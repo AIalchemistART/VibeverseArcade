@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Image Test</title>
+    <style>
+        body {
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        
+        .test-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .test-item {
+            background-color: #2a2a4a;
+            border: 1px solid #00ffff;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .test-item h2 {
+            color: #00ffff;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #00ff00;
+        }
+        
+        .failure {
+            color: #ff0055;
+        }
+        
+        .image-container {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px dashed #666;
+            padding: 5px;
+            height: 150px;
+            width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #log-container {
+            width: 90%;
+            max-width: 800px;
+            background-color: #0c0c1e;
+            border: 1px solid #00ffff;
+            padding: 10px;
+            margin-top: 30px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sign Image Loading Test</h1>
+    <p>This page tests different paths for loading the sign image</p>
+    
+    <div class="test-container" id="test-container">
+        <!-- Test items will be added here dynamically -->
+    </div>
+    
+    <div id="log-container"></div>
+    
+    <script>
+        // Logger
+        const log = (message) => {
+            const logContainer = document.getElementById('log-container');
+            const timestamp = new Date().toISOString();
+            logContainer.innerHTML += `[${timestamp}] ${message}\n`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(message);
+        };
+        
+        // Test paths
+        const testPaths = [
+            'assets/decor/Sign 1.png',
+            './assets/decor/Sign 1.png',
+            'assets/decor/Sign1.png',
+            './assets/decor/Sign1.png',
+            'assets/decor/sign1.png',
+            './assets/decor/sign1.png',
+            'assets/decor/sign 1.png',
+            './assets/decor/sign 1.png',
+            '/assets/decor/Sign 1.png'
+        ];
+        
+        // Create test items
+        const testContainer = document.getElementById('test-container');
+        
+        testPaths.forEach((path, index) => {
+            const testItem = document.createElement('div');
+            testItem.className = 'test-item';
+            
+            const title = document.createElement('h2');
+            title.textContent = `Test ${index + 1}: ${path}`;
+            
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'image-container';
+            
+            const img = document.createElement('img');
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+            
+            const status = document.createElement('div');
+            status.className = 'status';
+            status.textContent = 'Loading...';
+            
+            imageContainer.appendChild(img);
+            testItem.appendChild(title);
+            testItem.appendChild(imageContainer);
+            testItem.appendChild(status);
+            testContainer.appendChild(testItem);
+            
+            // Test image loading
+            img.onload = () => {
+                status.textContent = 'SUCCESS';
+                status.classList.add('success');
+                log(`✓ Image loaded successfully from: ${path}`);
+                log(`Image dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
+            };
+            
+            img.onerror = () => {
+                status.textContent = 'FAILED';
+                status.classList.add('failure');
+                log(`✗ Failed to load image from: ${path}`);
+            };
+            
+            img.src = path;
+        });
+        
+        // Additional tests with delay
+        setTimeout(() => {
+            log('Starting direct Image create API test...');
+            
+            const directImage = new Image();
+            directImage.onload = () => {
+                log(`✓ Direct Image API succeeded with: assets/decor/Sign 1.png`);
+                log(`Image dimensions: ${directImage.width}x${directImage.height}`);
+                
+                // Add to the page
+                const successContainer = document.createElement('div');
+                successContainer.className = 'test-item';
+                successContainer.innerHTML = `
+                    <h2>Direct Image API</h2>
+                    <div class="image-container"></div>
+                    <div class="status success">SUCCESS</div>
+                `;
+                successContainer.querySelector('.image-container').appendChild(directImage);
+                testContainer.appendChild(successContainer);
+            };
+            
+            directImage.onerror = () => {
+                log(`✗ Direct Image API failed with: assets/decor/Sign 1.png`);
+            };
+            
+            directImage.src = 'assets/decor/Sign 1.png';
+        }, 1000);
+        
+        // Try fetch API as well
+        setTimeout(() => {
+            log('Starting fetch API test...');
+            
+            fetch('assets/decor/Sign 1.png')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    log(`✓ Fetch API succeeded with: assets/decor/Sign 1.png`);
+                    log(`Blob size: ${blob.size} bytes, type: ${blob.type}`);
+                    
+                    // Create image from blob
+                    const blobUrl = URL.createObjectURL(blob);
+                    const blobImage = new Image();
+                    
+                    blobImage.onload = () => {
+                        log(`✓ Blob image created successfully: ${blobImage.width}x${blobImage.height}`);
+                        
+                        // Add to the page
+                        const blobContainer = document.createElement('div');
+                        blobContainer.className = 'test-item';
+                        blobContainer.innerHTML = `
+                            <h2>Fetch API + Blob</h2>
+                            <div class="image-container"></div>
+                            <div class="status success">SUCCESS</div>
+                        `;
+                        blobContainer.querySelector('.image-container').appendChild(blobImage);
+                        testContainer.appendChild(blobContainer);
+                    };
+                    
+                    blobImage.src = blobUrl;
+                })
+                .catch(error => {
+                    log(`✗ Fetch API failed: ${error.message}`);
+                });
+        }, 2000);
+    </script>
+</body>
+</html>

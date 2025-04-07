@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Test for AI Alchemist's Lair</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #ccc;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            color: #0ef;
+            text-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
+        }
+        .sprite-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .sprite-test {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            min-width: 150px;
+        }
+        .sprite-box {
+            width: 120px;
+            height: 120px;
+            background: #444;
+            border: 1px solid #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .sprite-name {
+            margin-top: 10px;
+            color: #0ef;
+        }
+        .sprite-status {
+            margin-top: 5px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .success {
+            background-color: rgba(0, 255, 0, 0.2);
+            color: #6f6;
+        }
+        .error {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: #f66;
+        }
+        .logs {
+            margin-top: 30px;
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Asset Test for AI Alchemist's Lair</h1>
+    <div id="summary"></div>
+    <div class="sprite-container" id="sprites"></div>
+    <div class="logs" id="logs"></div>
+
+    <script>
+        // Logger
+        const logContainer = document.getElementById('logs');
+        function log(message) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = message;
+            logContainer.appendChild(entry);
+            console.log(message);
+        }
+
+        // Simple asset loader
+        class AssetLoader {
+            constructor() {
+                this.assets = {};
+                this.loadedCount = 0;
+                this.errorCount = 0;
+                
+                // Wizard sprite paths - match the ones in the game
+                this.wizardSprites = {
+                    'wizardN': 'assets/Wizard/Wizard_1.png',
+                    'wizardNE': 'assets/Wizard/Wizard_2.png',
+                    'wizardE': 'assets/Wizard/Wizard_3.png',
+                    'wizardSE': 'assets/Wizard/Wizard_4.png',
+                    'wizardS': 'assets/Wizard/Wizard_5.png',
+                    'wizardSW': 'assets/Wizard/Wizard_6.png',
+                    'wizardW': 'assets/Wizard/Wizard_7.png',
+                    'wizardNW': 'assets/Wizard/Wizard_8.png'
+                };
+            }
+            
+            loadAll() {
+                const spriteContainer = document.getElementById('sprites');
+                const summary = document.getElementById('summary');
+                summary.innerHTML = `<h2>Loading ${Object.keys(this.wizardSprites).length} sprites...</h2>`;
+                
+                // Load each sprite
+                for (const [name, path] of Object.entries(this.wizardSprites)) {
+                    this.loadSprite(name, path, spriteContainer);
+                }
+            }
+            
+            loadSprite(name, path, container) {
+                log(`Loading sprite: ${name} from path: ${path}`);
+                
+                // Create container for this sprite
+                const spriteTest = document.createElement('div');
+                spriteTest.className = 'sprite-test';
+                
+                const spriteBox = document.createElement('div');
+                spriteBox.className = 'sprite-box';
+                
+                const spriteName = document.createElement('div');
+                spriteName.className = 'sprite-name';
+                spriteName.textContent = name;
+                
+                const spriteStatus = document.createElement('div');
+                spriteStatus.className = 'sprite-status';
+                spriteStatus.textContent = 'Loading...';
+                
+                spriteTest.appendChild(spriteBox);
+                spriteTest.appendChild(spriteName);
+                spriteTest.appendChild(spriteStatus);
+                container.appendChild(spriteTest);
+                
+                // Load the image
+                const img = new Image();
+                img.onload = () => {
+                    this.assets[name] = img;
+                    this.loadedCount++;
+                    
+                    spriteBox.appendChild(img);
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '100%';
+                    
+                    spriteStatus.textContent = 'Loaded';
+                    spriteStatus.className = 'sprite-status success';
+                    
+                    log(`✅ Successfully loaded: ${name}`);
+                    this.updateSummary();
+                };
+                
+                img.onerror = (err) => {
+                    this.errorCount++;
+                    spriteStatus.textContent = 'Error';
+                    spriteStatus.className = 'sprite-status error';
+                    
+                    // Add error info to sprite box
+                    const errorText = document.createElement('div');
+                    errorText.textContent = '❌';
+                    errorText.style.fontSize = '24px';
+                    errorText.style.color = '#f66';
+                    spriteBox.appendChild(errorText);
+                    
+                    log(`❌ Error loading: ${name} from ${path}`);
+                    this.updateSummary();
+                };
+                
+                img.src = path;
+            }
+            
+            updateSummary() {
+                const summary = document.getElementById('summary');
+                const total = Object.keys(this.wizardSprites).length;
+                summary.innerHTML = `
+                    <h2>Asset Test Results:</h2>
+                    <p>
+                        Total: ${total} sprites<br>
+                        Loaded: ${this.loadedCount} sprites<br>
+                        Errors: ${this.errorCount} sprites
+                    </p>
+                `;
+                
+                if (this.loadedCount + this.errorCount === total) {
+                    log(`Asset loading complete. ${this.loadedCount}/${total} loaded successfully.`);
+                    
+                    // Show final results
+                    const resultMessage = document.createElement('div');
+                    resultMessage.style.marginTop = '20px';
+                    resultMessage.style.padding = '10px';
+                    resultMessage.style.borderRadius = '5px';
+                    resultMessage.style.textAlign = 'center';
+                    resultMessage.style.fontWeight = 'bold';
+                    
+                    if (this.errorCount === 0) {
+                        resultMessage.style.backgroundColor = 'rgba(0, 255, 0, 0.1)';
+                        resultMessage.style.color = '#6f6';
+                        resultMessage.textContent = '✅ All sprites loaded successfully!';
+                    } else {
+                        resultMessage.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+                        resultMessage.style.color = '#f66';
+                        resultMessage.textContent = `❌ ${this.errorCount} sprites failed to load!`;
+                    }
+                    
+                    summary.appendChild(resultMessage);
+                }
+            }
+        }
+
+        // On page load, test all assets
+        window.onload = () => {
+            log('Starting asset test...');
+            const assetLoader = new AssetLoader();
+            assetLoader.loadAll();
+        };
+    </script>
+</body>
+</html>

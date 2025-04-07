@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct Sprite Rendering Test</title>
+    <style>
+        body {
+            background: #222;
+            color: #ccc;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #0ef;
+            text-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
+        }
+        canvas {
+            border: 2px solid #0ef;
+            box-shadow: 0 0 15px rgba(0, 238, 255, 0.5);
+            margin: 20px 0;
+            background: #333;
+        }
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #444;
+            color: #0ef;
+            border: 1px solid #0ef;
+            padding: 8px 16px;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 238, 255, 0.3);
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #555;
+            box-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
+        }
+        .logs {
+            width: 800px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #333;
+            padding: 10px;
+            border: 1px solid #555;
+            margin-top: 20px;
+        }
+        .log-entry {
+            border-bottom: 1px solid #444;
+            padding: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Direct Sprite Rendering Test</h1>
+    
+    <div class="controls">
+        <button id="load-sprites">Load Sprites</button>
+        <button id="draw-sprite">Draw South Sprite</button>
+        <button id="draw-rectangle">Draw Rectangle</button>
+        <button id="clear-canvas">Clear Canvas</button>
+    </div>
+    
+    <canvas id="test-canvas" width="800" height="600"></canvas>
+    
+    <div class="logs" id="logs"></div>
+    
+    <script>
+        // Set up canvas
+        const canvas = document.getElementById('test-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set up logging
+        const logs = document.getElementById('logs');
+        function log(message) {
+            console.log(message);
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = message;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        // Sprite paths
+        const spritePaths = {
+            'wizardN': 'assets/Wizard/Wizard_1.png',
+            'wizardNE': 'assets/Wizard/Wizard_2.png',
+            'wizardE': 'assets/Wizard/Wizard_3.png',
+            'wizardSE': 'assets/Wizard/Wizard_4.png',
+            'wizardS': 'assets/Wizard/Wizard_5.png',
+            'wizardSW': 'assets/Wizard/Wizard_6.png',
+            'wizardW': 'assets/Wizard/Wizard_7.png',
+            'wizardNW': 'assets/Wizard/Wizard_8.png'
+        };
+        
+        // Sprite cache
+        const sprites = {};
+        
+        // Load sprites button
+        document.getElementById('load-sprites').addEventListener('click', () => {
+            log('Loading sprites...');
+            
+            // Clear existing sprites
+            Object.keys(sprites).forEach(key => delete sprites[key]);
+            
+            // Load all sprites
+            let loadedCount = 0;
+            let errorCount = 0;
+            
+            Object.entries(spritePaths).forEach(([name, path]) => {
+                log(`Loading sprite: ${name} from ${path}`);
+                
+                const img = new Image();
+                img.onload = () => {
+                    sprites[name] = img;
+                    loadedCount++;
+                    log(`✅ Loaded sprite: ${name}, size: ${img.width}x${img.height}`);
+                    
+                    if (loadedCount + errorCount === Object.keys(spritePaths).length) {
+                        log(`Finished loading sprites. ${loadedCount} loaded, ${errorCount} failed.`);
+                    }
+                };
+                
+                img.onerror = () => {
+                    errorCount++;
+                    log(`❌ Error loading sprite: ${name} from ${path}`);
+                    
+                    if (loadedCount + errorCount === Object.keys(spritePaths).length) {
+                        log(`Finished loading sprites. ${loadedCount} loaded, ${errorCount} failed.`);
+                    }
+                };
+                
+                img.src = path;
+            });
+        });
+        
+        // Draw sprite button
+        document.getElementById('draw-sprite').addEventListener('click', () => {
+            log('Drawing south wizard sprite...');
+            
+            // Clear canvas first
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const sprite = sprites['wizardS'];
+            if (sprite) {
+                log(`Drawing sprite at (400, 300) with size 100x100`);
+                
+                // Draw background to ensure we can see the sprite area
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                ctx.fillRect(350, 250, 100, 100);
+                
+                try {
+                    // Draw the sprite
+                    ctx.drawImage(sprite, 350, 250, 100, 100);
+                    log('Sprite drawn successfully');
+                    
+                    // Draw a border around the sprite
+                    ctx.strokeStyle = 'yellow';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(350, 250, 100, 100);
+                } catch (err) {
+                    log(`Error drawing sprite: ${err.message}`);
+                }
+            } else {
+                log('South wizard sprite not loaded! Please load sprites first.');
+                
+                // Draw a placeholder
+                ctx.fillStyle = 'red';
+                ctx.font = '24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Sprite Not Loaded', 400, 300);
+            }
+        });
+        
+        // Draw rectangle button (as a test to ensure canvas is working)
+        document.getElementById('draw-rectangle').addEventListener('click', () => {
+            log('Drawing test rectangle...');
+            
+            // Clear canvas first
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw a rectangles with gradient fill
+            const gradient = ctx.createLinearGradient(200, 200, 600, 400);
+            gradient.addColorStop(0, '#0ef');
+            gradient.addColorStop(1, '#f0e');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(200, 200, 400, 200);
+            
+            // Add a border
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(200, 200, 400, 200);
+            
+            // Add text
+            ctx.fillStyle = 'white';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('If you can see this, canvas rendering works!', 400, 300);
+            
+            log('Rectangle drawn successfully');
+        });
+        
+        // Clear canvas button
+        document.getElementById('clear-canvas').addEventListener('click', () => {
+            log('Clearing canvas...');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+        
+        // Initial log
+        log('Sprite rendering test initialized. Click "Load Sprites" to begin.');
+        
+        // Draw initial test pattern
+        ctx.fillStyle = '#444';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        for (let i = 0; i < canvas.width; i += 40) {
+            ctx.fillStyle = i % 80 === 0 ? '#555' : '#333';
+            ctx.fillRect(i, 0, 20, canvas.height);
+        }
+        
+        ctx.fillStyle = 'white';
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Click "Load Sprites" and then "Draw Sprite" to test sprite rendering', canvas.width/2, canvas.height/2);
+    </script>
+</body>
+</html>
