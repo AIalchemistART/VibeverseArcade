@@ -130,8 +130,8 @@ class ArcadeManager {
         // We're not checking for a specific scene name as that seems to be causing issues
         
         // Place arcade cabinet in a visible area but not in the way of other elements
-        const arcadeX = 136; // Position in the room
-        const arcadeY = 18.5; // Position in the room
+        const arcadeX = 103.5; // Position in the room
+        const arcadeY = 6; // Position in the room
         
         // Define some custom retro games for this arcade
         const arcadeGames = [

@@ -130,8 +130,8 @@ class ArcadeManager2 {
         // We're not checking for a specific scene name as that seems to be causing issues
         
         // Place arcade cabinet in a visible area but not in the way of other elements
-        const arcadeX = 127; // Position in the room
-        const arcadeY = 19; // Position in the room
+        const arcadeX = 102.5; // Position in the room
+        const arcadeY = 18; // Position in the room
         
         // Define only the Gnome Mercy game for this cabinet
         const arcadeGames = [

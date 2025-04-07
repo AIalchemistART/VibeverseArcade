@@ -72,7 +72,7 @@ if (compatibilityResults.allCriticalSupported) {
         // Initialize scene and player position
         const scene = new TestScene();
         let playerX = 95;
-        let playerY = 35;
+        let playerY = 5;
         
         // Initialize camera with canvas dimensions
         const camera = new Camera(canvas.width, canvas.height);
@@ -229,14 +229,14 @@ if (compatibilityResults.allCriticalSupported) {
             vibePortalManager.addPortals(
                 // Start portal options (red) - positioned in lower right corner
                 { 
-                    position: { x: 85, y: 36.5, z: 0 },
+                    position: { x: 87, y: 2, z: -3 },
                     label: 'RETURN PORTAL',
                     interactionDistance: 3.5,  // Slightly larger interaction range
                     entryDetectionRange: 2.0   // Easier to enter
                 },
                 // Exit portal options (green) - positioned in upper left corner
                 { 
-                    position: { x: 114.9, y: 37, z: 0 },
+                    position: { x: 90, y: 2, z: -3 },
                     label: 'ENTER VIBEVERSE',
                     targetUrl: 'https://portal.pieter.com',
                     interactionDistance: 3.5,  // Slightly larger interaction range

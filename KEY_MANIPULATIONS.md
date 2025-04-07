@@ -237,6 +237,41 @@ Each entry contains:
   5. Enhanced reliability with proper event handling for track completion events
   These changes create a fully interactive music experience with DJ-like controls, allowing arcade visitors to customize their music experience.
 
+### Animated Vibeverse Door Arrow
+- **File**: scene.js
+- **Line**: ~1180-1270
+- **Search Term**: `drawVibeverseDoorArrow`
+- **Description**: Added an animated neon-purple arrow above the Vibeverse Arcade label/exit on the northeast wall. The arrow features multiple animation effects:
+  1. Positional animation with a smooth back-and-forth motion using sine waves
+  2. Pulsing opacity effect that makes the glow intensity change over time
+  3. Proper isometric transformations to match the game's perspective
+  4. Only appears in the startRoom scene
+  The animated arrow enhances visual guidance for players to find the Vibeverse Arcade exit, making navigation more intuitive.
+
+### Player Speed Adjustment
+- **File**: player.js
+- **Line**: ~21
+- **Search Term**: `player speed`
+- **Description**: Adjusted player movement speed from 4 to 3 to provide more control when navigating near portals and interactive elements.
+
+### Arcade Cabinet Repositioning
+- **File**: arcadeManager.js, arcadeManager2.js
+- **Line**: ~130-135 (both files)
+- **Search Term**: `arcadeX arcadeY`
+- **Description**: Repositioned arcade cabinets to create a dedicated gaming area:
+  1. First cabinet moved from { x: 136, y: 18.5 } to { x: 103.5, y: 6 }
+  2. Second cabinet moved from { x: 127, y: 19 } to { x: 102.5, y: 18 }
+  This arrangement creates a cohesive arcade section where players can easily move between games.
+
+### Vibeverse Portal Repositioning
+- **File**: main.js
+- **Line**: ~230-240
+- **Search Term**: `vibePortalManager position`
+- **Description**: Relocated Vibeverse portals for better integration with the scene layout:
+  1. RETURN portal moved from { x: 85, y: 36.5, z: 0 } to { x: 87, y: 2, z: -3 }
+  2. ENTER VIBEVERSE portal moved from { x: 114.9, y: 37, z: 0 } to { x: 90, y: 2, z: -3 }
+  These adjustments place the portals closer to the ground (negative z value) and in the southern part of the room, creating a dedicated portal area separate from the arcade cabinets.
+
 ---
 
-*Last updated: April 5, 2025*
+*Last updated: April 7, 2025*
