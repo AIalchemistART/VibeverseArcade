@@ -1,21 +1,21 @@
 /**
  * Arcade Cabinet Entity for AI Alchemist's Lair
- * Decorative arcade cabinet with interactive game selection functionality
+ * Decorative third arcade cabinet with interactive game selection functionality
  */
 
 import { Entity } from './entity.js';
 import { debug } from './utils.js';
 import { getAssetPath } from './pathResolver.js';
 
-class ArcadeEntity2 extends Entity {
+class ArcadeEntity3 extends Entity {
     /**
      * Creates a new arcade cabinet entity
      * @param {number} x - Grid X position
      * @param {number} y - Grid Y position
-     * @param {string} assetKey - Key for the asset to use ('Arcade_2', etc)
+     * @param {string} assetKey - Key for the asset to use ('Arcade_3', etc)
      * @param {object} options - Additional options
      */
-    constructor(x, y, assetKey = 'Arcade_2', options = {}) {
+    constructor(x, y, assetKey = 'Arcade_3', options = {}) {
         // Create an arcade with standard settings as a static entity
         super(x, y, 1.0, 1.0, {
             isStatic: true,
@@ -32,16 +32,16 @@ class ArcadeEntity2 extends Entity {
         this.asset = null;
         this.isInteractive = true;
         this.interactionRadius = 4;
-        this.arcadeId = options.arcadeId || 'arcade-' + Math.floor(Math.random() * 10000);
+        this.arcadeId = options.arcadeId || 'arcade3-' + Math.floor(Math.random() * 10000);
         
         // Visual properties
-        this.glowColor = '#00FFFF';
+        this.glowColor = '#FF00FF';
         this.glowIntensity = 5;
         this.maxGlowIntensity = 15;
         this.glowSpeed = 0.1;
         this.glowDirection = 1;
-        this.scaleX = .40;
-        this.scaleY = .40;
+        this.scaleX = .57;
+        this.scaleY = .57;
         this.groundingFactor = 0.25; // Percentage of height that sits "in" the ground
         
         // Apply positional offset like other decorative entities
@@ -70,9 +70,9 @@ class ArcadeEntity2 extends Entity {
                 title: 'Gnome Mercy', 
                 description: 'A bullet heaven roguelight',
                 url: 'https://gnome-mercy.vercel.app/',
-                imagePath: 'assets/Games/Game_6.png',
+                imagePath: 'assets/Games/Game_7.png',
                 image: null,
-                alternativeImagePaths: ['assets/Games/Game_6.png', 'assets/games/Game_6.png']
+                alternativeImagePaths: ['assets/Games/Game_7.png', 'assets/games/Game_7.png']
             }
         ];
         
@@ -90,7 +90,7 @@ class ArcadeEntity2 extends Entity {
         this.selectedGameIndex = 0;
         this.gameImagesLoaded = false;
         
-        console.log(`ArcadeEntity2: Initialized with ${this.games.length} games:`, this.games);
+        console.log(`ArcadeEntity3: Initialized with ${this.games.length} games:`, this.games);
         
         // Key state tracking
         this.wasUpPressed = false;
@@ -341,15 +341,15 @@ class ArcadeEntity2 extends Entity {
      * Test direct image loading outside the normal flow
      */
     testImageLoad() {
-        debug(`🧪 ArcadeEntity2: Testing direct image load with multiple paths...`);
+        debug(`🧪 ArcadeEntity3: Testing direct image load with multiple paths...`);
         
         // Try multiple different path formats
         const pathsToTry = [
-            window.location.origin + '/assets/decor/Arcade_2.png',
-            'assets/decor/Arcade_2.png',
-            './assets/decor/Arcade_2.png',
-            '/assets/decor/Arcade_2.png',
-            window.location.origin + '/assets/decor/Arcade%202.png',
+            window.location.origin + '/assets/decor/Arcade_3.png',
+            'assets/decor/Arcade_3.png',
+            './assets/decor/Arcade_3.png',
+            '/assets/decor/Arcade_3.png',
+            window.location.origin + '/assets/decor/Arcade%203.png',
             window.location.origin + '/assets/decor/arcade-cabinet.png',
             'assets/decor/arcade-cabinet.png'
         ];
@@ -402,19 +402,19 @@ class ArcadeEntity2 extends Entity {
      * @param {Function} assetLoader - Function to load assets
      */
     loadAsset(assetLoader) {
-        debug(`ArcadeEntity2: Attempting to load asset for ${this.assetKey}`);
+        debug(`ArcadeEntity3: Attempting to load asset for ${this.assetKey}`);
         
         // First check if asset is already loaded with this key
         const existingAsset = assetLoader.getAsset(this.assetKey);
         if (existingAsset) {
-            debug(`ArcadeEntity2: Found existing asset for ${this.assetKey}`);
+            debug(`ArcadeEntity3: Found existing asset for ${this.assetKey}`);
             this.asset = existingAsset;
             this.hasLoaded = true;
             return;
         }
         
         // Directly attempt to load the image
-        debug(`ArcadeEntity2: Asset not found in cache, attempting direct load`);
+        debug(`ArcadeEntity3: Asset not found in cache, attempting direct load`);
         this.directLoadArcadeImage();
     }
     
@@ -422,13 +422,13 @@ class ArcadeEntity2 extends Entity {
      * Directly load the arcade cabinet image without relying on asset loader
      */
     directLoadArcadeImage() {
-        debug(`ArcadeEntity2: Directly loading arcade image for key ${this.assetKey}`);
+        debug(`ArcadeEntity3: Directly loading arcade image for key ${this.assetKey}`);
         
         // Create a new image directly
         const img = new Image();
         
         img.onload = () => {
-            debug(`ArcadeEntity2: SUCCESSFULLY loaded arcade image directly (${img.width}x${img.height})`);
+            debug(`ArcadeEntity3: SUCCESSFULLY loaded arcade image directly (${img.width}x${img.height})`);
             this.asset = img;
             this.hasLoaded = true;
             
@@ -439,15 +439,15 @@ class ArcadeEntity2 extends Entity {
         };
         
         img.onerror = (err) => {
-            debug(`ArcadeEntity2: FAILED to load arcade image directly from exact path, error: ${err}`);
+            debug(`ArcadeEntity3: FAILED to load arcade image directly from exact path, error: ${err}`);
             this.tryAlternativePaths();
         };
         
         // Force to use the EXACT path that matches the file in the directory with GitHub Pages handling
         // This is known to exist from the dir command
-        const exactPath = 'assets/decor/Arcade_2.png';
+        const exactPath = 'assets/decor/Arcade_3.png';
         const resolvedPath = getAssetPath(exactPath);
-        debug(`ArcadeEntity2: Attempting to load from resolved path: ${resolvedPath} (original: ${exactPath})`);
+        debug(`ArcadeEntity3: Attempting to load from resolved path: ${resolvedPath} (original: ${exactPath})`);
         img.src = resolvedPath;
     }
     
@@ -455,16 +455,16 @@ class ArcadeEntity2 extends Entity {
      * Try to load the arcade image from alternative paths
      */
     tryAlternativePaths() {
-        debug(`ArcadeEntity2: Trying alternative paths for image`);
+        debug(`ArcadeEntity3: Trying alternative paths for image`);
         
         // Try several alternative paths - we now know the exact filename is "Arcade 1.png"
         // Generate both regular and GitHub Pages-resolved paths
         const basePaths = [
-            `assets/decor/Arcade_2.png`,        // Exact filename with space
-            `./assets/decor/Arcade_2.png`,      // With leading ./ and space
-            `assets/decor/Arcade%202.png`,      // URL encoded space
-            `assets/decor/Arcade-2.png`,        // Hyphen instead of space
-            `assets/decor/Arcade2.png`,         // No space
+            `assets/decor/Arcade_3.png`,        // Exact filename with space
+            `./assets/decor/Arcade_3.png`,      // With leading ./ and space
+            `assets/decor/Arcade%203.png`,      // URL encoded space
+            `assets/decor/Arcade-3.png`,        // Hyphen instead of space
+            `assets/decor/Arcade3.png`,         // No space
             `assets/decor/arcade-cabinet.png`,  // Generic name
             `assets/decor/arcade.png`           // Simple name
         ];
@@ -480,18 +480,18 @@ class ArcadeEntity2 extends Entity {
         
         const tryNextPath = () => {
             if (pathIndex >= alternativePaths.length) {
-                debug(`ArcadeEntity2: All alternative paths failed, creating fallback`);
+                debug(`ArcadeEntity3: All alternative paths failed, creating fallback`);
                 this.createFallbackAsset();
                 return;
             }
             
             const path = alternativePaths[pathIndex];
-            debug(`ArcadeEntity2: Trying alternative path (${pathIndex+1}/${alternativePaths.length}): ${path}`);
+            debug(`ArcadeEntity3: Trying alternative path (${pathIndex+1}/${alternativePaths.length}): ${path}`);
             
             const altImg = new Image();
             
             altImg.onload = () => {
-                debug(`ArcadeEntity2: Successfully loaded from alternative path: ${path}`);
+                debug(`ArcadeEntity3: Successfully loaded from alternative path: ${path}`);
                 this.asset = altImg;
                 this.hasLoaded = true;
                 
@@ -502,7 +502,7 @@ class ArcadeEntity2 extends Entity {
             };
             
             altImg.onerror = () => {
-                debug(`ArcadeEntity2: Failed to load from alternative path: ${path}`);
+                debug(`ArcadeEntity3: Failed to load from alternative path: ${path}`);
                 pathIndex++;
                 // Try the next path after a short delay
                 setTimeout(tryNextPath, 100);
@@ -521,7 +521,7 @@ class ArcadeEntity2 extends Entity {
      * Create a fallback asset when loading fails
      */
     createFallbackAsset() {
-        debug(`ArcadeEntity2: Creating fallback asset`);
+        debug(`ArcadeEntity3: Creating fallback asset`);
         
         // Create a canvas to render the fallback asset
         const canvas = document.createElement('canvas');
@@ -618,7 +618,7 @@ class ArcadeEntity2 extends Entity {
         // Convert to an image
         const img = new Image();
         img.onload = () => {
-            debug(`ArcadeEntity2: Fallback asset created successfully (${img.width}x${img.height})`);
+            debug(`ArcadeEntity3: Fallback asset created successfully (${img.width}x${img.height})`);
             this.asset = img;
             this.hasLoaded = true;
             
@@ -637,7 +637,7 @@ class ArcadeEntity2 extends Entity {
      */
     isPlayerNearby(player) {
         if (!player) {
-            debug(`ArcadeEntity2: No player provided to isPlayerNearby check`);
+            debug(`ArcadeEntity3: No player provided to isPlayerNearby check`);
             return false;
         }
         
@@ -651,7 +651,7 @@ class ArcadeEntity2 extends Entity {
         
         // Log details about the proximity check
         if (isNear) {
-            debug(`ArcadeEntity2: Player is nearby (distance: ${distance.toFixed(2)})`);
+            debug(`ArcadeEntity3: Player is nearby (distance: ${distance.toFixed(2)})`);
         }
         
         // Debug player distance occasionally
@@ -675,7 +675,7 @@ class ArcadeEntity2 extends Entity {
             
             // Only trigger state change effects if proximity changed
             if (isNearPlayer !== this.isNearPlayer) {
-                debug(`ArcadeEntity2: Player proximity changed to ${isNearPlayer ? 'NEAR' : 'FAR'}`);
+                debug(`ArcadeEntity3: Player proximity changed to ${isNearPlayer ? 'NEAR' : 'FAR'}`);
                 
                 // Trigger a pulse effect and sound when proximity changes
                 if (isNearPlayer) {
@@ -694,7 +694,7 @@ class ArcadeEntity2 extends Entity {
             const isEnterPressed = window.input && window.input.keys && window.input.keys['Enter'];
             
             if (isEnterPressed && !this.wasEnterPressed) {
-                debug(`ArcadeEntity2: Enter key pressed, starting interaction`);
+                debug(`ArcadeEntity3: Enter key pressed, starting interaction`);
                 this.startInteraction();
             }
             
@@ -735,7 +735,7 @@ class ArcadeEntity2 extends Entity {
             
             // If we're showing the game selection and player walks away, close it
             if (this.gameSelectVisible) {
-                debug(`ArcadeEntity2: Player walked away, closing game selection`);
+                debug(`ArcadeEntity3: Player walked away, closing game selection`);
                 this.hideGameSelection();
             }
         }
@@ -921,23 +921,23 @@ class ArcadeEntity2 extends Entity {
     handleInput(input, player) {
         // This method is no longer used, as we've integrated input handling directly in update()
         // Keep it for backward compatibility but log a warning if it gets called
-        debug(`ArcadeEntity2: WARNING - handleInput() is deprecated, input handling moved to update()`);
+        debug(`ArcadeEntity3: WARNING - handleInput() is deprecated, input handling moved to update()`);
     }
     
     /**
      * Start arcade cabinet interaction
      */
     startInteraction() {
-        debug(`ArcadeEntity2: Starting interaction`);
+        debug(`ArcadeEntity3: Starting interaction`);
         this.gameSelectVisible = true;
         
         // Tell the game system we're in an interaction
         // This prevents player movement during menu navigation
         if (window.game && typeof window.game.setInteractionActive === 'function') {
             window.game.setInteractionActive(true);
-            debug(`ArcadeEntity2: Set game interaction state to active`);
+            debug(`ArcadeEntity3: Set game interaction state to active`);
         } else {
-            console.warn(`ArcadeEntity2: Game interaction system not available!`);
+            console.warn(`ArcadeEntity3: Game interaction system not available!`);
         }
         
         // Play sound
@@ -948,7 +948,7 @@ class ArcadeEntity2 extends Entity {
      * Hide game selection menu
      */
     hideGameSelection() {
-        debug(`ArcadeEntity2: Hiding game selection`);
+        debug(`ArcadeEntity3: Hiding game selection`);
         
         // Play a sound effect when closing the menu
         this.playMenuCloseSound();
@@ -959,7 +959,7 @@ class ArcadeEntity2 extends Entity {
         // This allows player movement again
         if (window.game && typeof window.game.setInteractionActive === 'function') {
             window.game.setInteractionActive(false);
-            debug(`ArcadeEntity2: Set game interaction state to inactive`);
+            debug(`ArcadeEntity3: Set game interaction state to inactive`);
         }
         
         // Remove menu key listeners if they exist
@@ -986,22 +986,29 @@ class ArcadeEntity2 extends Entity {
                 window.input.keys[key] = false;
             });
         }
+        
+        // Clean up clickable areas when the menu is closed
+        if (this.clickableAreas && this.clickableAreas.length > 0) {
+            // Filter out any Twitter clickable areas when the menu is closed
+            this.clickableAreas = this.clickableAreas.filter(area => area.type !== 'twitter');
+            console.log('ArcadeEntity3: Removed Twitter clickable areas');
+        }
     }
     
     /**
      * Launch the selected game
      */
     launchGame() {
-        debug(`ArcadeEntity2: Launching game: ${this.games[this.selectedGameIndex].title}`);
+        debug(`ArcadeEntity3: Launching game: ${this.games[this.selectedGameIndex].title}`);
         
         if (this.games.length === 0) {
-            debug(`ArcadeEntity2: No games available to launch`);
+            debug(`ArcadeEntity3: No games available to launch`);
             return;
         }
         
         // Get the selected game
         const selectedGame = this.games[this.selectedGameIndex];
-        debug(`ArcadeEntity2: Launching game: ${selectedGame.title}`);
+        debug(`ArcadeEntity3: Launching game: ${selectedGame.title}`);
         
         // Play launch sound
         this.playLaunchSound();
@@ -1014,9 +1021,9 @@ class ArcadeEntity2 extends Entity {
         // Open the game URL
         try {
             window.open(selectedGame.url, '_blank');
-            debug(`ArcadeEntity2: Successfully opened URL for ${selectedGame.title}`);
+            debug(`ArcadeEntity3: Successfully opened URL for ${selectedGame.title}`);
         } catch (err) {
-            debug(`ArcadeEntity2: Failed to open URL: ${err}`);
+            debug(`ArcadeEntity3: Failed to open URL: ${err}`);
         }
         
         // Hide the game selection interface
@@ -1024,329 +1031,452 @@ class ArcadeEntity2 extends Entity {
     }
     
     /**
-     * Play a shotgun blast sound when activating the arcade cabinet
+     * Play an airplane takeoff / engine startup sound when activating the arcade cabinet
      */
     playActivateSound() {
         try {
-            // Create audio context for shotgun blast sound
+            // Create audio context for airplane startup and takeoff sound
             const context = new (window.AudioContext || window.webkitAudioContext)();
             
-            // Create nodes for shotgun blast components
+            // 1. Main engine startup sound (gradually increasing RPM)
+            const engineOsc = context.createOscillator();
+            engineOsc.type = 'sawtooth'; // Good for engine sounds
+            engineOsc.frequency.setValueAtTime(80, context.currentTime); // Start at low RPM
+            engineOsc.frequency.exponentialRampToValueAtTime(120, context.currentTime + 0.5); // Initial spin-up
+            engineOsc.frequency.exponentialRampToValueAtTime(180, context.currentTime + 1.5); // Full throttle
             
-            // 1. Initial explosion burst (white noise + filter)
+            // Add vibrato/unsteadiness to engine
+            const vibratoOsc = context.createOscillator();
+            vibratoOsc.type = 'sine';
+            vibratoOsc.frequency.value = 8; // 8Hz vibrato
+            
+            const vibratoGain = context.createGain();
+            vibratoGain.gain.value = 5; // Amount of vibrato
+            
+            vibratoOsc.connect(vibratoGain);
+            vibratoGain.connect(engineOsc.frequency); // Modulate engine frequency
+            
+            // Engine tone shaping
+            const engineFilter = context.createBiquadFilter();
+            engineFilter.type = 'lowpass';
+            engineFilter.frequency.value = 800;
+            engineFilter.Q.value = 2;
+            
+            // Engine volume envelope
+            const engineGain = context.createGain();
+            engineGain.gain.setValueAtTime(0.01, context.currentTime); // Start very quiet
+            engineGain.gain.linearRampToValueAtTime(0.15, context.currentTime + 0.8); // Ramp up as engine spools
+            engineGain.gain.linearRampToValueAtTime(0.20, context.currentTime + 1.5); // Full power
+            
+            // 2. Propeller blade sounds
+            const propOsc = context.createOscillator();
+            propOsc.type = 'square'; // Sharp sound for prop blade passing
+            propOsc.frequency.setValueAtTime(160, context.currentTime); 
+            propOsc.frequency.exponentialRampToValueAtTime(240, context.currentTime + 0.5);
+            propOsc.frequency.exponentialRampToValueAtTime(360, context.currentTime + 1.5);
+            
+            const propFilter = context.createBiquadFilter();
+            propFilter.type = 'bandpass';
+            propFilter.frequency.value = 1200;
+            propFilter.Q.value = 3;
+            
+            const propGain = context.createGain();
+            propGain.gain.setValueAtTime(0.0, context.currentTime);
+            propGain.gain.linearRampToValueAtTime(0.05, context.currentTime + 0.7);
+            propGain.gain.linearRampToValueAtTime(0.08, context.currentTime + 1.5);
+            
+            // 3. Wind/air rushing sound
             const bufferSize = 2 * context.sampleRate;
             const noiseBuffer = context.createBuffer(1, bufferSize, context.sampleRate);
             const output = noiseBuffer.getChannelData(0);
             
-            // Fill buffer with noise - heavier at start for explosive sound
+            // Fill buffer with noise
             for (let i = 0; i < bufferSize; i++) {
-                output[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.5);
+                output[i] = Math.random() * 2 - 1;
             }
             
-            // Create noise source from buffer
             const noise = context.createBufferSource();
             noise.buffer = noiseBuffer;
             
-            // Create filter for noise shaping
-            const blastFilter = context.createBiquadFilter();
-            blastFilter.type = 'lowpass';
-            blastFilter.frequency.setValueAtTime(400, context.currentTime);
-            blastFilter.frequency.exponentialRampToValueAtTime(100, context.currentTime + 0.2);
-            blastFilter.Q.value = 1.0;
+            // High-pass filter for wind sound
+            const windFilter = context.createBiquadFilter();
+            windFilter.type = 'highpass';
+            windFilter.frequency.value = 2000;
             
-            // Create bandpass filter for shotgun characteristic
-            const bandpassFilter = context.createBiquadFilter();
-            bandpassFilter.type = 'bandpass';
-            bandpassFilter.frequency.value = 250;
-            bandpassFilter.Q.value = 0.5;
+            const windGain = context.createGain();
+            windGain.gain.setValueAtTime(0.0, context.currentTime);
+            windGain.gain.linearRampToValueAtTime(0.01, context.currentTime + 0.9); // Wind starts later
+            windGain.gain.linearRampToValueAtTime(0.05, context.currentTime + 1.5); // Increases during takeoff
             
-            // Main explosion gain
-            const blastGain = context.createGain();
-            blastGain.gain.setValueAtTime(0.01, context.currentTime); // Start quiet
-            blastGain.gain.linearRampToValueAtTime(0.15, context.currentTime + 0.05); // Quick peak
-            blastGain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.2); // Fast falloff
-            blastGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.4); // Complete tail
+            // 4. Cockpit ambience and radio static
+            const staticBuffer = context.createBuffer(1, bufferSize, context.sampleRate);
+            const staticData = staticBuffer.getChannelData(0);
             
-            // 2. Low rumble component
-            const rumbleOsc = context.createOscillator();
-            rumbleOsc.type = 'sawtooth';
-            rumbleOsc.frequency.value = 60; // Very low frequency for rumble
-            
-            const rumbleGain = context.createGain();
-            rumbleGain.gain.setValueAtTime(0.0, context.currentTime);
-            rumbleGain.gain.linearRampToValueAtTime(0.10, context.currentTime + 0.05);
-            rumbleGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.6);
-            
-            // 3. Echo/reverb for spaciousness
-            const convolver = context.createConvolver();
-            const reverbBuffer = context.createBuffer(2, context.sampleRate * 1.5, context.sampleRate);
-            
-            // Create reverb impulse with dark characteristics
-            for (let channel = 0; channel < 2; channel++) {
-                const channelData = reverbBuffer.getChannelData(channel);
-                for (let i = 0; i < channelData.length; i++) {
-                    channelData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (context.sampleRate * 0.3));
-                }
+            for (let i = 0; i < staticData.length; i++) {
+                staticData[i] = Math.random() * 0.5 - 0.25; // Quieter static
             }
             
-            convolver.buffer = reverbBuffer;
+            const staticSource = context.createBufferSource();
+            staticSource.buffer = staticBuffer;
             
-            // Final output gain
+            const staticFilter = context.createBiquadFilter();
+            staticFilter.type = 'bandpass';
+            staticFilter.frequency.value = 3500;
+            staticFilter.Q.value = 0.5;
+            
+            const staticGain = context.createGain();
+            staticGain.gain.value = 0.015;
+            
+            // Final master gain
             const masterGain = context.createGain();
-            masterGain.gain.value = 0.25;
+            masterGain.gain.value = 0.3;
             
-            // Connect all nodes
-            noise.connect(blastFilter);
-            blastFilter.connect(bandpassFilter);
-            bandpassFilter.connect(blastGain);
-            blastGain.connect(convolver);
-            blastGain.connect(masterGain); // Direct path for clarity
+            // Connect all components
+            engineOsc.connect(engineFilter);
+            engineFilter.connect(engineGain);
+            engineGain.connect(masterGain);
             
-            rumbleOsc.connect(rumbleGain);
-            rumbleGain.connect(masterGain);
+            propOsc.connect(propFilter);
+            propFilter.connect(propGain);
+            propGain.connect(masterGain);
             
-            convolver.connect(masterGain);
+            noise.connect(windFilter);
+            windFilter.connect(windGain);
+            windGain.connect(masterGain);
+            
+            staticSource.connect(staticFilter);
+            staticFilter.connect(staticGain);
+            staticGain.connect(masterGain);
+            
             masterGain.connect(context.destination);
             
             // Start sources
+            engineOsc.start();
+            vibratoOsc.start();
+            propOsc.start();
             noise.start();
-            rumbleOsc.start();
+            staticSource.start();
             
             // Stop and clean up
             setTimeout(() => {
+                engineOsc.stop();
+                vibratoOsc.stop();
+                propOsc.stop();
                 noise.stop();
-                rumbleOsc.stop();
+                staticSource.stop();
                 context.close();
-            }, 700);
+            }, 1800); // Longer duration for the takeoff sequence
             
-            debug(`ArcadeEntity2: Played shotgun blast activation sound`);
+            debug(`ArcadeEntity3: Played airplane engine startup/takeoff sound`);
         } catch (err) {
-            debug(`ArcadeEntity2: Error playing activation sound: ${err}`);
+            debug(`ArcadeEntity3: Error playing activation sound: ${err}`);
         }
     }
     
     /**
-     * Play the menu selection change sound using Web Audio API
+     * Play a navigation radio beep sound when changing menu selections
      */
     playSelectSound() {
         try {
             const context = new (window.AudioContext || window.webkitAudioContext)();
             
-            // Create metallic click for shell loading
-            const clickOsc = context.createOscillator();
-            clickOsc.type = 'square';
-            clickOsc.frequency.setValueAtTime(2000, context.currentTime);
-            clickOsc.frequency.exponentialRampToValueAtTime(1500, context.currentTime + 0.03);
+            // Create main radio beep tone (navigation system sound)
+            const beepOsc = context.createOscillator();
+            beepOsc.type = 'sine';
+            beepOsc.frequency.setValueAtTime(1200, context.currentTime); // Higher pitch digital beep
             
-            // Create gain for click
+            // Create a subtle frequency modulation for more interesting tone
+            const fmOsc = context.createOscillator();
+            fmOsc.type = 'sine';
+            fmOsc.frequency.value = 45; // Subtle FM modulation
+            
+            const fmGain = context.createGain();
+            fmGain.gain.value = 15; // Amount of FM modulation
+            
+            // Connect FM modulation
+            fmOsc.connect(fmGain);
+            fmGain.connect(beepOsc.frequency);
+            
+            // Create gain envelope for beep
+            const beepGain = context.createGain();
+            beepGain.gain.setValueAtTime(0.0, context.currentTime);
+            beepGain.gain.linearRampToValueAtTime(0.15, context.currentTime + 0.01); // Fast attack
+            beepGain.gain.setValueAtTime(0.15, context.currentTime + 0.05); // Sustain
+            beepGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.12); // Release
+            
+            // Create filter for beep tone shaping
+            const beepFilter = context.createBiquadFilter();
+            beepFilter.type = 'bandpass';
+            beepFilter.frequency.value = 1200;
+            beepFilter.Q.value = 2.0;
+            
+            // Create a secondary confirmation click (button press) sound
+            const clickOsc = context.createOscillator();
+            clickOsc.type = 'triangle';
+            clickOsc.frequency.setValueAtTime(800, context.currentTime);
+            clickOsc.frequency.exponentialRampToValueAtTime(600, context.currentTime + 0.04);
+            
+            // Create gain for confirmation click
             const clickGain = context.createGain();
             clickGain.gain.setValueAtTime(0.0, context.currentTime);
-            clickGain.gain.linearRampToValueAtTime(0.08, context.currentTime + 0.01); // Sharp attack
-            clickGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.05); // Quick decay
+            clickGain.gain.linearRampToValueAtTime(0.04, context.currentTime + 0.01);
+            clickGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.06);
             
-            // Create filter for click
-            const clickFilter = context.createBiquadFilter();
-            clickFilter.type = 'bandpass';
-            clickFilter.frequency.value = 1800;
-            clickFilter.Q.value = 3.0;
+            // Add subtle cockpit ambience (background noise)
+            const noiseBuffer = context.createBuffer(1, context.sampleRate * 0.2, context.sampleRate);
+            const noiseData = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < noiseData.length; i++) {
+                noiseData[i] = Math.random() * 0.03 - 0.015; // Very quiet noise
+            }
             
-            // Create the shell sliding into chamber sound
-            const slideOsc = context.createOscillator();
-            slideOsc.type = 'sawtooth';
-            slideOsc.frequency.setValueAtTime(600, context.currentTime + 0.02); // Slight delay after click
-            slideOsc.frequency.linearRampToValueAtTime(800, context.currentTime + 0.08);
+            const noise = context.createBufferSource();
+            noise.buffer = noiseBuffer;
             
-            // Create gain for slide
-            const slideGain = context.createGain();
-            slideGain.gain.setValueAtTime(0.0, context.currentTime);
-            slideGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.02); // Delay start
-            slideGain.gain.linearRampToValueAtTime(0.04, context.currentTime + 0.04);
-            slideGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.1);
+            const noiseFilter = context.createBiquadFilter();
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.value = 2000;
+            noiseFilter.Q.value = 0.5;
             
-            // Create filter for slide
-            const slideFilter = context.createBiquadFilter();
-            slideFilter.type = 'lowpass';
-            slideFilter.frequency.value = 1000;
+            const noiseGain = context.createGain();
+            noiseGain.gain.value = 0.3;
             
             // Connect all nodes
-            clickOsc.connect(clickFilter);
-            clickFilter.connect(clickGain);
+            beepOsc.connect(beepFilter);
+            beepFilter.connect(beepGain);
+            beepGain.connect(context.destination);
+            
+            clickOsc.connect(clickGain);
             clickGain.connect(context.destination);
             
-            slideOsc.connect(slideFilter);
-            slideFilter.connect(slideGain);
-            slideGain.connect(context.destination);
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(context.destination);
             
-            // Start oscillators
+            // Start sound sources
+            beepOsc.start();
+            fmOsc.start();
             clickOsc.start();
-            slideOsc.start();
+            noise.start();
             
             // Stop and clean up
             setTimeout(() => {
+                beepOsc.stop();
+                fmOsc.stop();
                 clickOsc.stop();
-                slideOsc.stop();
+                noise.stop();
                 context.close();
-            }, 150);
+            }, 170);
             
-            debug(`ArcadeEntity2: Played shotgun shell loading sound`);
+            debug(`ArcadeEntity3: Played aircraft navigation beep sound`);
         } catch (err) {
-            debug(`ArcadeEntity2: Error playing selection sound: ${err}`);
+            debug(`ArcadeEntity3: Error playing selection sound: ${err}`);
         }
     }
     
     /**
-     * Play a double-barreled shotgun blast sound for game launch
+     * Play a passenger plane full takeoff sequence for game launch
      */
     playLaunchSound() {
         try {
             const context = new (window.AudioContext || window.webkitAudioContext)();
             
-            // Create components for double-barreled shotgun blast (two shots in very quick succession)
+            // Create components for a passenger plane takeoff with runway, engine, and flight sounds
             
-            // 1. Create main noise buffers for both shots
-            const bufferSize = 2 * context.sampleRate; // 2 seconds of audio
-            const shotBuffer1 = context.createBuffer(1, bufferSize, context.sampleRate);
-            const shotBuffer2 = context.createBuffer(1, bufferSize, context.sampleRate);
+            // 1. Main engine components
+            const engineOsc = context.createOscillator();
+            engineOsc.type = 'sawtooth';
+            engineOsc.frequency.setValueAtTime(120, context.currentTime); // Initial idle frequency
+            engineOsc.frequency.linearRampToValueAtTime(220, context.currentTime + 1.0); // Accelerate
+            engineOsc.frequency.linearRampToValueAtTime(280, context.currentTime + 2.0); // Full power
             
-            // Fill first shot buffer with explosive noise
-            const data1 = shotBuffer1.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                // More intense noise at the start for the explosion effect
-                data1[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
+            // Engine vibrato
+            const vibratoOsc = context.createOscillator();
+            vibratoOsc.type = 'sine';
+            vibratoOsc.frequency.setValueAtTime(12, context.currentTime); // Slower vibrato initially
+            vibratoOsc.frequency.linearRampToValueAtTime(25, context.currentTime + 2.0); // Faster at takeoff
+            
+            const vibratoGain = context.createGain();
+            vibratoGain.gain.setValueAtTime(10, context.currentTime); // Initial vibrato amount
+            vibratoGain.gain.linearRampToValueAtTime(25, context.currentTime + 2.0); // More pronounced at takeoff
+            
+            // Connect vibrato to engine frequency
+            vibratoOsc.connect(vibratoGain);
+            vibratoGain.connect(engineOsc.frequency);
+            
+            // Engine filter
+            const engineFilter = context.createBiquadFilter();
+            engineFilter.type = 'lowpass';
+            engineFilter.frequency.setValueAtTime(400, context.currentTime);
+            engineFilter.frequency.linearRampToValueAtTime(1200, context.currentTime + 2.0);
+            engineFilter.Q.value = 5;
+            
+            // 2. Propeller sound
+            const propOsc = context.createOscillator();
+            propOsc.type = 'square';
+            propOsc.frequency.setValueAtTime(60, context.currentTime); // Starting speed
+            propOsc.frequency.linearRampToValueAtTime(90, context.currentTime + 0.5); // Spool up
+            propOsc.frequency.linearRampToValueAtTime(130, context.currentTime + 2.0); // Full speed
+            
+            const propFilter = context.createBiquadFilter();
+            propFilter.type = 'bandpass';
+            propFilter.frequency.setValueAtTime(900, context.currentTime);
+            propFilter.frequency.linearRampToValueAtTime(1500, context.currentTime + 2.0);
+            propFilter.Q.value = 2;
+            
+            // 3. Runway rumble and wind noise
+            const runwayBufferSize = context.sampleRate * 3; // 3 seconds buffer
+            const runwayBuffer = context.createBuffer(1, runwayBufferSize, context.sampleRate);
+            const runwayData = runwayBuffer.getChannelData(0);
+            
+            // Fill runway rumble buffer - more intense at first, decreasing as plane lifts off
+            for (let i = 0; i < runwayBufferSize; i++) {
+                const progress = i / runwayBufferSize;
+                const intensity = progress < 0.7 ? 1.0 - (progress * 0.4) : 0.72 - (progress - 0.7) * 3.0; // Sharper decrease after 70%
+                runwayData[i] = (Math.random() * 2 - 1) * intensity * 0.6;
             }
             
-            // Fill second shot buffer with similar but slightly different noise
-            const data2 = shotBuffer2.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                // Slightly different noise pattern for the second shot
-                data2[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.8);
+            const runway = context.createBufferSource();
+            runway.buffer = runwayBuffer;
+            
+            const runwayFilter = context.createBiquadFilter();
+            runwayFilter.type = 'lowpass';
+            runwayFilter.frequency.setValueAtTime(180, context.currentTime);
+            runwayFilter.frequency.linearRampToValueAtTime(80, context.currentTime + 2.0); // Lower as we take off
+            
+            // 4. Wind noise increasing during takeoff
+            const windBufferSize = context.sampleRate * 3; // 3 seconds
+            const windBuffer = context.createBuffer(1, windBufferSize, context.sampleRate);
+            const windData = windBuffer.getChannelData(0);
+            
+            // Fill wind buffer - quieter at first, increasing as takeoff speed increases
+            for (let i = 0; i < windBufferSize; i++) {
+                const progress = i / windBufferSize;
+                const intensity = Math.min(1.0, progress * 1.5); // Increase with time
+                windData[i] = (Math.random() * 2 - 1) * intensity * 0.3;
             }
             
-            // Create noise sources
-            const shot1 = context.createBufferSource();
-            const shot2 = context.createBufferSource();
-            shot1.buffer = shotBuffer1;
-            shot2.buffer = shotBuffer2;
+            const wind = context.createBufferSource();
+            wind.buffer = windBuffer;
             
-            // 2. Filter chain for both shots to shape the sound
+            const windFilter = context.createBiquadFilter();
+            windFilter.type = 'bandpass';
+            windFilter.frequency.setValueAtTime(2000, context.currentTime);
+            windFilter.frequency.linearRampToValueAtTime(3000, context.currentTime + 2.0);
+            windFilter.Q.value = 0.8;
             
-            // First shot filters
-            const lowpass1 = context.createBiquadFilter();
-            lowpass1.type = 'lowpass';
-            lowpass1.frequency.setValueAtTime(350, context.currentTime);
-            lowpass1.frequency.exponentialRampToValueAtTime(80, context.currentTime + 0.3);
+            // 5. Radio communication and cockpit sounds
+            const radioBuffer = context.createBuffer(1, context.sampleRate * 3, context.sampleRate);
+            const radioData = radioBuffer.getChannelData(0);
             
-            const highpass1 = context.createBiquadFilter();
-            highpass1.type = 'highpass';
-            highpass1.frequency.value = 30;
-            
-            // Second shot filters
-            const lowpass2 = context.createBiquadFilter();
-            lowpass2.type = 'lowpass';
-            lowpass2.frequency.setValueAtTime(300, context.currentTime + 0.08);
-            lowpass2.frequency.exponentialRampToValueAtTime(70, context.currentTime + 0.4);
-            
-            const highpass2 = context.createBiquadFilter();
-            highpass2.type = 'highpass';
-            highpass2.frequency.value = 35;
-            
-            // 3. Gain nodes for volume envelope
-            const gain1 = context.createGain();
-            gain1.gain.setValueAtTime(0.01, context.currentTime);
-            gain1.gain.linearRampToValueAtTime(0.2, context.currentTime + 0.02);
-            gain1.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.4);
-            gain1.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.8);
-            
-            const gain2 = context.createGain();
-            gain2.gain.setValueAtTime(0.0, context.currentTime); // Start silent
-            gain2.gain.setValueAtTime(0.01, context.currentTime + 0.08); // Delay before second shot
-            gain2.gain.linearRampToValueAtTime(0.25, context.currentTime + 0.1); // Slightly louder than first
-            gain2.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
-            gain2.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.9);
-            
-            // 4. Add bass rumble to both shots
-            const rumble1 = context.createOscillator();
-            rumble1.type = 'sawtooth';
-            rumble1.frequency.value = 40;
-            
-            const rumble2 = context.createOscillator();
-            rumble2.type = 'sawtooth';
-            rumble2.frequency.value = 35; // Slightly lower rumble for second shot
-            
-            const rumbleGain1 = context.createGain();
-            rumbleGain1.gain.setValueAtTime(0.0, context.currentTime);
-            rumbleGain1.gain.linearRampToValueAtTime(0.15, context.currentTime + 0.02);
-            rumbleGain1.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.5);
-            
-            const rumbleGain2 = context.createGain();
-            rumbleGain2.gain.setValueAtTime(0.0, context.currentTime);
-            rumbleGain2.gain.setValueAtTime(0.0, context.currentTime + 0.08);
-            rumbleGain2.gain.linearRampToValueAtTime(0.2, context.currentTime + 0.1); // Stronger rumble
-            rumbleGain2.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.7);
-            
-            // 5. Add reverb for both shots
-            const convolver = context.createConvolver();
-            const reverbBuffer = context.createBuffer(2, context.sampleRate, context.sampleRate);
-            
-            // Create reverb impulse
-            for (let channel = 0; channel < 2; channel++) {
-                const channelData = reverbBuffer.getChannelData(channel);
-                for (let i = 0; i < channelData.length; i++) {
-                    channelData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (context.sampleRate * 0.3));
+            // Add some static and periodic beeps to simulate radio chatter
+            for (let i = 0; i < radioData.length; i++) {
+                // Background static
+                const staticNoise = Math.random() * 0.05 - 0.025;
+                
+                // Add periodic radio beeps and voice-like patterns
+                const beepFreq = 600; // Hz
+                const sampleRate = context.sampleRate;
+                
+                // Create patterns for radio communication (control tower, clearance, etc)
+                const time = i / sampleRate;
+                let beep = 0;
+                
+                // 0.5s in - clearance tone
+                if (time > 0.5 && time < 0.6) {
+                    beep = Math.sin(2 * Math.PI * beepFreq * time) * 0.15;
                 }
+                
+                // 1.5s in - takeoff clearance
+                if (time > 1.5 && time < 1.6) {
+                    beep = Math.sin(2 * Math.PI * (beepFreq + 100) * time) * 0.15;
+                }
+                
+                // 2.5s in - positive rate call
+                if (time > 2.5 && time < 2.55) {
+                    beep = Math.sin(2 * Math.PI * (beepFreq - 50) * time) * 0.15;
+                }
+                
+                radioData[i] = staticNoise + beep;
             }
             
-            convolver.buffer = reverbBuffer;
+            const radio = context.createBufferSource();
+            radio.buffer = radioBuffer;
             
-            // Master gain for overall volume control
+            const radioFilter = context.createBiquadFilter();
+            radioFilter.type = 'bandpass';
+            radioFilter.frequency.value = 1500;
+            radioFilter.Q.value = 1.0;
+            
+            // 6. Gain nodes for all components
+            const engineGain = context.createGain();
+            engineGain.gain.setValueAtTime(0.1, context.currentTime); // Start at idle
+            engineGain.gain.linearRampToValueAtTime(0.25, context.currentTime + 0.5); // Initial spool up
+            engineGain.gain.linearRampToValueAtTime(0.4, context.currentTime + 2.0); // Full takeoff power
+            
+            const propGain = context.createGain();
+            propGain.gain.setValueAtTime(0.15, context.currentTime);
+            propGain.gain.linearRampToValueAtTime(0.3, context.currentTime + 2.0);
+            
+            const runwayGain = context.createGain();
+            runwayGain.gain.setValueAtTime(0.4, context.currentTime); // Strong initially on ground
+            runwayGain.gain.linearRampToValueAtTime(0.05, context.currentTime + 2.0); // Fade as we leave ground
+            
+            const windGain = context.createGain();
+            windGain.gain.setValueAtTime(0.05, context.currentTime); // Quiet initially
+            windGain.gain.linearRampToValueAtTime(0.3, context.currentTime + 2.0); // Louder as speed increases
+            
+            const radioGain = context.createGain();
+            radioGain.gain.value = 0.4;
+            
+            // Master gain
             const masterGain = context.createGain();
-            masterGain.gain.value = 0.3;
+            masterGain.gain.value = 0.7;
             
             // Connect all nodes
+            engineOsc.connect(engineFilter);
+            engineFilter.connect(engineGain);
+            engineGain.connect(masterGain);
             
-            // First shot path
-            shot1.connect(lowpass1);
-            lowpass1.connect(highpass1);
-            highpass1.connect(gain1);
-            gain1.connect(convolver);
-            gain1.connect(masterGain); // Direct path for clarity
+            propOsc.connect(propFilter);
+            propFilter.connect(propGain);
+            propGain.connect(masterGain);
             
-            // Second shot path
-            shot2.connect(lowpass2);
-            lowpass2.connect(highpass2);
-            highpass2.connect(gain2);
-            gain2.connect(convolver);
-            gain2.connect(masterGain); // Direct path for clarity
+            runway.connect(runwayFilter);
+            runwayFilter.connect(runwayGain);
+            runwayGain.connect(masterGain);
             
-            // Rumble paths
-            rumble1.connect(rumbleGain1);
-            rumbleGain1.connect(masterGain);
+            wind.connect(windFilter);
+            windFilter.connect(windGain);
+            windGain.connect(masterGain);
             
-            rumble2.connect(rumbleGain2);
-            rumbleGain2.connect(masterGain);
+            radio.connect(radioFilter);
+            radioFilter.connect(radioGain);
+            radioGain.connect(masterGain);
             
-            // Connect reverb to output
-            convolver.connect(masterGain);
             masterGain.connect(context.destination);
             
             // Start all sound sources
-            shot1.start();
-            shot2.start();
-            rumble1.start();
-            rumble2.start();
+            engineOsc.start();
+            vibratoOsc.start();
+            propOsc.start();
+            runway.start();
+            wind.start();
+            radio.start();
             
             // Stop and clean up
             setTimeout(() => {
-                shot1.stop();
-                shot2.stop();
-                rumble1.stop();
-                rumble2.stop();
+                engineOsc.stop();
+                vibratoOsc.stop();
+                propOsc.stop();
+                runway.stop();
+                wind.stop();
+                radio.stop();
                 context.close();
-            }, 1000);
+            }, 3000); // Longer duration for the full takeoff sequence
             
-            debug(`ArcadeEntity2: Played double-barreled shotgun blast launch sound`);
+            debug(`ArcadeEntity3: Played passenger plane takeoff launch sound`);
         } catch (err) {
-            debug(`ArcadeEntity2: Error playing launch sound: ${err}`);
+            debug(`ArcadeEntity3: Error playing launch sound: ${err}`);
         }
     }
     
@@ -1356,58 +1486,58 @@ class ArcadeEntity2 extends Entity {
     loadSoundEffects() {
         // We're now using Web Audio API for sound generation
         // No need to load external sound files
-        debug(`ArcadeEntity2: Using Web Audio API for sound generation`);
+        debug(`ArcadeEntity3: Using Web Audio API for sound generation`);
     }
     
     /**
      * Load game images for the selection screen
      */
     loadGameImages() {
-        debug(`ArcadeEntity2: Loading game images for Gnome Mercy cabinet`); 
-        console.log(`🎮 ArcadeEntity2: Loading game images for Gnome Mercy cabinet`);
+        debug(`ArcadeEntity3: Loading game images for Gnome Mercy cabinet`); 
+        console.log(`🎮 ArcadeEntity3: Loading game images for Gnome Mercy cabinet`);
         
         if (!this.games || this.games.length === 0) {
-            debug(`ArcadeEntity2: No games to load images for`);
-            console.warn(`🎮 ArcadeEntity2: No games to load images for`);
+            debug(`ArcadeEntity3: No games to load images for`);
+            console.warn(`🎮 ArcadeEntity3: No games to load images for`);
             return;
         }
         
-        console.log(`🎮 ArcadeEntity2: Loading images for ${this.games.length} games:`, 
+        console.log(`🎮 ArcadeEntity3: Loading images for ${this.games.length} games:`, 
             this.games.map(g => g.title).join(', '));
         
         // Load images for each game that has an imagePath
         this.games.forEach(game => {
             if (game.imagePath) {
-                debug(`ArcadeEntity2: Loading image for ${game.title}: ${game.imagePath}`);
-                console.log(`🎮 ArcadeEntity2: Loading image for ${game.title}: ${game.imagePath}`);
+                debug(`ArcadeEntity3: Loading image for ${game.title}: ${game.imagePath}`);
+                console.log(`🎮 ArcadeEntity3: Loading image for ${game.title}: ${game.imagePath}`);
                 
                 // Create image object
                 const img = new Image();
                 
                 // Set up load handlers
                 img.onload = () => {
-                    debug(`ArcadeEntity2: Successfully loaded image for ${game.title}`);
-                    console.log(`🎮 ArcadeEntity2: Successfully loaded image for ${game.title}`);
+                    debug(`ArcadeEntity3: Successfully loaded image for ${game.title}`);
+                    console.log(`🎮 ArcadeEntity3: Successfully loaded image for ${game.title}`);
                     game.image = img;
                     
                     // Check if all games have images loaded
                     if (this.games.every(g => g.image)) {
-                        console.log(`🎮 ArcadeEntity2: All game images loaded successfully`);
+                        console.log(`🎮 ArcadeEntity3: All game images loaded successfully`);
                         this.gameImagesLoaded = true;
                     }
                 };
                 
                 img.onerror = (err) => {
-                    debug(`ArcadeEntity2: Failed to load image for ${game.title}: ${err}`);
-                    console.error(`🎮 ArcadeEntity2: Failed to load image for ${game.title}: ${err}`);
+                    debug(`ArcadeEntity3: Failed to load image for ${game.title}: ${err}`);
+                    console.error(`🎮 ArcadeEntity3: Failed to load image for ${game.title}: ${err}`);
                     
                     // Try alternative paths if available
                     if (game.alternativeImagePaths && game.alternativeImagePaths.length > 0) {
-                        console.log(`🎮 ArcadeEntity2: Trying alternative paths for ${game.title}`);
+                        console.log(`🎮 ArcadeEntity3: Trying alternative paths for ${game.title}`);
                         this.tryAlternativeImagePaths(game);
                     } else {
                         // Create a fallback canvas image
-                        console.log(`🎮 ArcadeEntity2: Creating fallback image for ${game.title}`);
+                        console.log(`🎮 ArcadeEntity3: Creating fallback image for ${game.title}`);
                         this.createFallbackImage(game);
                     }
                 };
@@ -1417,17 +1547,17 @@ class ArcadeEntity2 extends Entity {
                 if (typeof window.getAssetPath === 'function') {
                     try {
                         finalPath = window.getAssetPath(game.imagePath);
-                        console.log(`🎮 ArcadeEntity2: Resolved path: ${finalPath}`);
+                        console.log(`🎮 ArcadeEntity3: Resolved path: ${finalPath}`);
                     } catch (e) {
-                        console.warn(`🎮 ArcadeEntity2: Could not resolve path, using original: ${finalPath}`);
+                        console.warn(`🎮 ArcadeEntity3: Could not resolve path, using original: ${finalPath}`);
                     }
                 }
                 
                 // Start loading
                 img.src = finalPath;
             } else {
-                debug(`ArcadeEntity2: No image path for ${game.title}`);
-                console.warn(`🎮 ArcadeEntity2: No image path for ${game.title}`);
+                debug(`ArcadeEntity3: No image path for ${game.title}`);
+                console.warn(`🎮 ArcadeEntity3: No image path for ${game.title}`);
                 this.createFallbackImage(game);
             }
         });
@@ -1439,7 +1569,7 @@ class ArcadeEntity2 extends Entity {
      */
     tryAlternativeImagePaths(game) {
         if (!game.alternativeImagePaths || game.alternativeImagePaths.length === 0) {
-            console.warn(`🎮 ArcadeEntity2: No alternative paths for ${game.title}`);
+            console.warn(`🎮 ArcadeEntity3: No alternative paths for ${game.title}`);
             this.createFallbackImage(game);
             return;
         }
@@ -1447,22 +1577,22 @@ class ArcadeEntity2 extends Entity {
         let pathIndex = 0;
         const tryNextPath = () => {
             if (pathIndex >= game.alternativeImagePaths.length) {
-                console.error(`🎮 ArcadeEntity2: All alternative paths failed for ${game.title}`);
+                console.error(`🎮 ArcadeEntity3: All alternative paths failed for ${game.title}`);
                 this.createFallbackImage(game);
                 return;
             }
             
             const altPath = game.alternativeImagePaths[pathIndex];
-            console.log(`🎮 ArcadeEntity2: Trying alternative path ${pathIndex+1}/${game.alternativeImagePaths.length}: ${altPath}`);
+            console.log(`🎮 ArcadeEntity3: Trying alternative path ${pathIndex+1}/${game.alternativeImagePaths.length}: ${altPath}`);
             
             const img = new Image();
             img.onload = () => {
-                console.log(`🎮 ArcadeEntity2: Successfully loaded alternative image for ${game.title}`);
+                console.log(`🎮 ArcadeEntity3: Successfully loaded alternative image for ${game.title}`);
                 game.image = img;
             };
             
             img.onerror = () => {
-                console.warn(`🎮 ArcadeEntity2: Failed to load alternative path: ${altPath}`);
+                console.warn(`🎮 ArcadeEntity3: Failed to load alternative path: ${altPath}`);
                 pathIndex++;
                 tryNextPath(); // Try the next path
             };
@@ -1485,7 +1615,7 @@ class ArcadeEntity2 extends Entity {
      * @param {Object} game - The game object
      */
     createFallbackImage(game) {
-        console.log(`🎮 ArcadeEntity2: Creating canvas fallback image for ${game.title}`);
+        console.log(`🎮 ArcadeEntity3: Creating canvas fallback image for ${game.title}`);
         
         // Create a canvas to generate a placeholder image
         const canvas = document.createElement('canvas');
@@ -1527,180 +1657,264 @@ class ArcadeEntity2 extends Entity {
         // Set as game image
         game.image = img;
         
-        console.log(`🎮 ArcadeEntity2: Fallback image created for ${game.title}`);
+        console.log(`🎮 ArcadeEntity3: Fallback image created for ${game.title}`);
     }
 
     /**
-     * Play a shotgun slide/pump action sound when closing the menu
+     * Play an airplane engine power down and landing sound when closing the menu
      */
     playMenuCloseSound() {
         try {
             const context = new (window.AudioContext || window.webkitAudioContext)();
             
-            // 1. Create metal slide component
-            const slideNoise = context.createBufferSource();
-            const slideBuffer = context.createBuffer(1, context.sampleRate * 0.4, context.sampleRate);
-            const slideData = slideBuffer.getChannelData(0);
+            // 1. Create engine spooling down component
+            const engineOsc = context.createOscillator();
+            engineOsc.type = 'sawtooth';
+            engineOsc.frequency.setValueAtTime(220, context.currentTime); // Start at a medium engine frequency
+            engineOsc.frequency.exponentialRampToValueAtTime(100, context.currentTime + 0.35); // Spool down
             
-            // Populate buffer with noise shaped for a shotgun slide/pump action
-            for (let i = 0; i < slideData.length; i++) {
-                // Create a smooth metal sliding sound - higher frequency at start, lower at end
-                const progress = i / slideData.length;
-                // Less randomness for more metallic sound
-                slideData[i] = (Math.random() * 0.1 - 0.05) * Math.cos(progress * 120) * (1 - progress * 0.7);
+            // Engine vibrato that decreases as the engine spools down
+            const vibratoOsc = context.createOscillator();
+            vibratoOsc.type = 'sine';
+            vibratoOsc.frequency.setValueAtTime(20, context.currentTime); // Engine vibration
+            vibratoOsc.frequency.linearRampToValueAtTime(8, context.currentTime + 0.35); // Slower vibrato as engine slows
+            
+            const vibratoGain = context.createGain();
+            vibratoGain.gain.setValueAtTime(15, context.currentTime); // Initial vibrato depth
+            vibratoGain.gain.linearRampToValueAtTime(4, context.currentTime + 0.35); // Decrease vibrato as engine slows
+            
+            // Connect vibrato to engine frequency
+            vibratoOsc.connect(vibratoGain);
+            vibratoGain.connect(engineOsc.frequency);
+            
+            // Engine filter to shape the sound
+            const engineFilter = context.createBiquadFilter();
+            engineFilter.type = 'lowpass';
+            engineFilter.frequency.setValueAtTime(800, context.currentTime);
+            engineFilter.frequency.linearRampToValueAtTime(300, context.currentTime + 0.35);
+            engineFilter.Q.value = 3.0;
+            
+            // Engine gain envelope
+            const engineGain = context.createGain();
+            engineGain.gain.setValueAtTime(0.2, context.currentTime); // Start at moderate volume
+            engineGain.gain.linearRampToValueAtTime(0.05, context.currentTime + 0.35); // Fade as it winds down
+            engineGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.5); // Complete fade out
+            
+            // 2. Create landing gear deployment sound
+            const gearBuffer = context.createBuffer(1, context.sampleRate * 0.25, context.sampleRate);
+            const gearData = gearBuffer.getChannelData(0);
+            
+            // Create a mechanical sound for landing gear deployment
+            for (let i = 0; i < gearData.length; i++) {
+                const progress = i / gearData.length;
+                const mechanicalPattern = Math.sin(progress * 40) * (1 - progress * 0.5);
+                gearData[i] = (Math.random() * 0.1 - 0.05) * mechanicalPattern + mechanicalPattern * 0.15;
             }
             
-            slideNoise.buffer = slideBuffer;
+            const gearNoise = context.createBufferSource();
+            gearNoise.buffer = gearBuffer;
             
-            // Create filter for slide sound
-            const slideFilter = context.createBiquadFilter();
-            slideFilter.type = 'bandpass';
-            slideFilter.frequency.setValueAtTime(1200, context.currentTime);
-            slideFilter.frequency.linearRampToValueAtTime(800, context.currentTime + 0.2);
-            slideFilter.Q.value = 2.0;
+            // Filter for landing gear sound
+            const gearFilter = context.createBiquadFilter();
+            gearFilter.type = 'bandpass';
+            gearFilter.frequency.value = 600;
+            gearFilter.Q.value = 2.0;
             
-            // 2. Create click/clack component for the end of the pump action
-            const clickOsc = context.createOscillator();
-            clickOsc.type = 'square';
-            clickOsc.frequency.value = 180;
+            // Gain for landing gear
+            const gearGain = context.createGain();
+            gearGain.gain.setValueAtTime(0.0, context.currentTime);
+            gearGain.gain.setValueAtTime(0.0, context.currentTime + 0.15); // Delay gear deployment
+            gearGain.gain.linearRampToValueAtTime(0.08, context.currentTime + 0.18); // Quick ramp up
+            gearGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.35); // Fade out
             
-            const clickGain = context.createGain();
-            clickGain.gain.setValueAtTime(0.0, context.currentTime);
-            clickGain.gain.setValueAtTime(0.0, context.currentTime + 0.2); // Delay the click until slide completes
-            clickGain.gain.linearRampToValueAtTime(0.07, context.currentTime + 0.21); // Sharp attack
-            clickGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.25); // Fast decay
+            // 3. Create landing/touchdown thud
+            const thudOsc = context.createOscillator();
+            thudOsc.type = 'sine';
+            thudOsc.frequency.setValueAtTime(80, context.currentTime + 0.25); // Low frequency thud
+            thudOsc.frequency.exponentialRampToValueAtTime(40, context.currentTime + 0.4); // Dropping pitch
             
-            // 3. Create subtle resonance component
-            const resonanceOsc = context.createOscillator();
-            resonanceOsc.type = 'sine';
-            resonanceOsc.frequency.setValueAtTime(300, context.currentTime + 0.2);
-            resonanceOsc.frequency.exponentialRampToValueAtTime(150, context.currentTime + 0.35);
+            const thudGain = context.createGain();
+            thudGain.gain.setValueAtTime(0.0, context.currentTime);
+            thudGain.gain.setValueAtTime(0.0, context.currentTime + 0.25); // Delay until touchdown
+            thudGain.gain.linearRampToValueAtTime(0.15, context.currentTime + 0.27); // Quick impact
+            thudGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.5); // Fade out
             
-            const resonanceGain = context.createGain();
-            resonanceGain.gain.setValueAtTime(0.0, context.currentTime);
-            resonanceGain.gain.setValueAtTime(0.0, context.currentTime + 0.2);
-            resonanceGain.gain.linearRampToValueAtTime(0.03, context.currentTime + 0.22);
-            resonanceGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.4);
+            // 4. Add wheel roll sound
+            const rollBuffer = context.createBuffer(1, context.sampleRate * 0.3, context.sampleRate);
+            const rollData = rollBuffer.getChannelData(0);
+            
+            // Create a continuous rolling noise
+            for (let i = 0; i < rollData.length; i++) {
+                const progress = i / rollData.length;
+                // Higher intensity at start of roll, then gradually decreases
+                const intensity = Math.max(0, 1.0 - progress * 1.5);
+                rollData[i] = (Math.random() * 2 - 1) * 0.05 * intensity;
+            }
+            
+            const rollNoise = context.createBufferSource();
+            rollNoise.buffer = rollBuffer;
+            
+            const rollFilter = context.createBiquadFilter();
+            rollFilter.type = 'lowpass';
+            rollFilter.frequency.value = 200;
+            
+            const rollGain = context.createGain();
+            rollGain.gain.setValueAtTime(0.0, context.currentTime);
+            rollGain.gain.setValueAtTime(0.0, context.currentTime + 0.25); // Start at touchdown
+            rollGain.gain.linearRampToValueAtTime(0.1, context.currentTime + 0.3); // Ramp up as wheels touch
+            rollGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.5); // Gradually fade out
             
             // Main output gain
             const masterGain = context.createGain();
             masterGain.gain.value = 0.25;
             
             // Connect all components
-            slideNoise.connect(slideFilter);
-            slideFilter.connect(masterGain);
+            engineOsc.connect(engineFilter);
+            engineFilter.connect(engineGain);
+            engineGain.connect(masterGain);
             
-            clickOsc.connect(clickGain);
-            clickGain.connect(masterGain);
+            gearNoise.connect(gearFilter);
+            gearFilter.connect(gearGain);
+            gearGain.connect(masterGain);
             
-            resonanceOsc.connect(resonanceGain);
-            resonanceGain.connect(masterGain);
+            thudOsc.connect(thudGain);
+            thudGain.connect(masterGain);
+            
+            rollNoise.connect(rollFilter);
+            rollFilter.connect(rollGain);
+            rollGain.connect(masterGain);
             
             masterGain.connect(context.destination);
             
             // Start sound components
-            slideNoise.start();
-            clickOsc.start();
-            resonanceOsc.start();
+            engineOsc.start();
+            vibratoOsc.start();
+            gearNoise.start();
+            thudOsc.start();
+            rollNoise.start();
             
             // Stop and clean up
             setTimeout(() => {
-                slideNoise.stop();
-                clickOsc.stop();
-                resonanceOsc.stop();
+                engineOsc.stop();
+                vibratoOsc.stop();
+                gearNoise.stop();
+                thudOsc.stop();
+                rollNoise.stop();
                 context.close();
-            }, 400);
+            }, 550); // Slightly longer for full landing sequence
             
-            debug(`ArcadeEntity2: Played shotgun pump action close sound`);
+            debug(`ArcadeEntity3: Played airplane landing/power down sound`);
         } catch (err) {
-            debug(`ArcadeEntity2: Error playing menu close sound: ${err}`);
+            debug(`ArcadeEntity3: Error playing menu close sound: ${err}`);
         }
     }
 
     /**
-     * Play a shotgun racking/cocking sound when player enters interaction range
+     * Play a small passenger plane approach sound when player enters interaction range
      */
     playProximitySound() {
         try {
             const context = new (window.AudioContext || window.webkitAudioContext)();
             
-            // Create components for shotgun racking/cocking sound
+            // Create components for small aircraft engine approach sound
             
-            // 1. Metallic click sound (main racking mechanism)
-            const clickOsc = context.createOscillator();
-            clickOsc.type = 'triangle';
+            // 1. Main engine hum (basic propeller aircraft sound)
+            const engineOsc = context.createOscillator();
+            engineOsc.type = 'sawtooth';
+            engineOsc.frequency.setValueAtTime(110, context.currentTime); // Base frequency for engine sound
+            engineOsc.frequency.linearRampToValueAtTime(150, context.currentTime + 0.8); // Engine revving up slightly
             
-            const clickFilter = context.createBiquadFilter();
-            clickFilter.type = 'bandpass';
-            clickFilter.frequency.value = 2200;
-            clickFilter.Q.value = 1.5;
+            // Add slight pitch variation for realism
+            const enginePitchLFO = context.createOscillator();
+            enginePitchLFO.type = 'sine';
+            enginePitchLFO.frequency.value = 4; // 4Hz modulation
             
-            const clickGain = context.createGain();
-            clickGain.gain.setValueAtTime(0.0, context.currentTime);
-            clickGain.gain.linearRampToValueAtTime(0.10, context.currentTime + 0.02);
-            clickGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.08);
+            const enginePitchGain = context.createGain();
+            enginePitchGain.gain.value = 4; // Amount of frequency modulation
             
-            // 2. Metal sliding sound (shotgun pump action)
-            const slideOsc = context.createOscillator();
-            slideOsc.type = 'sawtooth';
-            slideOsc.frequency.setValueAtTime(800, context.currentTime);
-            slideOsc.frequency.linearRampToValueAtTime(1500, context.currentTime + 0.1);
-            slideOsc.frequency.linearRampToValueAtTime(800, context.currentTime + 0.2);
+            // Connect pitch modulation
+            enginePitchLFO.connect(enginePitchGain);
+            enginePitchGain.connect(engineOsc.frequency);
             
-            const slideFilter = context.createBiquadFilter();
-            slideFilter.type = 'lowpass';
-            slideFilter.frequency.value = 1800;
-            slideFilter.Q.value = 5;
+            // Filter the engine to make it sound realistic
+            const engineFilter = context.createBiquadFilter();
+            engineFilter.type = 'lowpass';
+            engineFilter.frequency.value = 900;
+            engineFilter.Q.value = 5;
             
-            const slideGain = context.createGain();
-            slideGain.gain.setValueAtTime(0.0, context.currentTime);
-            slideGain.gain.linearRampToValueAtTime(0.06, context.currentTime + 0.1);
-            slideGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.25);
+            // Engine volume envelope
+            const engineGain = context.createGain();
+            engineGain.gain.setValueAtTime(0.0, context.currentTime);
+            engineGain.gain.linearRampToValueAtTime(0.06, context.currentTime + 0.3); // Engine gradually approaches
+            engineGain.gain.linearRampToValueAtTime(0.12, context.currentTime + 0.7); // Gets louder as plane gets closer
             
-            // 3. Mechanical click at the end of racking
-            const endClickOsc = context.createOscillator();
-            endClickOsc.type = 'square';
-            endClickOsc.frequency.value = 1500;
+            // 2. Propeller blade sounds (higher frequency components)
+            const propellerOsc = context.createOscillator();
+            propellerOsc.type = 'square';
+            propellerOsc.frequency.setValueAtTime(220, context.currentTime); // Propeller blade frequency
+            propellerOsc.frequency.linearRampToValueAtTime(260, context.currentTime + 0.7); // Propeller speeds up slightly
             
-            const endClickFilter = context.createBiquadFilter();
-            endClickFilter.type = 'highpass';
-            endClickFilter.frequency.value = 2000;
+            const propFilter = context.createBiquadFilter();
+            propFilter.type = 'bandpass';
+            propFilter.frequency.value = 1200;
+            propFilter.Q.value = 2;
             
-            const endClickGain = context.createGain();
-            endClickGain.gain.setValueAtTime(0.0, context.currentTime);
-            endClickGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.2); // Delay start
-            endClickGain.gain.linearRampToValueAtTime(0.07, context.currentTime + 0.21);
-            endClickGain.gain.linearRampToValueAtTime(0.0, context.currentTime + 0.26);
+            const propGain = context.createGain();
+            propGain.gain.setValueAtTime(0.0, context.currentTime);
+            propGain.gain.linearRampToValueAtTime(0.02, context.currentTime + 0.4);
+            propGain.gain.linearRampToValueAtTime(0.04, context.currentTime + 0.8);
+            
+            // 3. Wind/air rushing sound (white noise component)
+            const noiseBuffer = context.createBuffer(1, context.sampleRate * 1, context.sampleRate);
+            const noiseData = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < noiseData.length; i++) {
+                noiseData[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = context.createBufferSource();
+            noise.buffer = noiseBuffer;
+            noise.loop = true;
+            
+            const windFilter = context.createBiquadFilter();
+            windFilter.type = 'highpass';
+            windFilter.frequency.value = 3000;
+            
+            const windGain = context.createGain();
+            windGain.gain.setValueAtTime(0.0, context.currentTime);
+            windGain.gain.linearRampToValueAtTime(0.01, context.currentTime + 0.5);
+            windGain.gain.linearRampToValueAtTime(0.025, context.currentTime + 0.9);
             
             // Connect all components
-            clickOsc.connect(clickFilter);
-            clickFilter.connect(clickGain);
-            clickGain.connect(context.destination);
+            engineOsc.connect(engineFilter);
+            engineFilter.connect(engineGain);
+            engineGain.connect(context.destination);
             
-            slideOsc.connect(slideFilter);
-            slideFilter.connect(slideGain);
-            slideGain.connect(context.destination);
+            propellerOsc.connect(propFilter);
+            propFilter.connect(propGain);
+            propGain.connect(context.destination);
             
-            endClickOsc.connect(endClickFilter);
-            endClickFilter.connect(endClickGain);
-            endClickGain.connect(context.destination);
+            noise.connect(windFilter);
+            windFilter.connect(windGain);
+            windGain.connect(context.destination);
             
-            // Start oscillators
-            clickOsc.start();
-            slideOsc.start();
-            endClickOsc.start();
+            // Start sound sources
+            engineOsc.start();
+            enginePitchLFO.start();
+            propellerOsc.start();
+            noise.start();
             
-            // Stop all oscillators after effect completes
+            // Stop all sound sources after effect completes
             setTimeout(() => {
-                clickOsc.stop();
-                slideOsc.stop();
-                endClickOsc.stop();
+                engineOsc.stop();
+                enginePitchLFO.stop();
+                propellerOsc.stop();
+                noise.stop();
                 context.close();
-            }, 300);
+            }, 1000); // Longer duration for the aircraft approach sound
             
-            debug(`ArcadeEntity2: Played shotgun racking sound on approach`);
+            debug(`ArcadeEntity3: Played small aircraft approach sound`);
         } catch (err) {
-            debug(`ArcadeEntity2: Error playing proximity sound: ${err}`);
+            debug(`ArcadeEntity3: Error playing proximity sound: ${err}`);
         }
     }
     
@@ -1719,10 +1933,10 @@ class ArcadeEntity2 extends Entity {
      */
     draw(ctx, screenX, screenY) {
         // Basic debug info - use debug instead of console.log to be consistent
-        debug(`ArcadeEntity2: Drawing at (${screenX.toFixed(0)}, ${screenY.toFixed(0)}), hasLoaded=${this.hasLoaded}, isNearPlayer=${this.isNearPlayer}`);
+        debug(`ArcadeEntity3: Drawing at (${screenX.toFixed(0)}, ${screenY.toFixed(0)}), hasLoaded=${this.hasLoaded}, isNearPlayer=${this.isNearPlayer}`);
         
         if (!this.hasLoaded || !this.asset) {
-            debug(`ArcadeEntity2: Using fallback rendering`);
+            debug(`ArcadeEntity3: Using fallback rendering`);
             this.drawFallbackArcade(ctx, screenX, screenY);
             return;
         }
@@ -1784,7 +1998,7 @@ class ArcadeEntity2 extends Entity {
         
         // Draw interaction prompt if player is nearby and prompt is visible
         if (this.isNearPlayer && this.interactionPromptAlpha > 0 && !this.gameSelectVisible) {
-            debug(`ArcadeEntity2: Drawing interaction prompt, alpha=${this.interactionPromptAlpha}`);
+            debug(`ArcadeEntity3: Drawing interaction prompt, alpha=${this.interactionPromptAlpha}`);
             this.drawInteractionPrompt(ctx, screenX, adjustedY - 50);
         }
         
@@ -1798,7 +2012,7 @@ class ArcadeEntity2 extends Entity {
      * @param {number} screenY - Screen Y coordinate
      */
     drawFallbackArcade(ctx, screenX, screenY) {
-        debug(`ArcadeEntity2: Drawing fallback arcade at (${screenX}, ${screenY})`);
+        debug(`ArcadeEntity3: Drawing fallback arcade at (${screenX}, ${screenY})`);
         ctx.save();
         
         // Apply glow effect if near player
@@ -1918,7 +2132,7 @@ class ArcadeEntity2 extends Entity {
         }
         
         // Draw the base point for debugging
-        debug(`ArcadeEntity2: Fallback arcade drawn, base at (${screenX}, ${screenY})`);
+        debug(`ArcadeEntity3: Fallback arcade drawn, base at (${screenX}, ${screenY})`);
         
         ctx.restore();
     }
@@ -1988,7 +2202,7 @@ class ArcadeEntity2 extends Entity {
      * @param {CanvasRenderingContext2D} ctx - Canvas rendering context
      */
     drawGameSelectionInterface(ctx) {
-        debug(`ArcadeEntity2: Drawing game selection interface`);
+        debug(`ArcadeEntity3: Drawing game selection interface`);
         
         // First identify the main game canvas - try different approaches
         let mainCanvas = null;
@@ -2057,7 +2271,7 @@ class ArcadeEntity2 extends Entity {
             // Add to the document body
             document.body.appendChild(newOverlay);
             
-            // Store a reference to the current ArcadeEntity2 instance
+            // Store a reference to the current ArcadeEntity3 instance
             const self = this;
             
             // Add click event listener to the canvas overlay
@@ -2366,9 +2580,11 @@ class ArcadeEntity2 extends Entity {
         // Instead of creating DOM elements, add a clickable area to the entity's internal tracking
         if (this.gameSelectVisible) {
             // Calculate the position and size of the Twitter handle
-            const textWidth = overlayCtx.measureText('@DannyLimanseta').width;
-            const twitterHandleX = width/2 - 40;
-            const twitterHandleY = creatorFooterY + footerHeight/2 - 20; // Adjusted to be higher for better clickability
+            const textWidth = overlayCtx.measureText('@levelsio').width;
+            // Since this is right-aligned, we need to calculate position differently
+            const twitterHandleX = width/2 + 90 - textWidth;
+            // Move position back down (was about 40px higher, now returning to original position)
+            const twitterHandleY = creatorFooterY + footerHeight/2 - 10;
             const twitterHandleWidth = textWidth * 2; // Make it wider
             const twitterHandleHeight = 50; // Make it taller
             
@@ -2379,10 +2595,10 @@ class ArcadeEntity2 extends Entity {
                 y: twitterHandleY,
                 width: twitterHandleWidth,
                 height: twitterHandleHeight,
-                url: 'https://x.com/DannyLimanseta'
+                url: 'https://x.com/levelsio'
             });
             
-            console.log('Added ArcadeEntity2 Twitter clickable area:', 
+            console.log('Added ArcadeEntity3 Twitter clickable area:', 
                         `x:${twitterHandleX}, y:${twitterHandleY}, w:${twitterHandleWidth}, h:${twitterHandleHeight}`);
             
             // Set up cursor behavior for clickable areas
@@ -2428,20 +2644,23 @@ class ArcadeEntity2 extends Entity {
         
         // Draw creator text with special styling
         overlayCtx.fillStyle = '#FFFFFF';
-        overlayCtx.textAlign = 'right';
+        overlayCtx.textAlign = 'center';
         overlayCtx.fillText('Created by', width/2 - 50, creatorFooterY + footerHeight/2);
         
         // Twitter handle with special styling to indicate it's clickable
         overlayCtx.fillStyle = '#1DA1F2'; // Twitter blue
         overlayCtx.font = 'bold 18px Arial, sans-serif';
-        overlayCtx.textAlign = 'left';
-        overlayCtx.fillText('@DannyLimanseta', width/2 - 40, creatorFooterY + footerHeight/2);
+        overlayCtx.textAlign = 'right';
+        overlayCtx.fillText('@levelsio', width/2 + 90, creatorFooterY + footerHeight/2);
         
         // Measure text width to make the underline fit perfectly
-        const twitterHandleWidth = overlayCtx.measureText('@DannyLimanseta').width;
+        const twitterHandleWidth = overlayCtx.measureText('@levelsio').width;
         
-        // Underline to show it's clickable - using measured width
-        overlayCtx.fillRect(width/2 - 40, creatorFooterY + footerHeight/2 + 3, twitterHandleWidth, 2);
+        // Get the exact position where the text ends since it's right-aligned
+        const textStartX = width/2 + 90 - twitterHandleWidth;
+        
+        // Underline to show it's clickable - using measured width and exact position
+        overlayCtx.fillRect(textStartX, creatorFooterY + footerHeight/2 + 3, twitterHandleWidth, 2);
         
         // We no longer need to update DOM elements since we're using the entity's clickable areas
         
@@ -2449,11 +2668,13 @@ class ArcadeEntity2 extends Entity {
         
         console.log("🎮 Finished drawing arcade game menu");
         
-        // Clean up clickable areas when the menu is closed
+        // Cleanup: Remove the Twitter link when the menu is closed
         if (!this.gameSelectVisible) {
-            // Filter out any Twitter clickable areas when the menu is closed
-            this.clickableAreas = this.clickableAreas.filter(area => area.type !== 'twitter');
-            console.log('Removed ArcadeEntity2 Twitter clickable areas');
+            const oldLink = document.getElementById(twitterLinkId);
+            if (oldLink) {
+                console.log('Removing ArcadeEntity3 Twitter link:', twitterLinkId);
+                oldLink.remove();
+            }
         }
     }
     
@@ -2510,7 +2731,7 @@ class ArcadeEntity2 extends Entity {
      * @param {number} clientY - Y position of the click in client coordinates
      */
     handleMenuClick(clientX, clientY) {
-        debug(`ArcadeEntity2: Checking menu click at ${clientX}, ${clientY}`);
+        debug(`ArcadeEntity3: Checking menu click at ${clientX}, ${clientY}`);
         
         // Skip if menu not visible
         if (!this.gameSelectVisible) return;
@@ -2527,7 +2748,7 @@ class ArcadeEntity2 extends Entity {
             const canvasX = clientX - rect.left;
             const canvasY = clientY - rect.top;
             
-            debug(`ArcadeEntity2: Canvas coordinates: ${canvasX}, ${canvasY}`);
+            debug(`ArcadeEntity3: Canvas coordinates: ${canvasX}, ${canvasY}`);
             
             // Check each clickable area
             for (const area of this.clickableAreas) {
@@ -2537,21 +2758,21 @@ class ArcadeEntity2 extends Entity {
                     canvasY >= area.y && 
                     canvasY <= area.y + area.height
                 ) {
-                    debug(`ArcadeEntity2: Clicked on area: ${area.type}`);
+                    debug(`ArcadeEntity3: Clicked on area: ${area.type}`);
                     
                     // Handle different types of clickable areas
                     switch(area.type) {
                         case 'twitter':
                             // Open the Twitter URL in a new tab
                             if (area.url) {
-                                debug(`ArcadeEntity2: Opening Twitter URL: ${area.url}`);
+                                debug(`ArcadeEntity3: Opening Twitter URL: ${area.url}`);
                                 window.open(area.url, '_blank');
                             }
                             break;
                         case 'creator':
                             // Open the creator's URL in a new tab
                             if (area.url) {
-                                debug(`ArcadeEntity2: Opening URL: ${area.url}`);
+                                debug(`ArcadeEntity3: Opening URL: ${area.url}`);
                                 window.open(area.url, '_blank');
                             }
                             break;
@@ -2562,4 +2783,4 @@ class ArcadeEntity2 extends Entity {
     }
 }
 
-export { ArcadeEntity2 };
+export { ArcadeEntity3 };

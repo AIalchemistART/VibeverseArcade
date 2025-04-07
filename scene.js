@@ -855,7 +855,7 @@ class TestScene {
             // Convert grid position to screen coordinates
             const circuitPos = this.gridToScreen(circuitGridX, circuitGridY);
             if (circuitPos) {
-                this.drawIsometricLabel(ctx, circuitPos.x, circuitPos.y, 'VIBEVERSE ARCADE', '#ff00ff');
+                this.drawIsometricLabel(ctx, circuitPos.x, circuitPos.y, 'AI ALCHEMIST\'S LAIR', '#ff00ff');
             }
             
             // Neon Phylactery label removed as it's no longer needed in Circuit Sanctum Arcade

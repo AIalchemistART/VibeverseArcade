@@ -293,6 +293,21 @@ Each entry contains:
   2. ENTER VIBEVERSE portal moved from { x: 114.9, y: 37, z: 0 } to { x: 90, y: 2, z: -3 }
   These adjustments place the portals closer to the ground (negative z value) and in the southern part of the room, creating a dedicated portal area separate from the arcade cabinets.
 
+### Arcade Cabinet 3 Sound Effects - Flight Simulator Theme
+- **File**: arcadeEntity3.js
+- **Line**: ~1175-1747
+- **Search Term**: `playSelectSound playLaunchSound playMenuCloseSound`
+- **Description**: Completely redesigned arcade cabinet sound effects to create a cohesive small passenger plane flight simulator theme:
+  1. **Proximity Sound**: Changed to a small passenger plane approach sound with engine hum
+  2. **Selection Sound** (~1175-1273): Updated from metallic click to navigation radio beep sound when changing menu selections
+  3. **Activation/Launch Sound** (~1275-1480): Transformed from shotgun blast to airplane engine startup and takeoff sequence with realistic propeller and wind effects
+  4. **Close/Exit Sound** (~1662-1747): Converted from shotgun pump action to a complete airplane landing sequence featuring:
+     - Engine spooling down with decreasing vibrato
+     - Landing gear deployment with mechanical sounds
+     - Touchdown thud effect
+     - Wheel rolling sound after landing
+  The new sound design creates an immersive flight simulator experience using Web Audio API with oscillators, filters, and noise buffers to generate realistic aircraft sounds.
+
 ---
 
-*Last updated: April 7, 2025 - Added Vibeverse Arcade loading screen redesign*
+*Last updated: April 7, 2025 - Added flight simulator sound effects for ArcadeEntity3*

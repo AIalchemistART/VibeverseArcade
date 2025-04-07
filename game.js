@@ -413,6 +413,7 @@ class Game {
                      entity.constructor.name === 'SpellbookEntity' ||
                      entity.constructor.name === 'ArcadeEntity' ||
                      entity.constructor.name === 'ArcadeEntity2' ||
+                     entity.constructor.name === 'ArcadeEntity3' ||
                      entity.constructor.name === 'VibePortalEntity')) {
                     console.log(`[GAME] Updating ${entity.constructor.name} at (${entity.x.toFixed(2)}, ${entity.y.toFixed(2)}) with player ref`);
                     entity.update(deltaTime, this.player);
