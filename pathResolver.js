@@ -1,5 +1,5 @@
 /**
- * Path resolver for AI Alchemist's Lair
+ * Path resolver for Vibeverse Arcade
  * Handles different path prefixes for local development vs GitHub Pages deployment
  */
 
@@ -17,12 +17,12 @@ function getAssetPath(path) {
         console.log(`PathResolver: Processing '${path}' on hostname: ${hostname}, GitHub Pages: ${isGitHubPages}`);
         
         // Only apply prefix for GitHub Pages, not for custom domain or localhost
-        if (isGitHubPages && !path.startsWith('/AIalchemistsLAIR/')) {
+        if (isGitHubPages && !path.startsWith('/Circuit-Sanctum-Arcade/')) {
             // If path already has a leading slash, remove it before adding the prefix
             if (path.startsWith('/')) {
                 path = path.substring(1);
             }
-            const result = `/AIalchemistsLAIR/${path}`;
+            const result = `/Circuit-Sanctum-Arcade/${path}`;
             console.log(`PathResolver: Prefixing path to: ${result}`);
             return result;
         }

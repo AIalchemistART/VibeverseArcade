@@ -1,5 +1,5 @@
 /**
- * Asset Loader Module
+ * Asset Loader Module for Vibeverse Arcade
  * Handles preloading and caching of assets for scenes
  */
 
@@ -13,7 +13,7 @@ const isCustomDomain = typeof window !== 'undefined' && window.location.hostname
 console.log(`Running on custom domain: ${isCustomDomain}`);
 
 // Force a base path for the custom domain
-const REPO_PREFIX = '/AIalchemistsLAIR/';
+const REPO_PREFIX = '/Circuit-Sanctum-Arcade/';
 
 class AssetLoader {
     constructor() {

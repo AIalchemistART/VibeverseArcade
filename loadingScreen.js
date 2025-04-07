@@ -1,7 +1,7 @@
 /**
  * loadingScreen.js
  * 
- * Provides a themed loading screen with progress indicators for the AI Alchemist's Lair.
+ * Provides a themed loading screen with progress indicators for the Vibeverse Arcade.
  * This screen displays during the initial asset loading to ensure all resources are properly
  * loaded before the player enters the game.
  */
@@ -18,15 +18,15 @@ class LoadingScreen {
         this.currentSymbolIndex = 0;
         this.symbolRotationInterval = null;
         this.loadingMessages = [
-            "Brewing magical potions...",
-            "Collecting arcane dust...",
-            "Calibrating alchemy apparatus...",
-            "Charging crystals...",
-            "Summoning mystical energies...",
-            "Arranging enchanted items...",
-            "Stabilizing magical fields...",
-            "Tuning the ethereal frequencies...",
-            "Preparing the alchemist's workspace..."
+            "Loading shotgun sound effects...",
+            "Powering up arcade cabinets...",
+            "Calibrating game controllers...",
+            "Connecting to the Vibeverse...",
+            "Polishing arcade screens...",
+            "Arranging community games...",
+            "Stabilizing pixel matrix...",
+            "Tuning audio frequencies...",
+            "Preparing the arcade experience..."
         ];
     }
 
@@ -52,7 +52,7 @@ class LoadingScreen {
         
         // Create title
         const title = document.createElement('h1');
-        title.textContent = "AI Alchemist's Lair";
+        title.textContent = "Vibeverse Arcade";
         title.style.color = 'gold';
         title.style.fontFamily = '"Cinzel Decorative", serif, fantasy';
         title.style.fontSize = '3rem';
@@ -121,7 +121,7 @@ class LoadingScreen {
             <circle cx="50%" cy="50%" r="30%" stroke="rgba(255,215,0,0.1)" stroke-width="1" fill="url(#bg-gradient)" />
             <circle cx="50%" cy="50%" r="40%" stroke="rgba(255,215,0,0.05)" stroke-width="0.5" fill="none" />
             <circle cx="50%" cy="50%" r="45%" stroke="rgba(255,215,0,0.03)" stroke-width="0.3" fill="none" />
-            <path d="M30%,50% L70%,50% M50%,30% L50%,70% M35%,35% L65%,65% M35%,65% L65%,35%" stroke="rgba(255,215,0,0.1)" stroke-width="0.2" />
+            <path d="M30,50 L70,50 M50,30 L50,70 M35,35 L65,65 M35,65 L65,35" stroke="rgba(255,215,0,0.1)" stroke-width="0.2" />
         `;
 
         // Add CSS keyframes for spinning animation
