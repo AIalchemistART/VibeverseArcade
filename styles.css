@@ -1,0 +1,17 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #1a1a1a; /* Dark gray for a medieval undertone */
+    background-image: radial-gradient(circle, #333 1px, transparent 1px); /* Subtle grid texture for depth */
+    background-size: 20px 20px; /* Spacing for the background grid pattern */
+    overflow: hidden; /* Prevent scrollbars */
+}
+
+canvas {
+    border: 2px solid #00ffcc; /* Neon cyan for a cyberpunk edge */
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.5), 0 0 30px rgba(0, 255, 204, 0.3); /* Enhanced neon glow effect */
+    background-color: #111; /* Dark canvas background */
+}
