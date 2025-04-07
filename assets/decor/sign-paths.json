@@ -1,0 +1,14 @@
+{
+    "signs": [
+        {
+            "key": "sign1",
+            "paths": [
+                "Sign 1.png",
+                "Sign1.png", 
+                "sign1.png",
+                "sign 1.png"
+            ],
+            "fallbackColor": "#FF6B35"
+        }
+    ]
+}
