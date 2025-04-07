@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Alchemist's Lair</title>
+    
+    <!-- Include pathResolver directly in head to ensure it's available early -->
+    <script type="module">
+        import { getAssetPath } from './pathResolver.js';
+        window.getAssetPath = getAssetPath;
+        console.log('Path resolver loaded directly in head');
+    </script>
+    
+    <!-- Google Analytics moved to end of body to prevent loading interference -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Inline SVG favicon - medieval-cyberpunk themed -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2L2 6v12l10 4 10-4V6L12 2z' fill='%23111' stroke='%2300ffcc' stroke-width='1'/><path d='M12 6v12M8 8v8M16 8v8' stroke='%2300ffcc' stroke-width='0.7'/></svg>" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Metamorphous&display=swap" rel="stylesheet">
+
+    <!-- Loading screen styles -->
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes reverseSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes glow {
+            0% { filter: drop-shadow(0 0 2px #7e57c2); }
+            50% { filter: drop-shadow(0 0 8px #9c27b0); }
+            100% { filter: drop-shadow(0 0 2px #7e57c2); }
+        }
+    </style>
+
+    <!-- Loading screen preloader - this ensures the loading screen appears before any other JS runs -->
+    <script>
+        // Create a global variable to control the loading process
+        window.loadingController = {
+            assetCount: 0,
+            loadedAssets: 0,
+            loadingScreen: null,
+            originalImage: null,
+            mainGameLoaded: false,
+            
+            // Initialize the basic loading screen
+            init: function() {
+                // Prevent multiple initializations
+                if (this.loadingScreen) return;
+                
+                console.log('Loading screen initializing');
+                
+                // Create loading container
+                const loadingContainer = document.createElement('div');
+                loadingContainer.id = 'loading-screen';
+                loadingContainer.style.position = 'fixed';
+                loadingContainer.style.top = '0';
+                loadingContainer.style.left = '0';
+                loadingContainer.style.width = '100%';
+                loadingContainer.style.height = '100%';
+                loadingContainer.style.backgroundColor = '#1a0536'; // Deep purple background
+                loadingContainer.style.display = 'flex';
+                loadingContainer.style.flexDirection = 'column';
+                loadingContainer.style.justifyContent = 'center';
+                loadingContainer.style.alignItems = 'center';
+                loadingContainer.style.zIndex = '9999';
+                loadingContainer.style.transition = 'opacity 1s ease-out';
+                loadingContainer.style.animation = 'pulse 2s infinite ease-in-out';
+                
+                // Grimoire background frame - make it look like an open book
+                const grimoireFrame = document.createElement('div');
+                grimoireFrame.style.width = '80%';
+                grimoireFrame.style.maxWidth = '600px';
+                grimoireFrame.style.height = '80%';
+                grimoireFrame.style.maxHeight = '600px';
+                grimoireFrame.style.background = 'radial-gradient(ellipse at center, #331b42 0%, #1a0536 70%)';
+                grimoireFrame.style.borderRadius = '10px';
+                grimoireFrame.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.7), inset 0 0 40px rgba(0, 0, 0, 0.4)';
+                grimoireFrame.style.border = '12px solid #3a1146';
+                grimoireFrame.style.position = 'relative';
+                grimoireFrame.style.display = 'flex';
+                grimoireFrame.style.flexDirection = 'column';
+                grimoireFrame.style.justifyContent = 'space-between';
+                grimoireFrame.style.alignItems = 'center';
+                grimoireFrame.style.padding = '20px';
+                
+                // Add book spine effect in the middle
+                const bookSpine = document.createElement('div');
+                bookSpine.style.position = 'absolute';
+                bookSpine.style.top = '0';
+                bookSpine.style.left = '50%';
+                bookSpine.style.width = '4px';
+                bookSpine.style.height = '100%';
+                bookSpine.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                bookSpine.style.transform = 'translateX(-50%)';
+                
+                // Add book page texture effect
+                const pageTexture = document.createElement('div');
+                pageTexture.style.position = 'absolute';
+                pageTexture.style.top = '0';
+                pageTexture.style.left = '0';
+                pageTexture.style.width = '100%';
+                pageTexture.style.height = '100%';
+                pageTexture.style.backgroundImage = 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100\' height=\'100\' filter=\'url(%23noiseFilter)\' opacity=\'0.1\'/%3E%3C/svg%3E")';
+                pageTexture.style.opacity = '0.05';
+                pageTexture.style.pointerEvents = 'none';
+                
+                // Create title
+                const title = document.createElement('h1');
+                title.textContent = "AI Alchemist's Lair";
+                title.style.color = 'gold';
+                title.style.fontFamily = '"Cinzel Decorative", "Metamorphous", serif';
+                title.style.fontSize = '2.8rem';
+                title.style.marginTop = '20px';
+                title.style.marginBottom = '10px';
+                title.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.7)';
+                title.style.textAlign = 'center';
+                
+                // Add custom arcane SVG symbol instead of emoji
+                const svgContainer = document.createElement('div');
+                svgContainer.style.width = '120px';
+                svgContainer.style.height = '120px';
+                svgContainer.style.margin = '20px auto';
+                svgContainer.style.position = 'relative';
+                svgContainer.style.animation = 'float 3s infinite ease-in-out';
+                
+                // Create the arcane symbol SVG
+                const arcaneSymbol = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                arcaneSymbol.setAttribute('width', '120');
+                arcaneSymbol.setAttribute('height', '120');
+                arcaneSymbol.setAttribute('viewBox', '0 0 100 100');
+                arcaneSymbol.style.animation = 'spin 12s infinite linear';
+                arcaneSymbol.style.filter = 'drop-shadow(0 0 5px #9c27b0)';
+                
+                // Inner elements with reverse spin for additional effect
+                const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                innerCircle.setAttribute('cx', '50');
+                innerCircle.setAttribute('cy', '50');
+                innerCircle.setAttribute('r', '30');
+                innerCircle.setAttribute('fill', 'none');
+                innerCircle.setAttribute('stroke', '#9c27b0');
+                innerCircle.setAttribute('stroke-width', '2');
+                innerCircle.style.animation = 'reverseSpin 8s infinite linear, glow 3s infinite ease-in-out';
+                
+                // Pentagram
+                const pentagram = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                // Calculate pentagram points
+                const points = [];
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
+                    points.push([
+                        50 + 40 * Math.cos(angle),
+                        50 + 40 * Math.sin(angle)
+                    ]);
+                }
+                // Create pentagram path by connecting non-adjacent points
+                let path = `M${points[0][0]},${points[0][1]} L${points[2][0]},${points[2][1]} L${points[4][0]},${points[4][1]} L${points[1][0]},${points[1][1]} L${points[3][0]},${points[3][1]} Z`;
+                pentagram.setAttribute('d', path);
+                pentagram.setAttribute('fill', 'none');
+                pentagram.setAttribute('stroke', 'gold');
+                pentagram.setAttribute('stroke-width', '2');
+                
+                // Add runes around the outer circle
+                const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                outerCircle.setAttribute('cx', '50');
+                outerCircle.setAttribute('cy', '50');
+                outerCircle.setAttribute('r', '45');
+                outerCircle.setAttribute('fill', 'none');
+                outerCircle.setAttribute('stroke', '#673ab7');
+                outerCircle.setAttribute('stroke-width', '1');
+                outerCircle.setAttribute('stroke-dasharray', '5,3');
+                
+                // Add small circles at pentagram points
+                for (let i = 0; i < 5; i++) {
+                    const pointCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    pointCircle.setAttribute('cx', points[i][0]);
+                    pointCircle.setAttribute('cy', points[i][1]);
+                    pointCircle.setAttribute('r', '3');
+                    pointCircle.setAttribute('fill', '#ff9800');
+                    arcaneSymbol.appendChild(pointCircle);
+                }
+                
+                // Add arcane symbols at the vertices
+                const arcaneSymbols = ['火', '水', '土', '風', '空'];
+                for (let i = 0; i < 5; i++) {
+                    const symbolText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    // Position text near but outside the pentagram points
+                    const angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
+                    const x = 50 + 50 * Math.cos(angle);
+                    const y = 50 + 50 * Math.sin(angle);
+                    
+                    symbolText.setAttribute('x', x);
+                    symbolText.setAttribute('y', y);
+                    symbolText.setAttribute('text-anchor', 'middle');
+                    symbolText.setAttribute('dominant-baseline', 'central');
+                    symbolText.setAttribute('fill', '#9c27b0');
+                    symbolText.setAttribute('font-size', '12');
+                    symbolText.textContent = arcaneSymbols[i];
+                    arcaneSymbol.appendChild(symbolText);
+                }
+                
+                // Assemble the SVG
+                arcaneSymbol.appendChild(outerCircle);
+                arcaneSymbol.appendChild(innerCircle);
+                arcaneSymbol.appendChild(pentagram);
+                svgContainer.appendChild(arcaneSymbol);
+                
+                // Add glowing particles around the symbol
+                const particles = document.createElement('div');
+                particles.style.position = 'absolute';
+                particles.style.top = '0';
+                particles.style.left = '0';
+                particles.style.width = '100%';
+                particles.style.height = '100%';
+                particles.style.pointerEvents = 'none';
+                
+                // Create 8 random particles
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.style.position = 'absolute';
+                    particle.style.width = `${2 + Math.random() * 4}px`;
+                    particle.style.height = particle.style.width;
+                    particle.style.backgroundColor = `hsl(${280 + Math.random() * 60}, 100%, 70%)`;
+                    particle.style.borderRadius = '50%';
+                    particle.style.top = `${Math.random() * 100}%`;
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.filter = 'blur(1px)';
+                    
+                    // Random animations
+                    const duration = 2 + Math.random() * 4;
+                    particle.style.animation = `float ${duration}s infinite ease-in-out ${Math.random() * 2}s, pulse ${duration/2}s infinite ease-in-out`;
+                    
+                    particles.appendChild(particle);
+                }
+                svgContainer.appendChild(particles);
+                
+                // Add a loading message with arcane styling
+                const loadingMessage = document.createElement('div');
+                loadingMessage.textContent = "Brewing magical potions...";
+                loadingMessage.style.color = '#f0e6d2';
+                loadingMessage.style.fontFamily = '"Metamorphous", serif';
+                loadingMessage.style.fontSize = '1.3rem';
+                loadingMessage.style.marginBottom = '2rem';
+                loadingMessage.style.fontStyle = 'italic';
+                loadingMessage.style.textAlign = 'center';
+                loadingMessage.style.padding = '0 40px';
+                loadingMessage.style.textShadow = '0 0 5px rgba(156, 39, 176, 0.7)';
+                
+                // Create progress container styled like an arcane bar
+                const progressContainer = document.createElement('div');
+                progressContainer.style.width = '80%';
+                progressContainer.style.maxWidth = '400px';
+                progressContainer.style.height = '20px';
+                progressContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                progressContainer.style.borderRadius = '10px';
+                progressContainer.style.overflow = 'hidden';
+                progressContainer.style.border = '2px solid rgba(255, 215, 0, 0.5)';
+                progressContainer.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.2), inset 0 0 10px rgba(0, 0, 0, 0.5)';
+                progressContainer.style.margin = '10px auto 30px auto';
+                
+                // Add arcane runes on the progress bar border
+                for (let i = 0; i < 5; i++) {
+                    const rune = document.createElement('div');
+                    rune.style.position = 'absolute';
+                    rune.style.top = '-8px';
+                    rune.style.left = `${12.5 + i * 25}%`;
+                    rune.style.fontSize = '12px';
+                    rune.style.color = 'gold';
+                    rune.style.transform = 'translateX(-50%)';
+                    rune.textContent = ['⚙', '⚜', '☯', '✧', '⛤'][i];
+                    progressContainer.appendChild(rune);
+                }
+                
+                // Create progress bar with animated gradient
+                const progressBar = document.createElement('div');
+                progressBar.style.width = '0%';
+                progressBar.style.height = '100%';
+                progressBar.style.transition = 'width 0.5s ease-out';
+                progressBar.style.backgroundImage = 'linear-gradient(45deg, #4b0082, #9c27b0, #673ab7, #4b0082)';
+                progressBar.style.backgroundSize = '300% 100%';
+                progressBar.style.animation = 'gradientMove 3s ease infinite';
+                
+                // Add keyframes for gradient movement
+                const keyframes = document.createElement('style');
+                keyframes.textContent = `
+                    @keyframes gradientMove {
+                        0% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                        100% { background-position: 0% 50%; }
+                    }
+                `;
+                document.head.appendChild(keyframes);
+                
+                // Create progress text
+                const progressText = document.createElement('div');
+                progressText.textContent = '0%';
+                progressText.style.color = '#f0e6d2';
+                progressText.style.marginTop = '0.5rem';
+                progressText.style.fontFamily = 'monospace';
+                progressText.style.textAlign = 'center';
+                
+                // Add decorative arcane circles in the background
+                const arcaneCircles = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                arcaneCircles.setAttribute('width', '100%');
+                arcaneCircles.setAttribute('height', '100%');
+                arcaneCircles.style.position = 'absolute';
+                arcaneCircles.style.top = '0';
+                arcaneCircles.style.left = '0';
+                arcaneCircles.style.pointerEvents = 'none';
+                arcaneCircles.style.zIndex = '-1';
+                arcaneCircles.innerHTML = `
+                    <defs>
+                        <radialGradient id="bg-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                            <stop offset="0%" style="stop-color:#4b0082;stop-opacity:0.1" />
+                            <stop offset="100%" style="stop-color:#000;stop-opacity:0" />
+                        </radialGradient>
+                    </defs>
+                    <circle cx="50%" cy="50%" r="35%" stroke="rgba(255,215,0,0.1)" stroke-width="1" fill="url(#bg-gradient)" />
+                    <circle cx="50%" cy="50%" r="40%" stroke="rgba(255,215,0,0.05)" stroke-width="0.5" fill="none" />
+                    <circle cx="50%" cy="50%" r="45%" stroke="rgba(255,215,0,0.03)" stroke-width="0.3" fill="none" />
+                    <path d="M30%,50% L70%,50% M50%,30% L50%,70% M35%,35% L65%,65% M35%,65% L65%,35%" stroke="rgba(255,215,0,0.1)" stroke-width="0.2" />
+                `;
+                
+                // Footer with arcane text
+                const footer = document.createElement('div');
+                footer.style.fontFamily = '"Metamorphous", serif';
+                footer.style.fontSize = '0.8rem';
+                footer.style.color = 'rgba(240, 230, 210, 0.6)';
+                footer.style.marginTop = '20px';
+                footer.style.textAlign = 'center';
+                footer.innerHTML = 'Codex Arcanum • Anno MMXXV';
+                
+                // Store references
+                this.progressBar = progressBar;
+                this.progressText = progressText;
+                this.loadingMessage = loadingMessage;
+                this.loadingContainer = loadingContainer;
+                
+                // Choose random loading messages
+                const loadingMessages = [
+                    "Brewing magical potions...",
+                    "Collecting arcane dust...",
+                    "Calibrating alchemy apparatus...",
+                    "Charging crystals...",
+                    "Summoning mystical energies...",
+                    "Arranging enchanted items...",
+                    "Stabilizing magical fields...",
+                    "Tuning the ethereal frequencies...",
+                    "Preparing the alchemist's workspace..."
+                ];
+                
+                // Rotate between messages
+                setInterval(() => {
+                    const randomIndex = Math.floor(Math.random() * loadingMessages.length);
+                    this.loadingMessage.textContent = loadingMessages[randomIndex];
+                }, 3000);
+                
+                // Assemble the loading screen
+                grimoireFrame.appendChild(bookSpine);
+                grimoireFrame.appendChild(pageTexture);
+                grimoireFrame.appendChild(title);
+                grimoireFrame.appendChild(svgContainer);
+                grimoireFrame.appendChild(loadingMessage);
+                progressContainer.appendChild(progressBar);
+                grimoireFrame.appendChild(progressContainer);
+                grimoireFrame.appendChild(progressText);
+                grimoireFrame.appendChild(footer);
+                loadingContainer.appendChild(arcaneCircles);
+                loadingContainer.appendChild(grimoireFrame);
+                
+                // Add to DOM
+                document.body.appendChild(loadingContainer);
+                
+                // Store reference to the loading screen
+                this.loadingScreen = loadingContainer;
+                
+                // Intercept Image loading to track progress
+                this.interceptImageLoading();
+                
+                // Start loading the game script immediately
+                this.loadGameScript();
+            },
+            
+            // Load the main game script
+            loadGameScript: function() {
+                const mainScript = document.createElement('script');
+                mainScript.type = 'module';
+                
+                // Smart path resolution that works across all environments
+                // Define possible environments
+                const isLocalhost = window.location.hostname === 'localhost' || 
+                                    window.location.hostname === '127.0.0.1';
+                const isCustomDomain = window.location.hostname.includes('aialchemist.net');
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                
+                console.log('Current hostname:', window.location.hostname);
+                console.log('Environment detection - Localhost:', isLocalhost, 'Custom domain:', isCustomDomain, 'GitHub Pages:', isGitHubPages);
+                
+                try {
+                    // Simple, reliable path resolution approach
+                    if (isLocalhost) {
+                        // For localhost, always use direct path
+                        mainScript.src = 'main.js';
+                        console.log('Local environment detected, using direct path:', mainScript.src);
+                    } else {
+                        // For all other environments (GitHub Pages or custom domain)
+                        // Try multiple fallback paths in sequence if the main one fails
+                        const attemptToLoad = (paths, index = 0) => {
+                            if (index >= paths.length) {
+                                console.error('All paths tried and failed');
+                                return;
+                            }
+                            
+                            const scriptElement = document.createElement('script');
+                            scriptElement.type = 'module';
+                            scriptElement.src = paths[index];
+                            
+                            console.log(`Attempting to load main.js from: ${paths[index]} (attempt ${index + 1}/${paths.length})`);
+                            
+                            scriptElement.onload = () => {
+                                console.log(`Successfully loaded main.js from: ${paths[index]}`);
+                                this.mainGameLoaded = true;
+                                this.checkLoadingComplete();
+                            };
+                            
+                            scriptElement.onerror = () => {
+                                console.warn(`Failed to load from: ${paths[index]}, trying next path...`);
+                                document.body.removeChild(scriptElement);
+                                attemptToLoad(paths, index + 1);
+                            };
+                            
+                            document.body.appendChild(scriptElement);
+                        };
+                        
+                        // Define the paths to try, in order of preference
+                        const pathsToTry = [
+                            'main.js',                     // Try direct path first
+                            '/main.js',                   // Try root path
+                            '/AIalchemistsLAIR/main.js'   // Try GitHub Pages path as last resort
+                        ];
+                        
+                        attemptToLoad(pathsToTry);
+                        return; // Skip the normal script addition below since we handle it in attemptToLoad
+                    }
+                } catch (e) {
+                    // Error recovery fallback
+                    console.error('Error in path resolution:', e);
+                    mainScript.src = 'main.js';
+                    console.log('Using fallback path after error:', mainScript.src);
+                }
+                
+                // Track when the main script is loaded
+                mainScript.onload = () => {
+                    console.log('Main game script loaded successfully');
+                    this.mainGameLoaded = true;
+                    this.checkLoadingComplete();
+                };
+                
+                mainScript.onerror = (err) => {
+                    console.error('Failed to load main.js, trying alternative path', err);
+                    // Try an alternative path if the first one fails
+                    mainScript.src = 'main.js';
+                };
+                
+                document.body.appendChild(mainScript);
+            },
+            
+            // Patch the Image constructor to track loading progress
+            interceptImageLoading: function() {
+                const self = this;
+                
+                // Store original Image constructor
+                this.originalImage = window.Image;
+                
+                // Override Image constructor
+                window.Image = function() {
+                    const img = new self.originalImage();
+                    
+                    // Track when this image starts loading
+                    self.assetCount++;
+                    
+                    // Track when this image finishes loading
+                    img.addEventListener('load', function() {
+                        self.assetLoaded();
+                    });
+                    
+                    // Also track errors as "loaded" to avoid hanging
+                    img.addEventListener('error', function() {
+                        console.error('Failed to load image:', img.src);
+                        self.assetLoaded();
+                    });
+                    
+                    return img;
+                };
+            },
+            
+            // Check if loading is complete
+            checkLoadingComplete: function() {
+                console.log(`Loading status: ${this.loadedAssets}/${this.assetCount} assets loaded, mainGameLoaded: ${this.mainGameLoaded}`);
+                
+                // Log more details about our conditions
+                if (!this.mainGameLoaded) {
+                    console.log('Waiting for main game script to load...');
+                }
+                
+                // Check for stuck loading (assets not loading after a period)
+                if (!this._loadingTimeoutSet && this.assetCount > 0) {
+                    this._loadingTimeoutSet = true;
+                    setTimeout(() => {
+                        if (this.loadedAssets === 0 && !this._hideScheduled) {
+                            console.warn('Loading appears to be stuck at 0 assets, forcing completion after timeout');
+                            this.mainGameLoaded = true;
+                            this.loadedAssets = Math.max(10, this.assetCount);
+                            this.hideLoadingScreen();
+                        }
+                    }, 8000); // 8 second timeout
+                }
+                
+                // Only complete if main game script is loaded and assets are loaded
+                if (this.mainGameLoaded && this.loadedAssets >= Math.max(10, this.assetCount)) {
+                    console.log('All conditions met, completing loading.');
+                    if (!this._hideScheduled) {
+                        this._hideScheduled = true;
+                        // Add a grace period
+                        setTimeout(() => this.hideLoadingScreen(), 1000);
+                    }
+                }
+            },
+            
+            // Track when an asset is loaded
+            assetLoaded: function() {
+                this.loadedAssets++;
+                
+                // Calculate progress
+                const progress = Math.min(100, Math.round((this.loadedAssets / Math.max(1, this.assetCount)) * 100));
+                
+                // Update loading UI
+                if (this.progressBar) {
+                    this.progressBar.style.width = progress + '%';
+                    this.progressText.textContent = progress + '%';
+                }
+                
+                // Check if loading should be complete
+                this.checkLoadingComplete();
+            },
+            
+            // Hide the loading screen
+            hideLoadingScreen: function() {
+                if (this.loadingScreen) {
+                    console.log('Hiding loading screen, loaded ' + this.loadedAssets + ' assets');
+                    
+                    // Only hide if we have a reasonable number of assets
+                    if (this.loadedAssets < 10) {
+                        console.log('Not enough assets loaded yet, waiting...');
+                        this._hideScheduled = false;
+                        return;
+                    }
+                    
+                    // Fade out
+                    this.loadingScreen.style.opacity = '0';
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        if (this.loadingScreen && this.loadingScreen.parentNode) {
+                            this.loadingScreen.parentNode.removeChild(this.loadingScreen);
+                        }
+                        
+                        // Dispatch event that loading is complete
+                        window.dispatchEvent(new CustomEvent('loadingComplete'));
+                        
+                        // Reset keyboard input state
+                        this.resetInputState();
+                        
+                        // Restore original Image constructor
+                        if (this.originalImage) {
+                            window.Image = this.originalImage;
+                        }
+                    }, 1000);
+                }
+            },
+            
+            // Reset keyboard input state
+            resetInputState: function() {
+                // Force a clean state for all keyboard input
+                document.dispatchEvent(new CustomEvent('inputReset'));
+                
+                // Create a clean keyup event to reset any stuck keys
+                ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'].forEach(key => {
+                    const keyEvent = new KeyboardEvent('keyup', {
+                        key: key,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    document.dispatchEvent(keyEvent);
+                });
+                
+                console.log('Input state reset completed');
+            }
+        };
+        
+        // Initialize loading screen immediately
+        document.addEventListener('DOMContentLoaded', function() {
+            window.loadingController.init();
+        });
+        
+        // Also init immediately if the document is already loaded
+        if (document.readyState !== 'loading') {
+            window.loadingController.init();
+        }
+    </script>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <!-- Overlay for decorative elements -->
+    <div id="decorativeOverlay" style="position: absolute; top: 0; left: 0; width: 800px; height: 600px; pointer-events: none; z-index: 10; display: none;">
+        <!-- SE Door -->
+        <div id="seDoor" style="position: absolute; top: 350px; left: 550px; width: 60px; height: 80px; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 60px; height: 80px; background: rgba(0,0,0,0.7); border: 4px solid #ff00ff; border-radius: 30px 30px 0 0;"></div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #ff00ff; margin-top: -50px;"></div>
+            <div style="color: white; font-size: 12px; margin-top: 10px; text-shadow: 0 0 5px #ff00ff;">SE Door</div>
+        </div>
+        
+        <!-- SW Door -->
+        <div id="swDoor" style="position: absolute; top: 450px; left: 250px; width: 60px; height: 80px; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 60px; height: 80px; background: rgba(0,0,0,0.7); border: 4px solid #00ffff; border-radius: 30px 30px 0 0;"></div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #00ffff; margin-top: -50px;"></div>
+            <div style="color: white; font-size: 12px; margin-top: 10px; text-shadow: 0 0 5px #00ffff;">SW Door</div>
+        </div>
+    </div>
+    
+    <!-- Debug info for keyboard input - hidden by default -->
+    <div id="input-debug" style="position: fixed; bottom: 5px; right: 5px; color: white; font-size: 10px; font-family: monospace; background: rgba(0,0,0,0.5); padding: 5px; display: none;">Input Ready</div>
+    
+    <!-- Cleanup script to remove any debug elements while preserving fixes -->
+    <script src="cleanupDebug.js"></script>
+    
+    <!-- Direct Enter key fix that manually handles Enter key events at document level -->
+    <script type="module" src="enterKeyFix.js"></script>
+    
+    <!-- Direct keyboard handler for immediate entity interactions -->
+    <script type="module" src="directKeyboardHandler.js"></script>
+    
+    <!-- Key diagnostic system to ensure Enter key detection is robust -->
+    <script type="module" src="keyDiagnostic.js"></script>
+    
+    <!-- Main game script is now loaded dynamically through loadGameScript() function -->
+    <!-- The static script tag was removed to prevent double loading -->
+    
+    <!-- Google Analytics tracking code -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-21BGLK8P3Y"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-21BGLK8P3Y', {
+        'cookie_domain': 'auto'
+      });
+    </script>
+</body>
+</html>

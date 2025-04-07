@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Alchemist's Lair</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Arcane-themed scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1a0536;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #4b0082;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9c27b0;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    
+    <!-- This script initializes the loading screen before any other scripts -->
+    <script type="module">
+        import { LoadingScreen } from './loadingScreen.js';
+        import loadingManager from './loadingManager.js';
+        
+        // Initialize loading screen immediately
+        const loadingInstance = loadingManager.initialize();
+        console.log('Loading screen initialized');
+        
+        // Listen for gameReady event from main game
+        window.addEventListener('gameReady', () => {
+            console.log('Game ready event received, loading complete');
+        });
+    </script>
+    
+    <!-- Main game scripts -->
+    <script type="module" src="main.js"></script>
+    
+    <!-- Load the integration script that connects loading to the main game -->
+    <script type="module">
+        import { signalGameReady } from './loadingIntegration.js';
+        
+        // Monitor when the game is ready
+        const checkGameReady = () => {
+            // Check for indicators that game is initialized
+            if (window.gameInitialized) {
+                signalGameReady();
+            } else {
+                // Check again in a moment
+                setTimeout(checkGameReady, 500);
+            }
+        };
+        
+        // Start monitoring for game ready state
+        window.addEventListener('load', () => {
+            console.log('Window loaded, monitoring game initialization');
+            
+            // Add a flag to the window object that the main.js can set when ready
+            window.gameInitialized = false;
+            
+            // Start checking for game ready state
+            setTimeout(checkGameReady, 1000);
+        });
+    </script>
+</body>
+</html>
