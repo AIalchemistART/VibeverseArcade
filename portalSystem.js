@@ -127,7 +127,7 @@ class PortalSystem {
             console.log(`Portal ${portalId} redirecting to external URL: ${portal.externalUrl}`);
             
             // Create a temporary notification to show the user is leaving
-            const notificationText = `Traveling to ${portal.label || 'AI Alchemist\'s Lair'}...`;
+            const notificationText = `Traveling to ${portal.label || 'Vibeverse Arcade'}...`;
             console.log(notificationText);
             
             // For a nice effect - give a short delay before redirecting

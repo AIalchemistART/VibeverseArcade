@@ -20,7 +20,7 @@ export const scenes = {
                 position: { x: 200, y: 0 },
                 gridX: 93,  // Center of north wall
                 gridY: 0,   // Top of the room (exit)
-                label: 'AI Alchemist\'s Lair' // Descriptive label for the destination
+                label: 'Vibeverse Arcade' // Descriptive label for the destination
             }
             // West wall door removed - only using north wall door
         ],

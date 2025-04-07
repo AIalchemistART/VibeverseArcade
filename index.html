@@ -75,7 +75,7 @@
                 loadingContainer.style.left = '0';
                 loadingContainer.style.width = '100%';
                 loadingContainer.style.height = '100%';
-                loadingContainer.style.backgroundColor = '#1a0536'; // Deep purple background
+                loadingContainer.style.background = 'linear-gradient(135deg, #1a0536 0%, #000000 100%)'; // Deep purple to black gradient
                 loadingContainer.style.display = 'flex';
                 loadingContainer.style.flexDirection = 'column';
                 loadingContainer.style.justifyContent = 'center';
@@ -84,143 +84,123 @@
                 loadingContainer.style.transition = 'opacity 1s ease-out';
                 loadingContainer.style.animation = 'pulse 2s infinite ease-in-out';
                 
-                // Grimoire background frame - make it look like an open book
-                const grimoireFrame = document.createElement('div');
-                grimoireFrame.style.width = '80%';
-                grimoireFrame.style.maxWidth = '600px';
-                grimoireFrame.style.height = '80%';
-                grimoireFrame.style.maxHeight = '600px';
-                grimoireFrame.style.background = 'radial-gradient(ellipse at center, #331b42 0%, #1a0536 70%)';
-                grimoireFrame.style.borderRadius = '10px';
-                grimoireFrame.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.7), inset 0 0 40px rgba(0, 0, 0, 0.4)';
-                grimoireFrame.style.border = '12px solid #3a1146';
-                grimoireFrame.style.position = 'relative';
-                grimoireFrame.style.display = 'flex';
-                grimoireFrame.style.flexDirection = 'column';
-                grimoireFrame.style.justifyContent = 'space-between';
-                grimoireFrame.style.alignItems = 'center';
-                grimoireFrame.style.padding = '20px';
+                // Portal frame - cyberpunk/synthwave style container
+                const portalFrame = document.createElement('div');
+                portalFrame.style.width = '80%';
+                portalFrame.style.maxWidth = '600px';
+                portalFrame.style.height = '80%';
+                portalFrame.style.maxHeight = '600px';
+                portalFrame.style.background = 'radial-gradient(ellipse at center, rgba(255,0,255,0.2) 0%, rgba(26,5,54,0.8) 70%)';
+                portalFrame.style.borderRadius = '10px';
+                portalFrame.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 40px rgba(255, 0, 255, 0.2)';
+                portalFrame.style.border = '4px solid rgba(0, 255, 255, 0.5)';
+                portalFrame.style.position = 'relative';
+                portalFrame.style.display = 'flex';
+                portalFrame.style.flexDirection = 'column';
+                portalFrame.style.justifyContent = 'space-between';
+                portalFrame.style.alignItems = 'center';
+                portalFrame.style.padding = '20px';
                 
-                // Add book spine effect in the middle
-                const bookSpine = document.createElement('div');
-                bookSpine.style.position = 'absolute';
-                bookSpine.style.top = '0';
-                bookSpine.style.left = '50%';
-                bookSpine.style.width = '4px';
-                bookSpine.style.height = '100%';
-                bookSpine.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-                bookSpine.style.transform = 'translateX(-50%)';
+                // Add neon grid lines
+                const gridLines = document.createElement('div');
+                gridLines.style.position = 'absolute';
+                gridLines.style.top = '0';
+                gridLines.style.left = '0';
+                gridLines.style.width = '100%';
+                gridLines.style.height = '100%';
+                gridLines.style.backgroundImage = 'linear-gradient(0deg, rgba(0,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,0,255,0.1) 1px, transparent 1px)';
+                gridLines.style.backgroundSize = '20px 20px';
+                gridLines.style.pointerEvents = 'none';
                 
-                // Add book page texture effect
-                const pageTexture = document.createElement('div');
-                pageTexture.style.position = 'absolute';
-                pageTexture.style.top = '0';
-                pageTexture.style.left = '0';
-                pageTexture.style.width = '100%';
-                pageTexture.style.height = '100%';
-                pageTexture.style.backgroundImage = 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100\' height=\'100\' filter=\'url(%23noiseFilter)\' opacity=\'0.1\'/%3E%3C/svg%3E")';
-                pageTexture.style.opacity = '0.05';
-                pageTexture.style.pointerEvents = 'none';
+                // Add synth glow
+                const synthGlow = document.createElement('div');
+                synthGlow.style.position = 'absolute';
+                synthGlow.style.bottom = '0';
+                synthGlow.style.left = '0';
+                synthGlow.style.width = '100%';
+                synthGlow.style.height = '30%';
+                synthGlow.style.background = 'linear-gradient(to top, rgba(255,0,255,0.2) 0%, transparent 100%)';
+                synthGlow.style.opacity = '0.7';
+                synthGlow.style.pointerEvents = 'none';
                 
                 // Create title
                 const title = document.createElement('h1');
-                title.textContent = "AI Alchemist's Lair";
-                title.style.color = 'gold';
+                title.textContent = "Vibeverse Arcade";
+                title.style.color = '#ff00ff'; // Neon purple
                 title.style.fontFamily = '"Cinzel Decorative", "Metamorphous", serif';
-                title.style.fontSize = '2.8rem';
+                title.style.fontSize = '3.5rem';
                 title.style.marginTop = '20px';
                 title.style.marginBottom = '10px';
-                title.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.7)';
+                title.style.textShadow = '0 0 10px rgba(255, 0, 255, 0.7), 0 0 20px rgba(255, 0, 255, 0.5)';
                 title.style.textAlign = 'center';
+                title.style.animation = 'glow 3s infinite ease-in-out';
                 
-                // Add custom arcane SVG symbol instead of emoji
+                // Add animated portal/vortex element
                 const svgContainer = document.createElement('div');
-                svgContainer.style.width = '120px';
-                svgContainer.style.height = '120px';
+                svgContainer.style.width = '150px';
+                svgContainer.style.height = '150px';
                 svgContainer.style.margin = '20px auto';
                 svgContainer.style.position = 'relative';
                 svgContainer.style.animation = 'float 3s infinite ease-in-out';
                 
-                // Create the arcane symbol SVG
-                const arcaneSymbol = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                arcaneSymbol.setAttribute('width', '120');
-                arcaneSymbol.setAttribute('height', '120');
-                arcaneSymbol.setAttribute('viewBox', '0 0 100 100');
-                arcaneSymbol.style.animation = 'spin 12s infinite linear';
-                arcaneSymbol.style.filter = 'drop-shadow(0 0 5px #9c27b0)';
+                // Create the portal symbol SVG
+                const portalSymbol = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                portalSymbol.setAttribute('width', '150');
+                portalSymbol.setAttribute('height', '150');
+                portalSymbol.setAttribute('viewBox', '0 0 100 100');
+                portalSymbol.style.animation = 'spin 12s infinite linear';
+                portalSymbol.style.filter = 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.7))';
                 
-                // Inner elements with reverse spin for additional effect
-                const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                innerCircle.setAttribute('cx', '50');
-                innerCircle.setAttribute('cy', '50');
-                innerCircle.setAttribute('r', '30');
-                innerCircle.setAttribute('fill', 'none');
-                innerCircle.setAttribute('stroke', '#9c27b0');
-                innerCircle.setAttribute('stroke-width', '2');
-                innerCircle.style.animation = 'reverseSpin 8s infinite linear, glow 3s infinite ease-in-out';
-                
-                // Pentagram
-                const pentagram = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                // Calculate pentagram points
-                const points = [];
-                for (let i = 0; i < 5; i++) {
-                    const angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
-                    points.push([
-                        50 + 40 * Math.cos(angle),
-                        50 + 40 * Math.sin(angle)
-                    ]);
-                }
-                // Create pentagram path by connecting non-adjacent points
-                let path = `M${points[0][0]},${points[0][1]} L${points[2][0]},${points[2][1]} L${points[4][0]},${points[4][1]} L${points[1][0]},${points[1][1]} L${points[3][0]},${points[3][1]} Z`;
-                pentagram.setAttribute('d', path);
-                pentagram.setAttribute('fill', 'none');
-                pentagram.setAttribute('stroke', 'gold');
-                pentagram.setAttribute('stroke-width', '2');
-                
-                // Add runes around the outer circle
-                const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                outerCircle.setAttribute('cx', '50');
-                outerCircle.setAttribute('cy', '50');
-                outerCircle.setAttribute('r', '45');
-                outerCircle.setAttribute('fill', 'none');
-                outerCircle.setAttribute('stroke', '#673ab7');
-                outerCircle.setAttribute('stroke-width', '1');
-                outerCircle.setAttribute('stroke-dasharray', '5,3');
-                
-                // Add small circles at pentagram points
-                for (let i = 0; i < 5; i++) {
-                    const pointCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    pointCircle.setAttribute('cx', points[i][0]);
-                    pointCircle.setAttribute('cy', points[i][1]);
-                    pointCircle.setAttribute('r', '3');
-                    pointCircle.setAttribute('fill', '#ff9800');
-                    arcaneSymbol.appendChild(pointCircle);
-                }
-                
-                // Add arcane symbols at the vertices
-                const arcaneSymbols = ['火', '水', '土', '風', '空'];
-                for (let i = 0; i < 5; i++) {
-                    const symbolText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    // Position text near but outside the pentagram points
-                    const angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
-                    const x = 50 + 50 * Math.cos(angle);
-                    const y = 50 + 50 * Math.sin(angle);
+                // Create an advanced portal effect with SVG
+                portalSymbol.innerHTML = `
+                    <defs>
+                        <radialGradient id="portal-gradient" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#ff00ff" stop-opacity="0.7" />
+                            <stop offset="70%" stop-color="#00ffff" stop-opacity="0.3" />
+                            <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+                        </radialGradient>
+                        <filter id="glow-effect" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
                     
-                    symbolText.setAttribute('x', x);
-                    symbolText.setAttribute('y', y);
-                    symbolText.setAttribute('text-anchor', 'middle');
-                    symbolText.setAttribute('dominant-baseline', 'central');
-                    symbolText.setAttribute('fill', '#9c27b0');
-                    symbolText.setAttribute('font-size', '12');
-                    symbolText.textContent = arcaneSymbols[i];
-                    arcaneSymbol.appendChild(symbolText);
-                }
+                    <!-- Portal background -->
+                    <circle cx="50" cy="50" r="40" fill="url(#portal-gradient)" filter="url(#glow-effect)" />
+                    
+                    <!-- Portal rings -->
+                    <circle cx="50" cy="50" r="40" stroke="#ff00ff" stroke-width="1" fill="none" filter="url(#glow-effect)">
+                        <animate attributeName="stroke-opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite" />
+                    </circle>
+                    
+                    <circle cx="50" cy="50" r="30" stroke="#00ffff" stroke-width="0.7" fill="none" opacity="0.7">
+                        <animate attributeName="r" values="28;32;28" dur="3s" repeatCount="indefinite" />
+                    </circle>
+                    
+                    <circle cx="50" cy="50" r="20" stroke="#ff00ff" stroke-width="0.5" fill="none" opacity="0.5">
+                        <animate attributeName="r" values="18;22;18" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                    
+                    <!-- Grid lines -->
+                    <path d="M10,50 h80 M50,10 v80" stroke="#00ffff" stroke-width="0.3" stroke-opacity="0.5" />
+                    <path d="M20,20 L80,80 M20,80 L80,20" stroke="#ff00ff" stroke-width="0.3" stroke-opacity="0.5" />
+                    
+                    <!-- Digital edges for cyberpunk feel -->
+                    <rect x="5" y="5" width="10" height="2" fill="#ff00ff" opacity="0.8" />
+                    <rect x="5" y="5" width="2" height="10" fill="#ff00ff" opacity="0.8" />
+                    
+                    <rect x="85" y="5" width="10" height="2" fill="#00ffff" opacity="0.8" />
+                    <rect x="93" y="5" width="2" height="10" fill="#00ffff" opacity="0.8" />
+                    
+                    <rect x="5" y="93" width="10" height="2" fill="#00ffff" opacity="0.8" />
+                    <rect x="5" y="85" width="2" height="10" fill="#00ffff" opacity="0.8" />
+                    
+                    <rect x="85" y="93" width="10" height="2" fill="#ff00ff" opacity="0.8" />
+                    <rect x="93" y="85" width="2" height="10" fill="#ff00ff" opacity="0.8" />
+                `;
                 
-                // Assemble the SVG
-                arcaneSymbol.appendChild(outerCircle);
-                arcaneSymbol.appendChild(innerCircle);
-                arcaneSymbol.appendChild(pentagram);
-                svgContainer.appendChild(arcaneSymbol);
+                // Add cyberpunk/synthwave particles around the symbol
+                svgContainer.appendChild(portalSymbol);
                 
                 // Add glowing particles around the symbol
                 const particles = document.createElement('div');
@@ -253,7 +233,7 @@
                 
                 // Add a loading message with arcane styling
                 const loadingMessage = document.createElement('div');
-                loadingMessage.textContent = "Brewing magical potions...";
+                loadingMessage.textContent = "Firing up the cabinets...";
                 loadingMessage.style.color = '#f0e6d2';
                 loadingMessage.style.fontFamily = '"Metamorphous", serif';
                 loadingMessage.style.fontSize = '1.3rem';
@@ -263,7 +243,7 @@
                 loadingMessage.style.padding = '0 40px';
                 loadingMessage.style.textShadow = '0 0 5px rgba(156, 39, 176, 0.7)';
                 
-                // Create progress container styled like an arcane bar
+                // Create progress container styled with neon cyberpunk aesthetics
                 const progressContainer = document.createElement('div');
                 progressContainer.style.width = '80%';
                 progressContainer.style.maxWidth = '400px';
@@ -271,33 +251,36 @@
                 progressContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
                 progressContainer.style.borderRadius = '10px';
                 progressContainer.style.overflow = 'hidden';
-                progressContainer.style.border = '2px solid rgba(255, 215, 0, 0.5)';
-                progressContainer.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.2), inset 0 0 10px rgba(0, 0, 0, 0.5)';
+                progressContainer.style.border = '2px solid rgba(0, 255, 255, 0.5)';
+                progressContainer.style.boxShadow = '0 0 15px rgba(255, 0, 255, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.5)';
                 progressContainer.style.margin = '10px auto 30px auto';
+                progressContainer.style.position = 'relative';
                 
-                // Add arcane runes on the progress bar border
+                // Add cyberpunk icons along the progress bar border
                 for (let i = 0; i < 5; i++) {
-                    const rune = document.createElement('div');
-                    rune.style.position = 'absolute';
-                    rune.style.top = '-8px';
-                    rune.style.left = `${12.5 + i * 25}%`;
-                    rune.style.fontSize = '12px';
-                    rune.style.color = 'gold';
-                    rune.style.transform = 'translateX(-50%)';
-                    rune.textContent = ['⚙', '⚜', '☯', '✧', '⛤'][i];
-                    progressContainer.appendChild(rune);
+                    const icon = document.createElement('div');
+                    icon.style.position = 'absolute';
+                    icon.style.top = '-8px';
+                    icon.style.left = `${12.5 + i * 25}%`;
+                    icon.style.fontSize = '12px';
+                    icon.style.color = i % 2 === 0 ? '#ff00ff' : '#00ffff'; // Alternate colors
+                    icon.style.textShadow = `0 0 5px ${icon.style.color}`;
+                    icon.style.transform = 'translateX(-50%)';
+                    icon.textContent = ['🌀', '🔮', '⚡', '🎮', '🌐'][i];
+                    progressContainer.appendChild(icon);
                 }
                 
-                // Create progress bar with animated gradient
+                // Create progress bar with animated cyberpunk gradient
                 const progressBar = document.createElement('div');
                 progressBar.style.width = '0%';
                 progressBar.style.height = '100%';
                 progressBar.style.transition = 'width 0.5s ease-out';
-                progressBar.style.backgroundImage = 'linear-gradient(45deg, #4b0082, #9c27b0, #673ab7, #4b0082)';
+                progressBar.style.backgroundImage = 'linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff)';
                 progressBar.style.backgroundSize = '300% 100%';
                 progressBar.style.animation = 'gradientMove 3s ease infinite';
+                progressBar.style.boxShadow = '0 0 10px rgba(255, 0, 255, 0.5), 0 0 15px rgba(0, 255, 255, 0.3)';
                 
-                // Add keyframes for gradient movement
+                // Add keyframes for animations
                 const keyframes = document.createElement('style');
                 keyframes.textContent = `
                     @keyframes gradientMove {
@@ -305,47 +288,75 @@
                         50% { background-position: 100% 50%; }
                         100% { background-position: 0% 50%; }
                     }
+                    
+                    @keyframes glow {
+                        0% { text-shadow: 0 0 10px rgba(255, 0, 255, 0.7), 0 0 20px rgba(255, 0, 255, 0.5); }
+                        50% { text-shadow: 0 0 15px rgba(255, 0, 255, 0.9), 0 0 30px rgba(255, 0, 255, 0.7); }
+                        100% { text-shadow: 0 0 10px rgba(255, 0, 255, 0.7), 0 0 20px rgba(255, 0, 255, 0.5); }
+                    }
                 `;
                 document.head.appendChild(keyframes);
                 
-                // Create progress text
+                // Create progress text with cyberpunk styling
                 const progressText = document.createElement('div');
                 progressText.textContent = '0%';
-                progressText.style.color = '#f0e6d2';
+                progressText.style.color = '#00ffff';
+                progressText.style.textShadow = '0 0 5px rgba(0, 255, 255, 0.7)';
                 progressText.style.marginTop = '0.5rem';
+                progressText.style.fontFamily = 'monospace';
                 progressText.style.fontFamily = 'monospace';
                 progressText.style.textAlign = 'center';
                 
-                // Add decorative arcane circles in the background
-                const arcaneCircles = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                arcaneCircles.setAttribute('width', '100%');
-                arcaneCircles.setAttribute('height', '100%');
-                arcaneCircles.style.position = 'absolute';
-                arcaneCircles.style.top = '0';
-                arcaneCircles.style.left = '0';
-                arcaneCircles.style.pointerEvents = 'none';
-                arcaneCircles.style.zIndex = '-1';
-                arcaneCircles.innerHTML = `
+                // Add decorative Vibeverse portal animation in the background
+                const vibePortal = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                vibePortal.setAttribute('width', '100%');
+                vibePortal.setAttribute('height', '100%');
+                vibePortal.setAttribute('viewBox', '0 0 100 100');
+                vibePortal.setAttribute('preserveAspectRatio', 'none');
+                vibePortal.style.position = 'absolute';
+                vibePortal.style.top = '0';
+                vibePortal.style.left = '0';
+                vibePortal.style.pointerEvents = 'none';
+                vibePortal.style.zIndex = '-1';
+                vibePortal.innerHTML = `
                     <defs>
-                        <radialGradient id="bg-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                            <stop offset="0%" style="stop-color:#4b0082;stop-opacity:0.1" />
+                        <radialGradient id="portal-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                            <stop offset="0%" style="stop-color:#ff00ff;stop-opacity:0.3" />
+                            <stop offset="70%" style="stop-color:#4b0082;stop-opacity:0.1" />
                             <stop offset="100%" style="stop-color:#000;stop-opacity:0" />
                         </radialGradient>
+                        <linearGradient id="neon-grid" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#00ffff;stop-opacity:0.2" />
+                            <stop offset="100%" style="stop-color:#ff00ff;stop-opacity:0.2" />
+                        </linearGradient>
                     </defs>
-                    <circle cx="50%" cy="50%" r="35%" stroke="rgba(255,215,0,0.1)" stroke-width="1" fill="url(#bg-gradient)" />
-                    <circle cx="50%" cy="50%" r="40%" stroke="rgba(255,215,0,0.05)" stroke-width="0.5" fill="none" />
-                    <circle cx="50%" cy="50%" r="45%" stroke="rgba(255,215,0,0.03)" stroke-width="0.3" fill="none" />
-                    <path d="M30%,50% L70%,50% M50%,30% L50%,70% M35%,35% L65%,65% M35%,65% L65%,35%" stroke="rgba(255,215,0,0.1)" stroke-width="0.2" />
+                    <!-- Portal/vortex effect -->
+                    <circle cx="50%" cy="50%" r="30%" stroke="rgba(255,0,255,0.3)" stroke-width="0.5" fill="url(#portal-gradient)">
+                        <animate attributeName="r" values="28%;32%;28%" dur="4s" repeatCount="indefinite" />
+                        <animate attributeName="stroke-opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                    <!-- Cyberpunk/synthwave grid -->
+                    <path d="M0,20 L100,20 M0,40 L100,40 M0,60 L100,60 M0,80 L100,80" stroke="url(#neon-grid)" stroke-width="0.2">
+                        <animate attributeName="stroke-opacity" values="0.1;0.3;0.1" dur="4s" repeatCount="indefinite" />
+                    </path>
+                    <path d="M20,0 L20,100 M40,0 L40,100 M60,0 L60,100 M80,0 L80,100" stroke="url(#neon-grid)" stroke-width="0.2">
+                        <animate attributeName="stroke-opacity" values="0.1;0.3;0.1" dur="4s" repeatCount="indefinite" />
+                    </path>
+                    <!-- Vibrational wave patterns -->
+                    <path d="M10,50 Q25,40 40,50 T70,50 T100,50" stroke="rgba(255,0,255,0.15)" stroke-width="0.3" fill="none">
+                        <animate attributeName="d" values="M10,50 Q25,40 40,50 T70,50 T100,50; M10,50 Q25,60 40,50 T70,50 T100,50; M10,50 Q25,40 40,50 T70,50 T100,50" dur="5s" repeatCount="indefinite" />
+                    </path>
                 `;
                 
-                // Footer with arcane text
+                // Footer with cyber text
                 const footer = document.createElement('div');
                 footer.style.fontFamily = '"Metamorphous", serif';
                 footer.style.fontSize = '0.8rem';
-                footer.style.color = 'rgba(240, 230, 210, 0.6)';
+                footer.style.color = 'rgba(0, 255, 255, 0.6)';
                 footer.style.marginTop = '20px';
                 footer.style.textAlign = 'center';
-                footer.innerHTML = 'Codex Arcanum • Anno MMXXV';
+                footer.style.textShadow = '0 0 5px rgba(0, 255, 255, 0.3)';
+                footer.innerHTML = 'Vibeverse Network • Connected 2025';
                 
                 // Store references
                 this.progressBar = progressBar;
@@ -355,15 +366,17 @@
                 
                 // Choose random loading messages
                 const loadingMessages = [
-                    "Brewing magical potions...",
-                    "Collecting arcane dust...",
-                    "Calibrating alchemy apparatus...",
-                    "Charging crystals...",
-                    "Summoning mystical energies...",
-                    "Arranging enchanted items...",
-                    "Stabilizing magical fields...",
-                    "Tuning the ethereal frequencies...",
-                    "Preparing the alchemist's workspace..."
+                    "Synchronizing interdimensional portals...",
+                    "Calibrating vibrational frequencies...",
+                    "Connecting to the Vibeverse network...",
+                    "Loading digital consciousness matrix...",
+                    "Generating synthwave harmonics...",
+                    "Initializing neon grid systems...",
+                    "Activating retro-futuristic interfaces...",
+                    "Stabilizing arcade quantum processors...",
+                    "Amplifying community vibrations...",
+                    "Powering up arcade energy fields...",
+                    "Unlocking dimensional gateways..."
                 ];
                 
                 // Rotate between messages
@@ -373,17 +386,17 @@
                 }, 3000);
                 
                 // Assemble the loading screen
-                grimoireFrame.appendChild(bookSpine);
-                grimoireFrame.appendChild(pageTexture);
-                grimoireFrame.appendChild(title);
-                grimoireFrame.appendChild(svgContainer);
-                grimoireFrame.appendChild(loadingMessage);
+                portalFrame.appendChild(gridLines);
+                portalFrame.appendChild(synthGlow);
+                portalFrame.appendChild(title);
+                portalFrame.appendChild(svgContainer);
+                portalFrame.appendChild(loadingMessage);
                 progressContainer.appendChild(progressBar);
-                grimoireFrame.appendChild(progressContainer);
-                grimoireFrame.appendChild(progressText);
-                grimoireFrame.appendChild(footer);
-                loadingContainer.appendChild(arcaneCircles);
-                loadingContainer.appendChild(grimoireFrame);
+                portalFrame.appendChild(progressContainer);
+                portalFrame.appendChild(progressText);
+                portalFrame.appendChild(footer);
+                loadingContainer.appendChild(vibePortal);
+                loadingContainer.appendChild(portalFrame);
                 
                 // Add to DOM
                 document.body.appendChild(loadingContainer);

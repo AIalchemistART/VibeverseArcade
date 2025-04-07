@@ -33,7 +33,7 @@ class SceneRenderer {
                 accentColor: '#00ffcc',
                 wallColor: '#334455',
                 floorColor: '#1a2a3a',
-                title: 'AI Alchemist\'s Lair',
+                title: 'Vibeverse Arcade',
                 pattern: this.drawHexGrid.bind(this)
             },
             circuitSanctum: {
