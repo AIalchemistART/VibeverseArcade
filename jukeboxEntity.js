@@ -433,6 +433,17 @@ class JukeboxEntity extends Entity {
             `;
             
             // Create a header with title and close button
+            // Add CSS animation for pulsing effect
+            const animationStyle = document.createElement('style');
+            animationStyle.textContent = `
+                @keyframes pulse {
+                    0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 20px rgba(255, 0, 165, 0.8); }
+                    50% { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 30px rgba(255, 0, 165, 1); }
+                    100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 20px rgba(255, 0, 165, 0.8); }
+                }
+            `;
+            document.head.appendChild(animationStyle);
+            
             const header = document.createElement('div');
             header.style.cssText = `
                 display: flex;
@@ -510,12 +521,13 @@ class JukeboxEntity extends Entity {
             iframe.allow = 'autoplay; encrypted-media';
             iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups allow-forms');
             
-            // Create a more mobile-friendly URL with optimized parameters
+            // Create a mobile-optimized URL with autoplay enabled
+            // - Set auto_play=true for immediate playback on both desktop and mobile
             // - Use mobile=true to hint at mobile optimization
             // - Set show_artwork=true for better mobile experience
             // - Use smaller_images=true for more efficient loading
             // - Disable teaser which can cause problems on mobile
-            iframe.src = 'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1886380535&color=%23ff00a5&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true&show_artwork=true&mobile=true&smaller_images=true';
+            iframe.src = 'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1886380535&color=%23ff00a5&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true&show_artwork=true&mobile=true&smaller_images=true';
             
             // Load SoundCloud Widget API if not already loaded
             if (!window.SC) {
@@ -556,24 +568,37 @@ class JukeboxEntity extends Entity {
             `;
             playerContainer.appendChild(autoplayButton);
             
-            // Initialize SoundCloud Widget API with enhanced autoplay reliability
+            // Initialize SoundCloud Widget API with enhanced autoplay reliability for both desktop and mobile
             let autoplayAttempts = 0;
-            const maxAutoplayAttempts = 3;
+            const maxAutoplayAttempts = 5; // Increased attempts for mobile
             const attemptAutoplay = () => {
                 if (window.SC && autoplayAttempts < maxAutoplayAttempts) {
                     try {
                         console.log(`JukeboxEntity: Autoplay attempt ${autoplayAttempts + 1}/${maxAutoplayAttempts}`);
                         const widget = SC.Widget(iframe);
                         
-                        // Comprehensive approach to ensure autoplay works
+                        // Check for mobile device first
+                        const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+                        
+                        // Comprehensive approach to ensure autoplay works on both desktop and mobile
                         widget.bind(SC.Widget.Events.READY, () => {
-                            console.log('JukeboxEntity: Widget ready, initiating autoplay sequence');
+                            console.log(`JukeboxEntity: Widget ready, initiating autoplay sequence (${isMobile ? 'mobile' : 'desktop'} device)`);
                             
-                            // Step 1: Set volume and state
-                            widget.setVolume(80);
-                            widget.play();
+                            // Immediate interactive trigger needed for mobile browsers
+                            if (isMobile) {
+                                // Mobile devices need a slight delay to ensure proper initialization
+                                setTimeout(() => {
+                                    console.log('JukeboxEntity: Delayed mobile autoplay trigger');
+                                    widget.setVolume(90); // Slightly louder for mobile
+                                    widget.play();
+                                }, 500);
+                            } else {
+                                // Standard desktop autoplay
+                                widget.setVolume(80);
+                                widget.play();
+                            }
                             
-                            // Step 2: Check if playback actually started after a delay
+                            // Check if playback actually started after a delay, with longer wait for mobile
                             setTimeout(() => {
                                 widget.getPosition(position => {
                                     if (position <= 0) {
@@ -583,17 +608,27 @@ class JukeboxEntity extends Entity {
                                         
                                         if (autoplayAttempts >= maxAutoplayAttempts) {
                                             console.log('JukeboxEntity: Maximum autoplay attempts reached, showing manual play button');
-                                            autoplayButton.style.display = 'block';
+                                            // Make button more prominent
+                                            autoplayButton.style.display = 'flex';
+                                            autoplayButton.style.animation = 'pulse 1.5s infinite';
+                                            
+                                            // Add a hint to the button text for mobile users
+                                            if (isMobile) {
+                                                autoplayButton.textContent = '▶️ Tap to Play Music';
+                                            }
                                         } else {
+                                            console.log(`JukeboxEntity: Retry attempt ${autoplayAttempts}`);
                                             widget.play(); // Try again
                                         }
                                     } else {
                                         console.log(`JukeboxEntity: Autoplay successful! Position: ${position}ms`);
+                                        // Hide manual button if it's showing
+                                        autoplayButton.style.display = 'none';
                                         // Now we can shuffle since playback is working
                                         shufflePlaylist(widget);
                                     }
                                 });
-                            }, 1000);
+                            }, isMobile ? 1500 : 1000); // Longer wait time for mobile
                         });
                         
                         // Handle track completion
