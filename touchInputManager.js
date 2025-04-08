@@ -366,26 +366,28 @@ class TouchInputManager {
             } 
             // Check if touch is on right half of screen (buttons area)
             else {
-                // Check if it's within the escape button bounds
-                if (this.escapeButtonElement && 
-                    x >= this.escapeButtonElement.getBoundingClientRect().left &&
-                    x <= this.escapeButtonElement.getBoundingClientRect().right &&
-                    y >= this.escapeButtonElement.getBoundingClientRect().top &&
-                    y <= this.escapeButtonElement.getBoundingClientRect().bottom) {
+                // Check if it's within the interact button bounds - more precise interaction
+                if (this.actionButtonElement && 
+                    x >= this.actionButtonElement.getBoundingClientRect().left &&
+                    x <= this.actionButtonElement.getBoundingClientRect().right &&
+                    y >= this.actionButtonElement.getBoundingClientRect().top &&
+                    y <= this.actionButtonElement.getBoundingClientRect().bottom) {
                     
-                    // Escape button pressed - simulate Escape key
-                    this.simulateKeyPress('Escape');
-                    this.setEscape(true);
-                    
-                    // Show active state on escape button
-                    this.escapeButtonElement.style.backgroundColor = 'rgba(255, 50, 50, 0.9)';
-                } else {
                     // Interact button pressed - simulate Enter key
                     this.simulateKeyPress('Enter');
                     this.setAction(true);
+                    console.log('Touch: Interact button specifically pressed');
                     
                     // Show active state on interact button
                     this.actionButtonElement.style.backgroundColor = 'rgba(100, 255, 100, 0.9)';
+                } else {
+                    // Default to escape for the rest of right side - simulate Escape key
+                    this.simulateKeyPress('Escape');
+                    this.setEscape(true);
+                    console.log('Touch: Right side pressed, defaulting to escape');
+                    
+                    // Show active state on escape button
+                    this.escapeButtonElement.style.backgroundColor = 'rgba(255, 50, 50, 0.9)';
                 }
             }
         }
