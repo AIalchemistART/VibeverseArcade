@@ -544,7 +544,7 @@ class TVEntity extends Entity {
         modalContainer.style.width = '100%';
         modalContainer.style.height = '100%';
         modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        modalContainer.style.zIndex = '1000';
+        modalContainer.style.zIndex = '2000'; // Increased to be above touch controls (which use 1000)
         modalContainer.style.display = 'flex';
         modalContainer.style.justifyContent = 'center';
         modalContainer.style.alignItems = 'center';

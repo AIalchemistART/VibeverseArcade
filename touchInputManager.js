@@ -98,42 +98,34 @@ class TouchInputManager {
      * Check if device supports touch and show controls if needed
      */
     checkTouchSupport() {
-        // Directly check for known mobile patterns in user agent
+        // Check for actual touch capability (rather than device type)
+        const hasTouchSupport = 'ontouchstart' in window || 
+                            navigator.maxTouchPoints > 0 ||
+                            navigator.msMaxTouchPoints > 0;
+        
+        // Still check user agent for debugging/logging purposes
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        
-        // Very strict mobile-only regex: only match common mobile OS patterns
         const strictMobileRegex = /android|iphone|ipad|ipod|blackberry|windows phone|opera mini/i;
-        
-        // Check if we're absolutely certain this is a mobile device
         const isDefinitelyMobile = strictMobileRegex.test(userAgent);
         
-        // Console logging for debugging
-        console.log('Mobile detection:', {
+        // Log detection results
+        console.log('Touch capability detection:', {
             userAgent,
-            isDefinitelyMobile,
+            hasTouchSupport,
+            isDefinitelyMobile, // for debugging only
+            touchPoints: navigator.maxTouchPoints,
             screenWidth: window.innerWidth,
             screenHeight: window.innerHeight
         });
         
-        // STRICT MODE: Only show controls on definitively identified mobile devices
-        if (isDefinitelyMobile) {
-            console.log('Mobile device confirmed, showing touch controls');
+        // Show controls only if touch is actually supported
+        if (hasTouchSupport) {
+            console.log('Touch support detected, showing touch controls');
             this.showTouchControls();
         } else {
-            console.log('Non-mobile device detected, hiding touch controls');
+            console.log('No touch support detected, hiding touch controls');
             this.hideTouchControls();
         }
-        
-        // OVERRIDE: Force hide controls on all devices - this ensures desktop never shows controls
-        this.hideTouchControls();
-        
-        // On mobile only, re-show controls after a delay
-        setTimeout(() => {
-            if (isDefinitelyMobile) {
-                this.showTouchControls();
-                console.log('Mobile device, showing touch controls after delay');
-            }
-        }, 1000);
     }
     
     /**
