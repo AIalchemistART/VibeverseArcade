@@ -4,6 +4,7 @@
  */
 
 import { input } from './input.js';
+import { touchInputManager } from './touchInputManager.js'; // Import touch input manager
 import { TestScene } from './scene.js';
 import { shouldRenderFrame, getDeltaTime, updateFps, TARGET_FPS } from './timing.js';
 import { drawFpsCounter, DEBUG_CONFIG } from './debug.js';
