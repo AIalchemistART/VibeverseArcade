@@ -563,12 +563,17 @@ class TouchInputManager {
      */
     setAction(active) {
         this.activeDirections.action = active;
+        console.log('Touch: setAction called with active =', active);
         
         // Update input system - now using Enter key for interaction
         if (active) {
             input.keys['Enter'] = true; // Enter key for interaction
+            input.enterKeyPressed = true; // Also set the special flag
+            console.log('Touch: Enter key and flag set to true');
         } else {
             input.keys['Enter'] = false;
+            input.enterKeyPressed = false;
+            console.log('Touch: Enter key and flag set to false');
         }
     }
     
@@ -610,21 +615,47 @@ class TouchInputManager {
      * @param {string} key - Key to simulate
      */
     simulateKeyPress(key) {
+        console.log(`Touch: Simulating ${key} key press`); 
+        
         // Set key state directly in input system
         input.keys[key] = true;
         
-        // Clear key after a short delay
-        setTimeout(() => {
-            input.keys[key] = false;
-        }, 100);
-        
-        // Handle special case for Enter key
+        // Handle special case for Enter key 
         if (key === 'Enter') {
             input.enterKeyPressed = true;
-            setTimeout(() => {
-                input.enterKeyPressed = false;
-            }, 100);
+            console.log('Touch: Set enterKeyPressed flag to true');
+            
+            // Dispatch a custom keydown event for better compatibility
+            const event = new KeyboardEvent('keydown', {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true
+            });
+            document.dispatchEvent(event);
         }
+        
+        // Clear key after a longer delay to ensure detection
+        setTimeout(() => {
+            console.log(`Touch: Clearing ${key} key press`);
+            input.keys[key] = false;
+            
+            // Handle special case for Enter key
+            if (key === 'Enter') {
+                input.enterKeyPressed = false;
+                
+                // Dispatch corresponding keyup event
+                const event = new KeyboardEvent('keyup', {
+                    key: 'Enter',
+                    code: 'Enter',
+                    keyCode: 13,
+                    which: 13,
+                    bubbles: true
+                });
+                document.dispatchEvent(event);
+            }
+        }, 250); // Longer delay for better detection
     }
 }
 
