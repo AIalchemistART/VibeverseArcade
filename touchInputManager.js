@@ -332,6 +332,15 @@ class TouchInputManager {
      * @param {TouchEvent} e - Touch event
      */
     handleTouchStart(e) {
+        // First check if we're clicking on the YouTube modal or shuffle button
+        const youtubeModal = document.getElementById('youtube-modal');
+        if (youtubeModal) {
+            // If the YouTube modal is open, don't process touch events
+            // This lets the shuffle button receive clicks directly
+            return;
+        }
+        
+        // Only proceed with default behavior if not in the YouTube modal
         // Prevent default behavior to stop scrolling
         e.preventDefault();
         
@@ -398,6 +407,13 @@ class TouchInputManager {
      * @param {TouchEvent} e - Touch event
      */
     handleTouchMove(e) {
+        // Check if YouTube modal is open
+        const youtubeModal = document.getElementById('youtube-modal');
+        if (youtubeModal) {
+            // If YouTube modal is open, don't process touch events
+            return;
+        }
+        
         // Prevent default behavior to stop scrolling
         e.preventDefault();
         
@@ -446,6 +462,13 @@ class TouchInputManager {
      * @param {TouchEvent} e - Touch event
      */
     handleTouchEnd(e) {
+        // Check if YouTube modal is open
+        const youtubeModal = document.getElementById('youtube-modal');
+        if (youtubeModal) {
+            // If YouTube modal is open, don't process touch events
+            return;
+        }
+        
         // Check if all touches are gone (e.touches.length will be 0 if no touches remain)
         if (e.touches.length === 0) {
             // Reset joystick
