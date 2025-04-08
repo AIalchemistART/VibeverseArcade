@@ -501,6 +501,18 @@ class TVEntity extends Entity {
         
         if (this.isActive) {
             console.log('TVEntity: Creating YouTube modal');
+            
+            // Hide touch controls when TV is active to prevent overlap issues
+            const touchControls = document.querySelectorAll('#virtualJoystick, #interactButton, #escapeButton');
+            touchControls.forEach(control => {
+                if (control && control.style) {
+                    // Store current visibility state
+                    control.dataset.wasVisible = control.style.display === 'block' ? 'true' : 'false';
+                    // Hide the control
+                    control.style.display = 'none';
+                }
+            });
+            
             this.createYoutubeModal();
             
             // Temporarily disable the direct Enter key event listener while player is active
@@ -517,6 +529,17 @@ class TVEntity extends Entity {
         } else {
             console.log('TVEntity: Removing YouTube modal');
             this.removeYoutubeModal();
+            
+            // Restore touch controls to their previous state when TV is closed
+            const touchControls = document.querySelectorAll('#virtualJoystick, #interactButton, #escapeButton');
+            touchControls.forEach(control => {
+                if (control && control.style && control.dataset.wasVisible === 'true') {
+                    // Restore visibility if it was previously visible
+                    control.style.display = 'block';
+                    // Clean up dataset
+                    delete control.dataset.wasVisible;
+                }
+            });
             
             // Re-enable the direct Enter key event listener after player is closed
             document.addEventListener('keydown', this.handleKeyDown);
@@ -544,8 +567,9 @@ class TVEntity extends Entity {
         modalContainer.style.width = '100%';
         modalContainer.style.height = '100%';
         modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        modalContainer.style.zIndex = '2000'; // Increased to be above touch controls (which use 1000)
+        modalContainer.style.zIndex = '9999'; // Significantly higher than touch controls to ensure priority
         modalContainer.style.display = 'flex';
+        modalContainer.style.pointerEvents = 'all'; // Force this element to capture all pointer events
         modalContainer.style.justifyContent = 'center';
         modalContainer.style.alignItems = 'center';
         modalContainer.style.flexDirection = 'column';
