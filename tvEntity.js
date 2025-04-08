@@ -596,36 +596,32 @@ class TVEntity extends Entity {
             margin-bottom: 10px;
         `;
         
-        // Create shuffle button for YouTube with neon TV styling
+        // Create shuffle button for YouTube with neon TV styling - enhanced for touch
         const shuffleButton = document.createElement('button');
         shuffleButton.textContent = '🔀 Shuffle';
         shuffleButton.title = 'Shuffle playlist';
+        shuffleButton.id = 'tv-shuffle-button'; // Add ID for easier targeting
         shuffleButton.style.cssText = `
             background-color: #3DF5FF;
             color: black;
             border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 12px 20px; /* Larger padding for better touch target */
+            border-radius: 8px; /* Slightly larger radius */
             font-weight: bold;
             cursor: pointer;
             font-family: monospace;
+            font-size: 18px; /* Larger font for better visibility on mobile */
             transition: all 0.3s ease;
             box-shadow: 0 0 10px rgba(61, 245, 255, 0.7);
+            margin: 5px; /* Add margin to help prevent accidentally touching nearby elements */
+            -webkit-tap-highlight-color: rgba(61, 245, 255, 0.5); /* Mobile tap highlight */
+            user-select: none; /* Prevent text selection */
+            touch-action: manipulation; /* Optimization for touch */
         `;
         
-        // Button hover effect
-        shuffleButton.onmouseover = () => {
-            shuffleButton.style.backgroundColor = '#2bc7d4';
-            shuffleButton.style.boxShadow = '0 0 15px rgba(61, 245, 255, 0.9)';
-        };
-        shuffleButton.onmouseout = () => {
-            shuffleButton.style.backgroundColor = '#3DF5FF';
-            shuffleButton.style.boxShadow = '0 0 10px rgba(61, 245, 255, 0.7)';
-        };
-        
-        // Shuffle button click handler
-        shuffleButton.addEventListener('click', () => {
-            console.log('TVEntity: Shuffle button clicked, reloading with shuffled playlist');
+        // Function to handle the shuffle action
+        const handleShuffleAction = () => {
+            console.log('TVEntity: Shuffle button activated, reloading with shuffled playlist');
             
             // Get the current iframe
             const currentIframe = iframeContainer.querySelector('iframe');
@@ -652,6 +648,39 @@ class TVEntity extends Entity {
                     shuffleButton.textContent = '🔀 Shuffle';
                 }, 1500);
             }
+        };
+        
+        // Visual feedback functions for both mouse and touch
+        const applyActiveStyle = () => {
+            shuffleButton.style.backgroundColor = '#2bc7d4';
+            shuffleButton.style.boxShadow = '0 0 15px rgba(61, 245, 255, 0.9)';
+            shuffleButton.style.transform = 'scale(0.97)'; // Slight scale effect for feedback
+        };
+        
+        const revertToNormalStyle = () => {
+            shuffleButton.style.backgroundColor = '#3DF5FF';
+            shuffleButton.style.boxShadow = '0 0 10px rgba(61, 245, 255, 0.7)';
+            shuffleButton.style.transform = 'scale(1)';
+        };
+        
+        // Mouse event handlers
+        shuffleButton.onmouseover = applyActiveStyle;
+        shuffleButton.onmouseout = revertToNormalStyle;
+        
+        // Touch event handlers
+        shuffleButton.addEventListener('touchstart', (e) => {
+            applyActiveStyle();
+        }, { passive: true });
+        
+        shuffleButton.addEventListener('touchend', (e) => {
+            revertToNormalStyle();
+            handleShuffleAction();
+        }, { passive: true });
+        
+        // Shuffle button click handler (for mouse)
+        shuffleButton.addEventListener('click', () => {
+            // Use the same handler function for both touch and click events
+            handleShuffleAction();
         });
         
         // Add the shuffle button to the controls container
