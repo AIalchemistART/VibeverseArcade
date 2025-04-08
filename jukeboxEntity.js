@@ -682,50 +682,7 @@ class JukeboxEntity extends Entity {
             // Start the autoplay attempt sequence
             setTimeout(attemptAutoplay, 1000);
             
-            // Add a direct link to SoundCloud for mobile fallback
-            const fallbackContainer = document.createElement('div');
-            fallbackContainer.style.cssText = `
-                margin-top: 10px;
-                margin-bottom: 15px;
-                padding: 10px;
-                background-color: rgba(0, 0, 0, 0.7);
-                border-radius: 8px;
-                border: 1px solid #ff00a5;
-                text-align: center;
-                display: none; /* Initially hidden */
-            `;
-            
-            const fallbackMessage = document.createElement('p');
-            fallbackMessage.textContent = 'Having trouble with the player on mobile?';
-            fallbackMessage.style.cssText = `
-                margin: 0 0 8px 0;
-                font-size: 16px;
-                color: white;
-            `;
-            
-            const directLink = document.createElement('a');
-            directLink.href = 'https://soundcloud.com/aivibeverse/sets/ai-alchemist-arcade-soundtrack';
-            directLink.target = '_blank';
-            directLink.textContent = 'Open directly in SoundCloud App';
-            directLink.style.cssText = `
-                display: inline-block;
-                background-color: #FF5500; /* SoundCloud orange */
-                color: white;
-                padding: 10px 15px;
-                border-radius: 8px;
-                text-decoration: none;
-                font-weight: bold;
-                -webkit-tap-highlight-color: rgba(255, 85, 0, 0.5);
-            `;
-            
-            fallbackContainer.appendChild(fallbackMessage);
-            fallbackContainer.appendChild(directLink);
-            playerContainer.appendChild(fallbackContainer);
-            
-            // Show fallback link for mobile devices
-            if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0)) {
-                fallbackContainer.style.display = 'block';
-            }
+            // Mobile playback is now functional, no fallback needed
             
             // Add control buttons for playback
             const controlButtonsContainer = document.createElement('div');
