@@ -94,18 +94,23 @@ class TouchInputManager {
             console.log('Device does not support touch or is detected as desktop, hiding touch controls');
         }
         
-        // Force show for testing (remove in production)
-        // this.showTouchControls();
+        // Force show for testing on all devices
+        this.showTouchControls();
+        console.log('Touch controls force enabled for testing');
     }
     
     /**
      * Show virtual joystick and action button
      */
     showTouchControls() {
+        console.log('Showing touch controls');
         if (this.joystickElement && this.actionButtonElement) {
             this.joystickElement.style.display = 'block';
             this.actionButtonElement.style.display = 'block';
             this.controlsVisible = true;
+            console.log('Touch control elements are now visible');
+        } else {
+            console.error('Touch control elements not created yet');
         }
         
         // Add mobile-friendly meta tag if not already present
@@ -147,8 +152,8 @@ class TouchInputManager {
             z-index: 1000;
             touch-action: none;
             display: none;
-            pointer-events: none;
         `;
+        console.log('Created virtual joystick element');
         
         // Create joystick knob
         this.joystickKnobElement = document.createElement('div');
@@ -180,7 +185,6 @@ class TouchInputManager {
             z-index: 1000;
             touch-action: none;
             display: none;
-            pointer-events: none;
             font-family: Arial, sans-serif;
             color: white;
             text-align: center;
@@ -201,7 +205,7 @@ class TouchInputManager {
      * @param {HTMLElement} canvas - Game canvas element
      */
     addTouchListeners(canvas) {
-        // Create a transparent overlay for touch controls to prevent canvas input interference
+        // Create a transparent overlay for touch controls
         const touchOverlay = document.createElement('div');
         touchOverlay.id = 'touchOverlay';
         touchOverlay.style.cssText = `
@@ -213,9 +217,9 @@ class TouchInputManager {
             z-index: 999;
             touch-action: none;
             background-color: transparent;
-            pointer-events: none;
         `;
         document.body.appendChild(touchOverlay);
+        console.log('Touch overlay created and added to DOM');
         
         // Listen for touch events on the entire document
         document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
@@ -287,11 +291,12 @@ class TouchInputManager {
                 this.joystick.currentY = y;
                 
                 // Position joystick at touch point
-                this.joystickElement.style.left = (x - this.joystickElement.offsetWidth / 2) + 'px';
-                this.joystickElement.style.top = (y - this.joystickElement.offsetHeight / 2) + 'px';
+                this.joystickElement.style.left = (x - 75) + 'px';
+                this.joystickElement.style.top = (y - 75) + 'px';
                 this.joystickElement.style.transform = 'none';
                 this.joystickKnobElement.style.left = '50%';
                 this.joystickKnobElement.style.top = '50%';
+                console.log('Joystick positioned at:', x, y);
                 
                 // Make joystick visible
                 this.joystickElement.style.display = 'block';
@@ -560,14 +565,33 @@ class TouchInputManager {
 const touchInputManager = new TouchInputManager();
 
 // Initialize on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-    touchInputManager.initialize();
-    
-    // Also listen for loading complete event to reinitialize
-    window.addEventListener('loadingComplete', () => {
-        console.log('Loading complete event received in touchInputManager.js');
-        touchInputManager.initialize();
+// Initialize immediately if document is already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    console.log('Document already loaded, initializing touch controls immediately');
+    setTimeout(() => touchInputManager.initialize(), 1000);
+} else {
+    // Otherwise wait for DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOMContentLoaded event fired, initializing touch controls');
+        setTimeout(() => touchInputManager.initialize(), 1000);
+        
+        // Also listen for loading complete event to reinitialize
+        window.addEventListener('loadingComplete', () => {
+            console.log('Loading complete event received in touchInputManager.js');
+            setTimeout(() => touchInputManager.initialize(), 1000);
+        });
     });
-});
+}
+
+// Add a fallback initialization after a delay
+setTimeout(() => {
+    console.log('Fallback touch controls initialization');
+    if (!touchInputManager.initialized) {
+        touchInputManager.initialize();
+    } else {
+        console.log('Touch controls were already initialized, forcing show');
+        touchInputManager.showTouchControls();
+    }
+}, 3000);
 
 export { touchInputManager };
