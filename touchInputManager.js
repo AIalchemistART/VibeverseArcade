@@ -63,6 +63,13 @@ class TouchInputManager {
             return;
         }
         
+        // Listen for menu/overlay events to ensure controls remain visible
+        // Using both window and document event listeners for better coverage
+        window.addEventListener('overlayOpened', this.ensureControlsVisibility.bind(this));
+        window.addEventListener('menuOpened', this.ensureControlsVisibility.bind(this));
+        document.addEventListener('overlayOpened', this.ensureControlsVisibility.bind(this));
+        document.addEventListener('menuOpened', this.ensureControlsVisibility.bind(this));
+        
         // Add touch event listeners
         this.addTouchListeners(canvas);
         
@@ -130,8 +137,14 @@ class TouchInputManager {
             this.joystickElement.style.display = 'block';
             this.actionButtonElement.style.display = 'block';
             this.escapeButtonElement.style.display = 'block';
+            
+            // Ensure buttons are above any menus or overlays
+            this.joystickElement.style.zIndex = '9999';
+            this.actionButtonElement.style.zIndex = '9999';
+            this.escapeButtonElement.style.zIndex = '9999';
+            
             this.controlsVisible = true;
-            console.log('Touch control elements are now visible');
+            console.log('Touch control elements are now visible and above overlays');
         } else {
             console.error('Touch control elements not created yet');
         }
@@ -154,6 +167,7 @@ class TouchInputManager {
             this.actionButtonElement.style.display = 'none';
             this.escapeButtonElement.style.display = 'none';
             this.controlsVisible = false;
+            console.log('Touch controls hidden');
         }
     }
     
@@ -558,6 +572,24 @@ class TouchInputManager {
     }
     
     /**
+     * Ensure touch controls remain visible above any overlays or menus
+     */
+    ensureControlsVisibility() {
+        console.log('Ensuring touch controls visibility during overlay/menu');
+        if (this.controlsVisible) {
+            // Make sure buttons are displayed and with high z-index
+            this.actionButtonElement.style.display = 'block';
+            this.escapeButtonElement.style.display = 'block';
+            
+            // Use very high z-index to ensure they appear above everything
+            this.actionButtonElement.style.zIndex = '9999';
+            this.escapeButtonElement.style.zIndex = '9999';
+            
+            console.log('Touch controls visibility and z-index refreshed');
+        }
+    }
+    
+    /**
      * Set action button state
      * @param {boolean} active - Whether action is active
      */
@@ -582,11 +614,15 @@ class TouchInputManager {
      * @param {boolean} active - Whether escape is active
      */
     setEscape(active) {
-        // Update input system
+        console.log('Touch: setEscape called with active =', active);
+        
+        // Update input system with explicit tracking
         if (active) {
             input.keys['Escape'] = true;
+            console.log('Touch: Escape key set to true');
         } else {
             input.keys['Escape'] = false;
+            console.log('Touch: Escape key set to false');
         }
     }
     
@@ -620,41 +656,52 @@ class TouchInputManager {
         // Set key state directly in input system
         input.keys[key] = true;
         
-        // Handle special case for Enter key 
+        // Create key-specific details
+        let keyCode, keyCodeStr;
         if (key === 'Enter') {
+            keyCode = 13;
+            keyCodeStr = 'Enter';
             input.enterKeyPressed = true;
             console.log('Touch: Set enterKeyPressed flag to true');
-            
-            // Dispatch a custom keydown event for better compatibility
-            const event = new KeyboardEvent('keydown', {
-                key: 'Enter',
-                code: 'Enter',
-                keyCode: 13,
-                which: 13,
-                bubbles: true
-            });
-            document.dispatchEvent(event);
+        } else if (key === 'Escape') {
+            keyCode = 27;
+            keyCodeStr = 'Escape';
+            console.log('Touch: Simulating Escape key');
+        } else {
+            // For other keys
+            keyCode = key.charCodeAt(0);
+            keyCodeStr = key;
         }
+        
+        // Dispatch a custom keydown event for better compatibility
+        const downEvent = new KeyboardEvent('keydown', {
+            key: key,
+            code: keyCodeStr,
+            keyCode: keyCode,
+            which: keyCode,
+            bubbles: true
+        });
+        document.dispatchEvent(downEvent);
         
         // Clear key after a longer delay to ensure detection
         setTimeout(() => {
             console.log(`Touch: Clearing ${key} key press`);
             input.keys[key] = false;
             
-            // Handle special case for Enter key
+            // Reset special flags
             if (key === 'Enter') {
                 input.enterKeyPressed = false;
-                
-                // Dispatch corresponding keyup event
-                const event = new KeyboardEvent('keyup', {
-                    key: 'Enter',
-                    code: 'Enter',
-                    keyCode: 13,
-                    which: 13,
-                    bubbles: true
-                });
-                document.dispatchEvent(event);
             }
+            
+            // Dispatch corresponding keyup event
+            const upEvent = new KeyboardEvent('keyup', {
+                key: key,
+                code: keyCodeStr,
+                keyCode: keyCode,
+                which: keyCode,
+                bubbles: true
+            });
+            document.dispatchEvent(upEvent);
         }, 250); // Longer delay for better detection
     }
 }
