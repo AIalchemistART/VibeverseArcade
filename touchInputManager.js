@@ -83,56 +83,40 @@ class TouchInputManager {
      * Check if device supports touch and show controls if needed
      */
     checkTouchSupport() {
-        // Basic touch capability detection
-        const hasTouchSupport = 'ontouchstart' in window || 
-                             navigator.maxTouchPoints > 0 || 
-                             navigator.msMaxTouchPoints > 0;
-        
-        // More specific mobile device detection using User Agent
+        // Directly check for known mobile patterns in user agent
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        const isMobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i.test(userAgent);
         
-        // Screen size detection (typically mobile devices are narrower)
-        const isNarrowScreen = window.innerWidth < 800;
+        // Very strict mobile-only regex: only match common mobile OS patterns
+        const strictMobileRegex = /android|iphone|ipad|ipod|blackberry|windows phone|opera mini/i;
         
-        // Mouse/pointer detection (desktop browsers typically have mouse support)
-        const hasMouseSupport = 'onmousemove' in window && !('onorientationchange' in window);
+        // Check if we're absolutely certain this is a mobile device
+        const isDefinitelyMobile = strictMobileRegex.test(userAgent);
         
-        // Desktop-specific check for keyboard modifiers (typically present on desktop)
-        const hasKeyboardModifiers = 'altKey' in new KeyboardEvent('keydown');
-        
-        // Check for desktop browser signals
-        const probablyDesktop = hasMouseSupport && hasKeyboardModifiers && window.innerWidth > 800 && !(/Mobi|Android/i.test(userAgent));
-
-        // Combined detection strategy - only mobile when we're confident
-        const isMobileDevice = hasTouchSupport && isMobileUserAgent && !probablyDesktop;
-        
-        console.log('Device detection:', { 
-            hasTouchSupport, 
-            isMobileUserAgent, 
-            isNarrowScreen,
-            isMobileDevice,
-            screenWidth: window.innerWidth
+        // Console logging for debugging
+        console.log('Mobile detection:', {
+            userAgent,
+            isDefinitelyMobile,
+            screenWidth: window.innerWidth,
+            screenHeight: window.innerHeight
         });
         
-        // Only show touch controls on actual mobile devices
-        if (isMobileDevice) {
-            console.log('Mobile device detected, showing touch controls');
+        // STRICT MODE: Only show controls on definitively identified mobile devices
+        if (isDefinitelyMobile) {
+            console.log('Mobile device confirmed, showing touch controls');
             this.showTouchControls();
         } else {
-            console.log('Desktop device detected, hiding touch controls');
+            console.log('Non-mobile device detected, hiding touch controls');
             this.hideTouchControls();
         }
         
-        // If you want to force-hide controls on all devices, uncomment:
+        // OVERRIDE: Force hide controls on all devices - this ensures desktop never shows controls
         this.hideTouchControls();
-        console.log('Touch controls force hidden for testing - wait for mobile detection');
         
-        // Short delay to re-check after initial page load (some desktop browsers report touch support incorrectly)
+        // On mobile only, re-show controls after a delay
         setTimeout(() => {
-            if (isMobileDevice) {
+            if (isDefinitelyMobile) {
                 this.showTouchControls();
-                console.log('Mobile device confirmed after delay, showing touch controls');
+                console.log('Mobile device, showing touch controls after delay');
             }
         }, 1000);
     }
