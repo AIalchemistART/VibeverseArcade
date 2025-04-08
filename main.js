@@ -34,6 +34,7 @@ import { RugManager } from './rugManager.js'; // Import RugManager
 import { RugManager2 } from './rugManager2.js'; // Import RugManager2
 import { RugManager3 } from './rugManager3.js'; // Import RugManager3
 import { RugManager4 } from './rugManager4.js'; // Import RugManager4
+import { RugManager5 } from './rugManager5.js'; // Import RugManager5
 import { VibePortalManager } from './vibePortalManager.js'; // Import VibePortalManager
 import { TrophyManager } from './trophyManager.js'; // Import TrophyManager
 import { XPortalManager } from './xPortalManager.js'; // Import XPortalManager
@@ -42,6 +43,7 @@ import { ArcadeManager } from './arcadeManager.js'; // Import ArcadeManager
 import { ArcadeManager2 } from './arcadeManager2.js'; // Import ArcadeManager2
 import { ArcadeManager3 } from './arcadeManager3.js'; // Import ArcadeManager3
 import { ArcadeManager4 } from './arcadeManager4.js'; // Import ArcadeManager4
+import { ArcadeManager5 } from './arcadeManager5.js'; // Import ArcadeManager5
 
 // Check browser compatibility before initializing the game
 const compatibilityResults = checkBrowserCompatibility();
@@ -290,7 +292,18 @@ if (compatibilityResults.allCriticalSupported) {
             console.log('Adding rugs to scene...');
             rugManager4.addRugs();
             console.log('Rugs added successfully');
-
+                
+            // Initialize RugManager5 with game instance
+            const rugManager5 = new RugManager5(game);
+            
+            // Preload rug assets
+            rugManager5.preloadAssets();
+            
+            // Add rugs to scene
+            console.log('Adding rugs to scene...');
+            rugManager5.addRugs();
+            console.log('Rugs added successfully');
+            
             // Initialize TrophyManager with game instance
             const trophyManager = new TrophyManager(game);
             
@@ -374,6 +387,19 @@ if (compatibilityResults.allCriticalSupported) {
             
             // Change this - explicitly pass a scene name that will match our condition
             arcadeManager4.addEntities('startRoom');
+            console.log('Arcade cabinets added successfully');
+            
+            // Initialize ArcadeManager5 with game instance
+            const arcadeManager5 = new ArcadeManager5(game);
+            
+            // Preload arcade assets
+            arcadeManager5.preloadAssets(assetLoader);
+            
+            // Force window.assetLoader to be set for direct access by entity classes
+            window.assetLoader = assetLoader;
+            
+            // Change this - explicitly pass a scene name that will match our condition
+            arcadeManager5.addEntities('startRoom');
             console.log('Arcade cabinets added successfully');
             
             // Send initialization complete event

@@ -337,6 +337,36 @@ Each entry contains:
      - Gentle white noise fadeout for settling effect
   The new sound design creates a complete fantasy-themed audio experience using the Web Audio API with oscillators, filters, and dynamic audio processing to generate rich magical sounds that enhance the immersion for players.
 
+### Arcade Cabinet 5 Sound Effects - Offroad Racing Theme
+- **File**: arcadeEntity5.js
+- **Line**: ~1032-2180
+- **Search Term**: `playActivateSound playSelectSound playLaunchSound playMenuCloseSound`
+- **Description**: Completely redesigned arcade cabinet sound effects to create an immersive offroad racing experience:
+  1. **Activation Sound** (~1032-1283): Transformed from fantasy-themed to offroad racing vehicle startup sound featuring:
+     - Key ignition and starter motor sounds with realistic cranking
+     - Multiple cylinder firing sequence with engine ignition
+     - Engine rev-up with intake and exhaust sounds
+     - Idle engine simulation with appropriate harmonics
+  2. **Selection Sound**: Updated from magical crystal chime to mechanical gear shift sound with:
+     - Mechanical click/clunk of a shift lever
+     - Metal spring tension and release effects
+     - Short mechanical thud at end of shift
+  3. **Launch Sound** (~1424-1753): Converted from magical portal opening to offroad racing start sequence including:
+     - Engine revving sounds building to peak RPM
+     - Announcer voice and air horn start signals
+     - Race track crowd ambience
+     - Tire skids and dirt spray effects
+     - Stadium-like outdoor reverb
+  4. **Menu Close Sound** (~1957-2180): Changed from magical portal closing to vehicle shutdown sequence with:
+     - Engine RPM decrease with irregular flutter
+     - Exhaust afterfire/backfire pops during shutdown
+     - Metal cooling tick/ping sounds as components contract
+     - Final electronics shutdown "thunk"
+     - Ambient track noise fading out
+     - Garage/workshop style reverb
+
+  All sound effects were designed using the Web Audio API with oscillators, filters, and custom buffer generation to create realistic racing sounds without requiring external audio files.
+
 ---
 
-*Last updated: April 7, 2025 - Added sword and sorcery themed sound effects for ArcadeEntity4*
+*Last updated: April 8, 2025 - Added offroad racing themed sound effects for ArcadeEntity5*
