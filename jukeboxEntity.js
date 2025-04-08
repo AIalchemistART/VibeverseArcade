@@ -421,6 +421,15 @@ class JukeboxEntity extends Entity {
             touchOverlay.style.cssText += 'display: none !important; z-index: -999 !important; pointer-events: none !important;';
         }
         
+        // Specifically handle the escape button with more aggressive hiding
+        const escapeButton = document.getElementById('escapeButton');
+        if (escapeButton) {
+            // Store its previous state
+            escapeButton.dataset.wasVisible = escapeButton.style.display === 'block' ? 'true' : 'false';
+            // Force hide with inline !important style to override any other styles
+            escapeButton.style.cssText += 'display: none !important; z-index: -1 !important; opacity: 0 !important; pointer-events: none !important;';
+        }
+        
         // Create container if it doesn't exist
         if (!this.soundCloudPlayer) {
             console.log('JukeboxEntity: Creating SoundCloud player container');
@@ -1077,6 +1086,26 @@ class JukeboxEntity extends Entity {
                     background-color: transparent;
                 `;
                 delete touchOverlay.dataset.wasVisible;
+            }
+            
+            // Special handling for escape button to restore it properly
+            const escapeButton = document.getElementById('escapeButton');
+            if (escapeButton && escapeButton.dataset.wasVisible === 'true') {
+                // Remove the aggressive styles we added
+                escapeButton.style.cssText = `
+                    position: fixed;
+                    bottom: 10px;
+                    left: 10px;
+                    padding: 10px 15px;
+                    background-color: rgba(0, 0, 0, 0.7);
+                    color: #fff;
+                    border: 2px solid #0ff;
+                    border-radius: 5px;
+                    font-family: monospace;
+                    z-index: 1000;
+                    display: block;
+                `;
+                delete escapeButton.dataset.wasVisible;
             }
             
             // Remove after transition
