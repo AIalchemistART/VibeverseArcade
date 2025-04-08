@@ -1088,30 +1088,36 @@ class JukeboxEntity extends Entity {
                 delete touchOverlay.dataset.wasVisible;
             }
             
-            // Special handling for escape button to restore it properly
+            // Special handling for escape button to restore it properly with a short delay to ensure it overrides any other positioning
             const escapeButton = document.getElementById('escapeButton');
             if (escapeButton && escapeButton.dataset.wasVisible === 'true') {
-                // Remove the aggressive styles we added and restore original position and styling
-                escapeButton.style.cssText = `
-                    position: fixed;
-                    bottom: 240px;
-                    right: 140px;
-                    width: 60px;
-                    height: 60px;
-                    background-color: rgba(255, 100, 100, 0.6);
-                    border: 2px solid rgba(255, 255, 255, 0.6);
-                    border-radius: 50%;
-                    z-index: 1000;
-                    touch-action: none;
-                    display: block;
-                    font-family: Arial, sans-serif;
-                    color: white;
-                    text-align: center;
-                    line-height: 60px;
-                    font-size: 12px;
-                    font-weight: bold;
-                `;
+                // First set wasVisible to false to prevent double-handling
                 delete escapeButton.dataset.wasVisible;
+                
+                // Add a short delay to ensure this happens after any automatic touch control restoration
+                setTimeout(() => {
+                    // Apply the correct styling with !important to override any competing styles
+                    escapeButton.style.cssText = `
+                        position: fixed !important;
+                        bottom: 240px !important;
+                        right: 140px !important;
+                        width: 60px !important;
+                        height: 60px !important;
+                        background-color: rgba(255, 100, 100, 0.6) !important;
+                        border: 2px solid rgba(255, 255, 255, 0.6) !important;
+                        border-radius: 50% !important;
+                        z-index: 1000 !important;
+                        touch-action: none !important;
+                        display: block !important;
+                        font-family: Arial, sans-serif !important;
+                        color: white !important;
+                        text-align: center !important;
+                        line-height: 60px !important;
+                        font-size: 12px !important;
+                        font-weight: bold !important;
+                    `;
+                    console.log('JukeboxEntity: ESC button repositioned to original location');
+                }, 50); // Just a short delay, but enough to be after other handlers
             }
             
             // Remove after transition
