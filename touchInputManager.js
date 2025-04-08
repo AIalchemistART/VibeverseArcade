@@ -39,6 +39,14 @@ class TouchInputManager {
         this.joystickKnobElement = null;
         this.actionButtonElement = null;
         this.controlsVisible = false;
+        
+        // Arcade navigation properties with cooldown
+        this.arcadeNavigation = {
+            lastNavigationTime: 0,
+            cooldownPeriod: 300, // 300ms cooldown between selections
+            isInCooldown: false,
+            lastDirection: null  // Tracks the last direction used (up/down)
+        };
     }
     
     /**
@@ -560,6 +568,76 @@ class TouchInputManager {
                     this.resetDirections();
                     return; // Exit without updating input system for game movement
                 }
+            }
+        }
+        
+        // Check if arcade game selection is open by looking for the overlay
+        const arcadeSelectionElement = document.getElementById('arcadeMenuOverlay');
+        
+        if (arcadeSelectionElement) {
+            // Get current time to check cooldown
+            const currentTime = Date.now();
+            
+            // Check if we're in cooldown period
+            if (this.arcadeNavigation.isInCooldown) {
+                // If cooldown has expired, reset it
+                if (currentTime - this.arcadeNavigation.lastNavigationTime > this.arcadeNavigation.cooldownPeriod) {
+                    this.arcadeNavigation.isInCooldown = false;
+                } else {
+                    // Still in cooldown, don't process navigation input
+                    this.resetDirections();
+                    return;
+                }
+            }
+            
+            // Determine navigation direction for arcade menu
+            let direction = null;
+            
+            if (angle >= -135 && angle < -45) { // Up
+                direction = 'up';
+                console.log('Joystick: Arcade menu navigation UP');
+                
+                // Simulate ArrowUp keypress to navigate the menu
+                this.simulateKeyPress('ArrowUp');
+                
+                // Set cooldown
+                this.arcadeNavigation.lastNavigationTime = currentTime;
+                this.arcadeNavigation.isInCooldown = true;
+                this.arcadeNavigation.lastDirection = 'up';
+                
+                // Reset directions but don't update the input system
+                this.resetDirections();
+                return;
+            } else if (angle >= 45 && angle < 135) { // Down
+                direction = 'down';
+                console.log('Joystick: Arcade menu navigation DOWN');
+                
+                // Simulate ArrowDown keypress to navigate the menu
+                this.simulateKeyPress('ArrowDown');
+                
+                // Set cooldown
+                this.arcadeNavigation.lastNavigationTime = currentTime;
+                this.arcadeNavigation.isInCooldown = true;
+                this.arcadeNavigation.lastDirection = 'down';
+                
+                // Reset directions but don't update the input system
+                this.resetDirections();
+                return;
+            } else if (angle >= -45 && angle < 45) { // Right - for selecting a game
+                direction = 'right';
+                console.log('Joystick: Arcade menu SELECT game');
+                
+                // Simulate Enter keypress to select the current game
+                this.simulateKeyPress('Enter');
+                
+                // Set cooldown with longer period for selection
+                this.arcadeNavigation.lastNavigationTime = currentTime;
+                this.arcadeNavigation.isInCooldown = true;
+                this.arcadeNavigation.lastDirection = 'select';
+                
+                // Reset directions but don't update the input system
+                this.resetDirections();
+                return;
             }
         }
         
