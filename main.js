@@ -41,6 +41,7 @@ import { SpellbookManager } from './spellbookManager.js'; // Import SpellbookMan
 import { ArcadeManager } from './arcadeManager.js'; // Import ArcadeManager
 import { ArcadeManager2 } from './arcadeManager2.js'; // Import ArcadeManager2
 import { ArcadeManager3 } from './arcadeManager3.js'; // Import ArcadeManager3
+import { ArcadeManager4 } from './arcadeManager4.js'; // Import ArcadeManager4
 
 // Check browser compatibility before initializing the game
 const compatibilityResults = checkBrowserCompatibility();
@@ -362,6 +363,19 @@ if (compatibilityResults.allCriticalSupported) {
             arcadeManager3.addEntities('startRoom');
             console.log('Arcade cabinets added successfully');
 
+            // Initialize ArcadeManager4 with game instance
+            const arcadeManager4 = new ArcadeManager4(game);
+            
+            // Preload arcade assets
+            arcadeManager4.preloadAssets(assetLoader);
+            
+            // Force window.assetLoader to be set for direct access by entity classes
+            window.assetLoader = assetLoader;
+            
+            // Change this - explicitly pass a scene name that will match our condition
+            arcadeManager4.addEntities('startRoom');
+            console.log('Arcade cabinets added successfully');
+            
             // Send initialization complete event
         }, 500);
         
