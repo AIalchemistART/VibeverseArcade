@@ -83,20 +83,41 @@ class TouchInputManager {
      * Check if device supports touch and show controls if needed
      */
     checkTouchSupport() {
-        const isTouchDevice = 'ontouchstart' in window || 
+        // Basic touch capability detection
+        const hasTouchSupport = 'ontouchstart' in window || 
                              navigator.maxTouchPoints > 0 || 
                              navigator.msMaxTouchPoints > 0;
-                             
-        // Show touch controls if on touch device
-        if (isTouchDevice) {
+        
+        // More specific mobile device detection using User Agent
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const isMobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i.test(userAgent);
+        
+        // Screen size detection (typically mobile devices are narrower)
+        const isNarrowScreen = window.innerWidth < 800;
+        
+        // Combined detection strategy
+        const isMobileDevice = hasTouchSupport && (isMobileUserAgent || isNarrowScreen);
+        
+        console.log('Device detection:', { 
+            hasTouchSupport, 
+            isMobileUserAgent, 
+            isNarrowScreen,
+            isMobileDevice,
+            screenWidth: window.innerWidth
+        });
+        
+        // Only show touch controls on actual mobile devices
+        if (isMobileDevice) {
+            console.log('Mobile device detected, showing touch controls');
             this.showTouchControls();
         } else {
-            console.log('Device does not support touch or is detected as desktop, hiding touch controls');
+            console.log('Desktop device detected, hiding touch controls');
+            this.hideTouchControls();
         }
         
-        // Force show for testing on all devices
-        this.showTouchControls();
-        console.log('Touch controls force enabled for testing');
+        // For testing: uncomment to force show on all devices
+        // this.showTouchControls();
+        // console.log('Touch controls force enabled for testing');
     }
     
     /**
