@@ -450,18 +450,7 @@ export class SpellbookEntity extends Entity {
             closeButton.style.boxShadow = 'none';
         };
         
-        closeButton.onclick = () => {
-            // Fade out and remove overlay
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                if (document.body.contains(overlay)) {
-                    document.body.removeChild(overlay);
-                }
-            }, 500);
-            
-            // Play closing sound
-            this.playPageTurnSound();
-        };
+        // closeButton.onclick will be set after the closeOverlay function is defined
         
         // Create the content
         const content = document.createElement('div');
@@ -761,6 +750,36 @@ export class SpellbookEntity extends Entity {
         
         // Play opening sound
         this.playPageTurnSound();
+        
+        // Function to close the overlay
+        const closeOverlay = () => {
+            // Fade out and remove overlay
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                if (document.body.contains(overlay)) {
+                    document.body.removeChild(overlay);
+                    // Remove the event listener when overlay is closed
+                    document.removeEventListener('keydown', handleKeyDown);
+                }
+            }, 500);
+            
+            // Play closing sound
+            this.playPageTurnSound();
+        };
+        
+        // Event handler for keyboard input
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                console.log('Spellbook: Escape key detected, closing overlay');
+                closeOverlay();
+            }
+        };
+        
+        // Add keyboard event listener for Escape key
+        document.addEventListener('keydown', handleKeyDown);
+        
+        // Update close button to use the same closeOverlay function
+        closeButton.onclick = closeOverlay;
         
         // Trigger fade in
         setTimeout(() => {
