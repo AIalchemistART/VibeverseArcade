@@ -403,6 +403,24 @@ class JukeboxEntity extends Entity {
     showSoundCloudPlayer() {
         console.log('JukeboxEntity: Showing SoundCloud player');
         
+        // Hide touch controls when SoundCloud player is active to prevent overlap issues
+        const touchControls = document.querySelectorAll('#virtualJoystick, #interactButton');
+        touchControls.forEach(control => {
+            if (control && control.style) {
+                // Store current visibility state
+                control.dataset.wasVisible = control.style.display === 'block' ? 'true' : 'false';
+                // Hide the control
+                control.style.display = 'none';
+            }
+        });
+        
+        // Also hide the touch overlay that covers the entire screen
+        const touchOverlay = document.getElementById('touchOverlay');
+        if (touchOverlay) {
+            touchOverlay.dataset.wasVisible = touchOverlay.style.display !== 'none' ? 'true' : 'false';
+            touchOverlay.style.cssText += 'display: none !important; z-index: -999 !important; pointer-events: none !important;';
+        }
+        
         // Create container if it doesn't exist
         if (!this.soundCloudPlayer) {
             console.log('JukeboxEntity: Creating SoundCloud player container');
@@ -1032,6 +1050,33 @@ class JukeboxEntity extends Entity {
             if (this.keydownHandler) {
                 document.removeEventListener('keydown', this.keydownHandler);
                 this.keydownHandler = null;
+            }
+            
+            // Restore touch controls that were hidden when the player was opened
+            const touchControls = document.querySelectorAll('#virtualJoystick, #interactButton');
+            touchControls.forEach(control => {
+                if (control && control.style && control.dataset.wasVisible === 'true') {
+                    // Restore visibility if it was previously visible
+                    control.style.display = 'block';
+                    // Clean up dataset
+                    delete control.dataset.wasVisible;
+                }
+            });
+            
+            // Restore the touch overlay if it was previously visible
+            const touchOverlay = document.getElementById('touchOverlay');
+            if (touchOverlay && touchOverlay.dataset.wasVisible === 'true') {
+                touchOverlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    z-index: 999;
+                    touch-action: none;
+                    background-color: transparent;
+                `;
+                delete touchOverlay.dataset.wasVisible;
             }
             
             // Remove after transition
