@@ -503,7 +503,7 @@ class TVEntity extends Entity {
             console.log('TVEntity: Creating YouTube modal');
             
             // Hide touch controls when TV is active to prevent overlap issues
-            const touchControls = document.querySelectorAll('#virtualJoystick, #interactButton, #escapeButton');
+            const touchControls = document.querySelectorAll('#virtualJoystick, #interactButton');
             touchControls.forEach(control => {
                 if (control && control.style) {
                     // Store current visibility state
@@ -512,6 +512,15 @@ class TVEntity extends Entity {
                     control.style.display = 'none';
                 }
             });
+            
+            // Specifically handle the escape button with more aggressive hiding
+            const escapeButton = document.getElementById('escapeButton');
+            if (escapeButton) {
+                // Store its previous state
+                escapeButton.dataset.wasVisible = escapeButton.style.display === 'block' ? 'true' : 'false';
+                // Force hide with inline !important style to override any other styles
+                escapeButton.style.cssText += 'display: none !important; z-index: -1 !important; opacity: 0 !important; pointer-events: none !important;';
+            }
             
             this.createYoutubeModal();
             
@@ -530,8 +539,8 @@ class TVEntity extends Entity {
             console.log('TVEntity: Removing YouTube modal');
             this.removeYoutubeModal();
             
-            // Restore touch controls to their previous state when TV is closed
-            const touchControls = document.querySelectorAll('#virtualJoystick, #interactButton, #escapeButton');
+            // Restore standard touch controls to their previous state when TV is closed
+            const touchControls = document.querySelectorAll('#virtualJoystick, #interactButton');
             touchControls.forEach(control => {
                 if (control && control.style && control.dataset.wasVisible === 'true') {
                     // Restore visibility if it was previously visible
@@ -540,6 +549,32 @@ class TVEntity extends Entity {
                     delete control.dataset.wasVisible;
                 }
             });
+            
+            // Special handling for escape button to restore it properly
+            const escapeButton = document.getElementById('escapeButton');
+            if (escapeButton && escapeButton.dataset.wasVisible === 'true') {
+                // Remove the aggressive styles we added
+                escapeButton.style.cssText = `
+                    position: fixed;
+                    bottom: 240px;
+                    right: 140px;
+                    width: 60px;
+                    height: 60px;
+                    background-color: rgba(255, 100, 100, 0.6);
+                    border: 2px solid rgba(255, 255, 255, 0.6);
+                    border-radius: 50%;
+                    z-index: 1000;
+                    touch-action: none;
+                    display: block;
+                    font-family: Arial, sans-serif;
+                    color: white;
+                    text-align: center;
+                    line-height: 60px;
+                    font-size: 12px;
+                    font-weight: bold;
+                `;
+                delete escapeButton.dataset.wasVisible;
+            }
             
             // Re-enable the direct Enter key event listener after player is closed
             document.addEventListener('keydown', this.handleKeyDown);
