@@ -1091,19 +1091,25 @@ class JukeboxEntity extends Entity {
             // Special handling for escape button to restore it properly
             const escapeButton = document.getElementById('escapeButton');
             if (escapeButton && escapeButton.dataset.wasVisible === 'true') {
-                // Remove the aggressive styles we added
+                // Remove the aggressive styles we added and restore original position and styling
                 escapeButton.style.cssText = `
                     position: fixed;
-                    bottom: 10px;
-                    left: 10px;
-                    padding: 10px 15px;
-                    background-color: rgba(0, 0, 0, 0.7);
-                    color: #fff;
-                    border: 2px solid #0ff;
-                    border-radius: 5px;
-                    font-family: monospace;
+                    bottom: 240px;
+                    right: 140px;
+                    width: 60px;
+                    height: 60px;
+                    background-color: rgba(255, 100, 100, 0.6);
+                    border: 2px solid rgba(255, 255, 255, 0.6);
+                    border-radius: 50%;
                     z-index: 1000;
+                    touch-action: none;
                     display: block;
+                    font-family: Arial, sans-serif;
+                    color: white;
+                    text-align: center;
+                    line-height: 60px;
+                    font-size: 12px;
+                    font-weight: bold;
                 `;
                 delete escapeButton.dataset.wasVisible;
             }
