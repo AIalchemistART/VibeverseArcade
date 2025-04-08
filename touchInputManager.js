@@ -373,6 +373,7 @@ class TouchInputManager {
                     // Show active state on interact button
                     this.actionButtonElement.style.backgroundColor = 'rgba(100, 255, 100, 0.9)';
                 }
+            }
         }
     }
     
