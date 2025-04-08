@@ -501,14 +501,21 @@ class JukeboxEntity extends Entity {
                 align-items: center;
             `;
             
-            // Add SoundCloud iframe with direct autoplay parameter
+            // Add SoundCloud iframe with mobile-optimized parameters
             const iframe = document.createElement('iframe');
             iframe.id = 'soundcloud-widget';
             iframe.width = '100%';
             iframe.height = '90%'; // Leave room for controls
             iframe.frameBorder = 'no';
-            iframe.allow = 'autoplay';
-            iframe.src = 'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1886380535&color=%23ff00a5&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true';
+            iframe.allow = 'autoplay; encrypted-media';
+            iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups allow-forms');
+            
+            // Create a more mobile-friendly URL with optimized parameters
+            // - Use mobile=true to hint at mobile optimization
+            // - Set show_artwork=true for better mobile experience
+            // - Use smaller_images=true for more efficient loading
+            // - Disable teaser which can cause problems on mobile
+            iframe.src = 'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1886380535&color=%23ff00a5&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true&show_artwork=true&mobile=true&smaller_images=true';
             
             // Load SoundCloud Widget API if not already loaded
             if (!window.SC) {
@@ -518,9 +525,10 @@ class JukeboxEntity extends Entity {
             }
             playerContainer.appendChild(iframe);
             
-            // Create an auto-play button as a failsafe
+            // Create an auto-play button as a failsafe, enhanced for touch devices
             const autoplayButton = document.createElement('button');
             autoplayButton.textContent = '▶️ Start Music';
+            autoplayButton.id = 'jukebox-autoplay-button';
             autoplayButton.style.cssText = `
                 position: absolute;
                 top: 50%;
@@ -529,16 +537,22 @@ class JukeboxEntity extends Entity {
                 background-color: #ff00a5;
                 color: white;
                 border: none;
-                padding: 16px 32px;
-                border-radius: 8px;
+                padding: 20px 40px; /* Larger touch target */
+                border-radius: 12px; /* Slightly rounder corners */
                 font-weight: bold;
-                font-size: 24px;
+                font-size: 26px; /* Larger text for better visibility */
                 cursor: pointer;
                 font-family: monospace;
                 transition: all 0.3s ease;
                 box-shadow: 0 0 20px rgba(255, 0, 165, 0.8);
                 z-index: 10000;
-                display: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                -webkit-tap-highlight-color: rgba(255, 0, 165, 0.5); /* Mobile tap highlight */
+                user-select: none; /* Prevent text selection */
+                touch-action: manipulation; /* Optimization for touch */
+                display: none; /* Initially hidden */
             `;
             playerContainer.appendChild(autoplayButton);
             
@@ -618,10 +632,12 @@ class JukeboxEntity extends Entity {
                 });
             };
             
-            // Manual start button handler
-            autoplayButton.addEventListener('click', () => {
+            // Manual start button handlers optimized for both touch and mouse events
+            // Add visual feedback for touch interaction
+            const handlePlayAction = () => {
                 if (window.SC) {
                     try {
+                        console.log('JukeboxEntity: Manual play button activated');
                         const widget = SC.Widget(iframe);
                         widget.play();
                         autoplayButton.style.display = 'none';
@@ -630,10 +646,86 @@ class JukeboxEntity extends Entity {
                         console.error('JukeboxEntity: Error starting playback manually', err);
                     }
                 }
-            });
+            };
+            
+            // Add visual feedback for touch
+            const applyTouchEffect = () => {
+                autoplayButton.style.transform = 'translate(-50%, -50%) scale(0.97)';
+                autoplayButton.style.backgroundColor = '#d6008c';
+                autoplayButton.style.boxShadow = '0 0 25px rgba(255, 0, 165, 0.9)';
+            };
+            
+            const removeTouchEffect = () => {
+                autoplayButton.style.transform = 'translate(-50%, -50%)';
+                autoplayButton.style.backgroundColor = '#ff00a5';
+                autoplayButton.style.boxShadow = '0 0 20px rgba(255, 0, 165, 0.8)';
+            };
+            
+            // Add all event listeners for better mobile support
+            autoplayButton.addEventListener('click', handlePlayAction);
+            autoplayButton.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Prevent double-tap zoom
+                applyTouchEffect();
+            }, { passive: false });
+            
+            autoplayButton.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                removeTouchEffect();
+                handlePlayAction();
+            }, { passive: false });
+            
+            // Mouse events for desktop
+            autoplayButton.addEventListener('mousedown', applyTouchEffect);
+            autoplayButton.addEventListener('mouseup', removeTouchEffect);
+            autoplayButton.addEventListener('mouseleave', removeTouchEffect);
             
             // Start the autoplay attempt sequence
             setTimeout(attemptAutoplay, 1000);
+            
+            // Add a direct link to SoundCloud for mobile fallback
+            const fallbackContainer = document.createElement('div');
+            fallbackContainer.style.cssText = `
+                margin-top: 10px;
+                margin-bottom: 15px;
+                padding: 10px;
+                background-color: rgba(0, 0, 0, 0.7);
+                border-radius: 8px;
+                border: 1px solid #ff00a5;
+                text-align: center;
+                display: none; /* Initially hidden */
+            `;
+            
+            const fallbackMessage = document.createElement('p');
+            fallbackMessage.textContent = 'Having trouble with the player on mobile?';
+            fallbackMessage.style.cssText = `
+                margin: 0 0 8px 0;
+                font-size: 16px;
+                color: white;
+            `;
+            
+            const directLink = document.createElement('a');
+            directLink.href = 'https://soundcloud.com/aivibeverse/sets/ai-alchemist-arcade-soundtrack';
+            directLink.target = '_blank';
+            directLink.textContent = 'Open directly in SoundCloud App';
+            directLink.style.cssText = `
+                display: inline-block;
+                background-color: #FF5500; /* SoundCloud orange */
+                color: white;
+                padding: 10px 15px;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: bold;
+                -webkit-tap-highlight-color: rgba(255, 85, 0, 0.5);
+            `;
+            
+            fallbackContainer.appendChild(fallbackMessage);
+            fallbackContainer.appendChild(directLink);
+            playerContainer.appendChild(fallbackContainer);
+            
+            // Show fallback link for mobile devices
+            if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0)) {
+                fallbackContainer.style.display = 'block';
+            }
             
             // Add control buttons for playback
             const controlButtonsContainer = document.createElement('div');
@@ -645,7 +737,7 @@ class JukeboxEntity extends Entity {
                 margin-bottom: 10px;
             `;
             
-            // Helper function to create control buttons with consistent styling
+            // Helper function to create control buttons with consistent styling and touch support
             const createButton = (text, tooltip) => {
                 const button = document.createElement('button');
                 button.textContent = text;
@@ -654,24 +746,48 @@ class JukeboxEntity extends Entity {
                     background-color: #ff00a5;
                     color: white;
                     border: none;
-                    padding: 8px 16px;
-                    border-radius: 4px;
+                    padding: 12px 20px; /* Larger touch target */
+                    border-radius: 8px; /* Slightly rounder corners */
                     font-weight: bold;
+                    font-size: 18px; /* Larger text for mobile */
                     cursor: pointer;
                     font-family: monospace;
                     transition: all 0.3s ease;
                     box-shadow: 0 0 10px rgba(255, 0, 165, 0.5);
+                    -webkit-tap-highlight-color: rgba(255, 0, 165, 0.5); /* Mobile tap highlight */
+                    user-select: none; /* Prevent text selection */
+                    touch-action: manipulation; /* Optimization for touch */
                 `;
                 
-                // Button hover effect
-                button.onmouseover = () => {
+                // Apply visual feedback on touch/click
+                const applyButtonEffect = () => {
+                    button.style.transform = 'scale(0.97)';
                     button.style.backgroundColor = '#d6008c';
                     button.style.boxShadow = '0 0 15px rgba(255, 0, 165, 0.8)';
                 };
-                button.onmouseout = () => {
+                
+                const removeButtonEffect = () => {
+                    button.style.transform = 'scale(1)';
                     button.style.backgroundColor = '#ff00a5';
                     button.style.boxShadow = '0 0 10px rgba(255, 0, 165, 0.5)';
                 };
+                
+                // Mouse events for desktop
+                button.addEventListener('mousedown', applyButtonEffect);
+                button.addEventListener('mouseup', removeButtonEffect);
+                button.addEventListener('mouseleave', removeButtonEffect);
+                
+                // Touch events for mobile
+                button.addEventListener('touchstart', (e) => {
+                    // Prevent default to avoid delays on mobile
+                    e.preventDefault();
+                    applyButtonEffect();
+                }, { passive: false });
+                
+                button.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    removeButtonEffect();
+                }, { passive: false });
                 
                 return button;
             };
