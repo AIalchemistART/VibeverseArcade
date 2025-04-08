@@ -332,11 +332,13 @@ class TouchInputManager {
      * @param {TouchEvent} e - Touch event
      */
     handleTouchStart(e) {
-        // First check if we're clicking on the YouTube modal or shuffle button
+        // First check if we're clicking on a modal (YouTube or SoundCloud)
         const youtubeModal = document.getElementById('youtube-modal');
-        if (youtubeModal) {
-            // If the YouTube modal is open, don't process touch events
-            // This lets the shuffle button receive clicks directly
+        const soundCloudModal = document.getElementById('soundCloudPlayerModal');
+        
+        if (youtubeModal || soundCloudModal) {
+            // If any modal is open, don't process touch events
+            // This lets modal buttons receive clicks directly
             return;
         }
         
@@ -407,10 +409,12 @@ class TouchInputManager {
      * @param {TouchEvent} e - Touch event
      */
     handleTouchMove(e) {
-        // Check if YouTube modal is open
+        // Check if any modal is open (YouTube or SoundCloud)
         const youtubeModal = document.getElementById('youtube-modal');
-        if (youtubeModal) {
-            // If YouTube modal is open, don't process touch events
+        const soundCloudModal = document.getElementById('soundCloudPlayerModal');
+        
+        if (youtubeModal || soundCloudModal) {
+            // If any modal is open, don't process touch events
             return;
         }
         
@@ -462,10 +466,12 @@ class TouchInputManager {
      * @param {TouchEvent} e - Touch event
      */
     handleTouchEnd(e) {
-        // Check if YouTube modal is open
+        // Check if any modal is open (YouTube or SoundCloud)
         const youtubeModal = document.getElementById('youtube-modal');
-        if (youtubeModal) {
-            // If YouTube modal is open, don't process touch events
+        const soundCloudModal = document.getElementById('soundCloudPlayerModal');
+        
+        if (youtubeModal || soundCloudModal) {
+            // If any modal is open, don't process touch events
             return;
         }
         

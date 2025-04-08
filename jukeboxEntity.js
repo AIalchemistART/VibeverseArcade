@@ -421,7 +421,7 @@ class JukeboxEntity extends Entity {
                 background-color: rgba(0, 0, 0, 0.9);
                 border: 4px solid #ff00a5;
                 box-shadow: 0 0 20px #ff00a5, inset 0 0 10px #ff00a5;
-                z-index: 1000;
+                z-index: 9999; /* Increased z-index to ensure it's above other UI elements */
                 display: flex;
                 flex-direction: column;
                 opacity: 0;
@@ -786,16 +786,28 @@ class JukeboxEntity extends Entity {
             
             // Previous track button
             const prevButton = createButton('⏮️ Prev', 'Play previous track');
+            prevButton.id = 'jukebox-prev-button';
             
             // Next track button
             const nextButton = createButton('⏭️ Next', 'Play next track');
+            nextButton.id = 'jukebox-next-button';
             
             // Shuffle button
             const shuffleButton = createButton('🔀 Shuffle', 'Shuffle playlist');
+            shuffleButton.id = 'jukebox-shuffle-button';
             
-            // Shuffle button click handler with Widget API integration
-            shuffleButton.addEventListener('click', () => {
-                console.log('JukeboxEntity: Shuffle button clicked, activating true random playback');
+            // Apply additional touch-friendly styling to all controls
+            [prevButton, nextButton, shuffleButton].forEach(button => {
+                // Increase touch target size further
+                button.style.padding = '15px 24px';
+                button.style.margin = '0 5px';
+                button.style.borderRadius = '10px';
+                button.style.fontSize = '20px';
+            });
+            
+            // Handler function for shuffle button with Widget API integration
+            const handleShuffleAction = () => {
+                console.log('JukeboxEntity: Shuffle button activated, activating true random playback');
                 
                 // Use the SoundCloud Widget API to properly shuffle tracks
                 if (window.SC) {
@@ -857,11 +869,22 @@ class JukeboxEntity extends Entity {
                     iframe.src = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1886380535&color=%23ff00a5&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true&starting_track=${newRandomIndex}`;
                     console.log(`JukeboxEntity: Fallback shuffle to track index ${newRandomIndex}`);
                 }
-            });
+            };
             
-            // Previous track button handler
-            prevButton.addEventListener('click', () => {
-                console.log('JukeboxEntity: Previous button clicked');
+            // Add mouse and touch event listeners for shuffle button
+            shuffleButton.addEventListener('click', handleShuffleAction);
+            shuffleButton.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Prevent double-tap zoom
+            }, { passive: false });
+            
+            shuffleButton.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                handleShuffleAction();
+            }, { passive: false });
+            
+            // Handler functions for track control buttons
+            const handlePrevTrack = () => {
+                console.log('JukeboxEntity: Previous button activated');
                 if (window.SC) {
                     try {
                         const widget = SC.Widget(iframe);
@@ -876,11 +899,10 @@ class JukeboxEntity extends Entity {
                         console.error('JukeboxEntity: Error using previous track', err);
                     }
                 }
-            });
+            };
             
-            // Next track button handler
-            nextButton.addEventListener('click', () => {
-                console.log('JukeboxEntity: Next button clicked');
+            const handleNextTrack = () => {
+                console.log('JukeboxEntity: Next button activated');
                 if (window.SC) {
                     try {
                         const widget = SC.Widget(iframe);
@@ -895,7 +917,29 @@ class JukeboxEntity extends Entity {
                         console.error('JukeboxEntity: Error using next track', err);
                     }
                 }
-            });
+            };
+            
+            // Add touch events for previous button
+            prevButton.addEventListener('click', handlePrevTrack);
+            prevButton.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Prevent double-tap zoom
+            }, { passive: false });
+            
+            prevButton.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                handlePrevTrack();
+            }, { passive: false });
+            
+            // Add touch events for next button
+            nextButton.addEventListener('click', handleNextTrack);
+            nextButton.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Prevent double-tap zoom
+            }, { passive: false });
+            
+            nextButton.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                handleNextTrack();
+            }, { passive: false });
             
             // Add all buttons to the control container
             controlButtonsContainer.appendChild(prevButton);
