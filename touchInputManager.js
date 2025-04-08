@@ -122,13 +122,14 @@ class TouchInputManager {
     }
     
     /**
-     * Show virtual joystick and action button
+     * Show virtual joystick and touch buttons
      */
     showTouchControls() {
         console.log('Showing touch controls');
-        if (this.joystickElement && this.actionButtonElement) {
+        if (this.joystickElement && this.actionButtonElement && this.escapeButtonElement) {
             this.joystickElement.style.display = 'block';
             this.actionButtonElement.style.display = 'block';
+            this.escapeButtonElement.style.display = 'block';
             this.controlsVisible = true;
             console.log('Touch control elements are now visible');
         } else {
@@ -145,12 +146,13 @@ class TouchInputManager {
     }
     
     /**
-     * Hide virtual joystick and action button
+     * Hide virtual joystick and touch buttons
      */
     hideTouchControls() {
-        if (this.joystickElement && this.actionButtonElement) {
+        if (this.joystickElement && this.actionButtonElement && this.escapeButtonElement) {
             this.joystickElement.style.display = 'none';
             this.actionButtonElement.style.display = 'none';
+            this.escapeButtonElement.style.display = 'none';
             this.controlsVisible = false;
         }
     }
@@ -192,16 +194,16 @@ class TouchInputManager {
             pointer-events: none;
         `;
         
-        // Create action button
+        // Create interact button (previously action button)
         this.actionButtonElement = document.createElement('div');
-        this.actionButtonElement.id = 'actionButton';
+        this.actionButtonElement.id = 'interactButton';
         this.actionButtonElement.style.cssText = `
             position: fixed;
             bottom: 120px;
             right: 120px;
             width: 100px;
             height: 100px;
-            background-color: rgba(255, 100, 100, 0.6);
+            background-color: rgba(100, 200, 100, 0.6);
             border: 2px solid rgba(255, 255, 255, 0.6);
             border-radius: 50%;
             z-index: 1000;
@@ -214,12 +216,37 @@ class TouchInputManager {
             font-size: 16px;
             font-weight: bold;
         `;
-        this.actionButtonElement.textContent = 'ACTION';
+        this.actionButtonElement.textContent = 'INTERACT';
+        
+        // Create escape button
+        this.escapeButtonElement = document.createElement('div');
+        this.escapeButtonElement.id = 'escapeButton';
+        this.escapeButtonElement.style.cssText = `
+            position: fixed;
+            bottom: 240px;
+            right: 140px;
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 100, 100, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            z-index: 1000;
+            touch-action: none;
+            display: none;
+            font-family: Arial, sans-serif;
+            color: white;
+            text-align: center;
+            line-height: 60px;
+            font-size: 12px;
+            font-weight: bold;
+        `;
+        this.escapeButtonElement.textContent = 'ESC';
         
         // Add elements to DOM
         this.joystickElement.appendChild(this.joystickKnobElement);
         document.body.appendChild(this.joystickElement);
         document.body.appendChild(this.actionButtonElement);
+        document.body.appendChild(this.escapeButtonElement);
     }
     
     /**
@@ -323,24 +350,29 @@ class TouchInputManager {
                 // Make joystick visible
                 this.joystickElement.style.display = 'block';
             } 
-            // Check if touch is on right half of screen (action area)
+            // Check if touch is on right half of screen (buttons area)
             else {
-                // Check for double tap (Enter key)
-                const now = Date.now();
-                if (now - this.lastTapTime < this.doubleTapThreshold) {
-                    // Double tap detected - simulate Enter key
-                    this.simulateKeyPress('Enter');
-                    this.lastTapTime = 0; // Reset to prevent triple tap
+                // Check if it's within the escape button bounds
+                if (this.escapeButtonElement && 
+                    x >= this.escapeButtonElement.getBoundingClientRect().left &&
+                    x <= this.escapeButtonElement.getBoundingClientRect().right &&
+                    y >= this.escapeButtonElement.getBoundingClientRect().top &&
+                    y <= this.escapeButtonElement.getBoundingClientRect().bottom) {
+                    
+                    // Escape button pressed - simulate Escape key
+                    this.simulateKeyPress('Escape');
+                    this.setEscape(true);
+                    
+                    // Show active state on escape button
+                    this.escapeButtonElement.style.backgroundColor = 'rgba(255, 50, 50, 0.9)';
                 } else {
-                    // Single tap - simulate space/action
+                    // Interact button pressed - simulate Enter key
+                    this.simulateKeyPress('Enter');
                     this.setAction(true);
-                    // Store tap time for double tap detection
-                    this.lastTapTime = now;
+                    
+                    // Show active state on interact button
+                    this.actionButtonElement.style.backgroundColor = 'rgba(100, 255, 100, 0.9)';
                 }
-                
-                // Show active state on action button
-                this.actionButtonElement.style.backgroundColor = 'rgba(255, 100, 100, 0.9)';
-            }
         }
     }
     
@@ -404,17 +436,16 @@ class TouchInputManager {
             this.joystickKnobElement.style.transform = 'translate(-50%, -50%)';
             this.joystickElement.style.transform = 'none';
             
-            // Reset action button
-            this.actionButtonElement.style.backgroundColor = 'rgba(255, 100, 100, 0.6)';
+            // Reset interact button
+            this.actionButtonElement.style.backgroundColor = 'rgba(100, 200, 100, 0.6)';
+            this.setAction(false);
+            
+            // Reset escape button
+            this.escapeButtonElement.style.backgroundColor = 'rgba(255, 100, 100, 0.6)';
+            this.setEscape(false);
             
             // Reset all directions
             this.resetDirections();
-            
-            // Release action button after a short delay (to allow double tap detection)
-            clearTimeout(this.tapTimeout);
-            this.tapTimeout = setTimeout(() => {
-                this.setAction(false);
-            }, 50);
         } else {
             // Some touches remain - check if joystick touch is gone
             let joystickTouchExists = false;
@@ -532,11 +563,24 @@ class TouchInputManager {
     setAction(active) {
         this.activeDirections.action = active;
         
+        // Update input system - now using Enter key for interaction
+        if (active) {
+            input.keys['Enter'] = true; // Enter key for interaction
+        } else {
+            input.keys['Enter'] = false;
+        }
+    }
+    
+    /**
+     * Set escape button state
+     * @param {boolean} active - Whether escape is active
+     */
+    setEscape(active) {
         // Update input system
         if (active) {
-            input.keys[' '] = true; // Space bar for action
+            input.keys['Escape'] = true;
         } else {
-            input.keys[' '] = false;
+            input.keys['Escape'] = false;
         }
     }
     
