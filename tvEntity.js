@@ -513,6 +513,13 @@ class TVEntity extends Entity {
                 }
             });
             
+            // Also hide the touch overlay that covers the entire screen
+            const touchOverlay = document.getElementById('touchOverlay');
+            if (touchOverlay) {
+                touchOverlay.dataset.wasVisible = touchOverlay.style.display !== 'none' ? 'true' : 'false';
+                touchOverlay.style.cssText += 'display: none !important; z-index: -999 !important; pointer-events: none !important;';
+            }
+            
             // Specifically handle the escape button with more aggressive hiding
             const escapeButton = document.getElementById('escapeButton');
             if (escapeButton) {
@@ -549,6 +556,22 @@ class TVEntity extends Entity {
                     delete control.dataset.wasVisible;
                 }
             });
+            
+            // Restore the touch overlay if it was previously visible
+            const touchOverlay = document.getElementById('touchOverlay');
+            if (touchOverlay && touchOverlay.dataset.wasVisible === 'true') {
+                touchOverlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    z-index: 999;
+                    touch-action: none;
+                    background-color: transparent;
+                `;
+                delete touchOverlay.dataset.wasVisible;
+            }
             
             // Special handling for escape button to restore it properly
             const escapeButton = document.getElementById('escapeButton');
