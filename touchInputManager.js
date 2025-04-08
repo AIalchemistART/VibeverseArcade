@@ -518,7 +518,52 @@ class TouchInputManager {
         // Determine direction
         const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
         
-        // Reset all directions
+        // Check if spellbook overlay is open
+        const spellbookOverlay = document.getElementById('spellbook-overlay');
+        
+        // If spellbook is open, use joystick for scrolling
+        if (spellbookOverlay) {
+            // Get the spellbook page content that needs scrolling
+            const spellbookPage = spellbookOverlay.querySelector('.spellbook-page');
+            
+            if (spellbookPage) {
+                // Calculate scroll speed based on joystick displacement
+                // Use a multiplier to control sensitivity
+                const scrollSpeed = 10;
+                let scrollAmount = 0;
+                
+                // Determine scroll direction based on joystick position
+                if (angle >= -135 && angle < -45) { // Up
+                    // Scroll up
+                    scrollAmount = -scrollSpeed;
+                    console.log('Joystick: Scrolling spellbook UP');
+                } else if (angle >= 45 && angle < 135) { // Down
+                    // Scroll down
+                    scrollAmount = scrollSpeed;
+                    console.log('Joystick: Scrolling spellbook DOWN');
+                }
+                
+                // Apply scrolling if there's a scroll amount
+                if (scrollAmount !== 0) {
+                    // Calculate scroll intensity based on joystick displacement
+                    const intensity = Math.min(Math.max(distance / this.joystick.maxDistance, 0.2), 1.0);
+                    const finalScrollAmount = scrollAmount * intensity * 2;
+                    
+                    // Smoothly scroll the content
+                    spellbookPage.scrollBy({
+                        top: finalScrollAmount,
+                        behavior: 'auto' // Use 'auto' for immediate response
+                    });
+                    
+                    // Important: Reset directions but skip updating the input system
+                    // This prevents character movement while scrolling
+                    this.resetDirections();
+                    return; // Exit without updating input system for game movement
+                }
+            }
+        }
+        
+        // Reset all directions for normal gameplay
         this.resetDirections();
         
         // Map angle to direction
