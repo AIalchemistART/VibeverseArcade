@@ -310,4 +310,33 @@ Each entry contains:
 
 ---
 
-*Last updated: April 7, 2025 - Added flight simulator sound effects for ArcadeEntity3*
+### Arcade Cabinet 4 Sound Effects - Sword and Sorcery Theme
+- **File**: arcadeEntity4.js
+- **Line**: ~1020-1897
+- **Search Term**: `playActivateSound playMenuCloseSound playLaunchSound`
+- **Description**: Completely redesigned arcade cabinet sound effects to create an immersive sword and sorcery/fantasy theme:
+  1. **Proximity Sound**: Changed from airplane approach to sword unsheathing with magical shimmer and mystical ambience
+  2. **Selection Sound**: Changed from aircraft navigation beep to magical crystal chime with metal impact effects
+  3. **Launch Sound** (~1278-1436): Transformed from airplane takeoff to epic fantasy portal opening with:
+     - Deep rumbling magical energy base
+     - Rising mystical chord progressions
+     - Ethereal choir effects
+     - Crystal resonance tones
+     - Magical impact and shimmer effects
+  4. **Activation Sound** (~1020-1275): Converted from airplane engine startup to magical crystal/arcane power activation featuring:
+     - Deep arcane power build-up
+     - Pulsating magical energy effect
+     - Crystal resonance with multiple oscillators for chord-like effect
+     - Magical sparkle effects and mystical energy hum
+     - Added reverb effect for ambiance
+  5. **Menu Close Sound** (~1753-1897): Changed from airplane landing to magical portal closing/power down with:
+     - Dissipating magical energy with descending tone
+     - Crystalline fragmentation sounds
+     - Magical dispersal/collapse effects
+     - Final magical seal/locking effect
+     - Gentle white noise fadeout for settling effect
+  The new sound design creates a complete fantasy-themed audio experience using the Web Audio API with oscillators, filters, and dynamic audio processing to generate rich magical sounds that enhance the immersion for players.
+
+---
+
+*Last updated: April 7, 2025 - Added sword and sorcery themed sound effects for ArcadeEntity4*
