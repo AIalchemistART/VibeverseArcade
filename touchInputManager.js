@@ -331,15 +331,15 @@ class TouchInputManager {
         document.body.appendChild(this.actionButtonElement);
         document.body.appendChild(this.escapeButtonElement);
         
-        // Create zoom toggle button with enhanced touch-friendly design
+        // Create zoom toggle button with enhanced touch-friendly design for better mobile support
         this.zoomButtonElement = document.createElement('div');
         this.zoomButtonElement.id = 'zoomToggleButton';
         this.zoomButtonElement.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background-color: rgba(0, 183, 255, 0.5);
             border: 2px solid rgba(0, 255, 255, 0.8);
@@ -350,51 +350,71 @@ class TouchInputManager {
             z-index: 1000;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
             user-select: none;
             font-family: Arial, sans-serif;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
             color: #ffffff;
             text-shadow: 0 0 5px #00ffff, 0 0 10px rgba(0, 255, 255, 0.8);
             transition: all 0.2s ease;
-            padding: 12px;
+            padding: 15px 20px;
             cursor: pointer;
         `;
         this.zoomButtonElement.innerHTML = '🔍';
         document.body.appendChild(this.zoomButtonElement);
         
-        // Add touch event listeners for the zoom button with visual feedback
-        this.zoomButtonElement.addEventListener('touchstart', (e) => {
+        // Create a single handler function for zoom level toggle to ensure consistent behavior
+        const handleZoomAction = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            // Apply pressed visual state
-            this.zoomButtonElement.style.transform = 'scale(0.97)';
             this.toggleZoomLevel();
-        }, { passive: false });
-        
+            return false; // Prevent any default actions
+        };
+
+        // Apply pressed visual state function
+        const applyPressedState = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.zoomButtonElement.style.transform = 'scale(0.97)';
+            return false;
+        };
+
+        // Return to normal state function
+        const returnToNormalState = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.zoomButtonElement.style.transform = 'scale(1)';
+            return false;
+        };
+
+        // Add Android-friendly touch events (must be added before mouse events)
+        this.zoomButtonElement.addEventListener('touchstart', applyPressedState, { passive: false });
         this.zoomButtonElement.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Return to normal state
-            this.zoomButtonElement.style.transform = 'scale(1)';
+            returnToNormalState(e);
+            handleZoomAction(e);
         }, { passive: false });
         
-        // Also add mouse events for desktop support
-        this.zoomButtonElement.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            this.zoomButtonElement.style.transform = 'scale(0.97)';
-        });
+        // Cancel touch if moved out of button
+        this.zoomButtonElement.addEventListener('touchcancel', returnToNormalState, { passive: false });
+        this.zoomButtonElement.addEventListener('touchmove', (e) => {
+            // Optional: handle if touch moves out of the button area
+            const touch = e.touches[0];
+            const rect = this.zoomButtonElement.getBoundingClientRect();
+            if (touch.clientX < rect.left || touch.clientX > rect.right || 
+                touch.clientY < rect.top || touch.clientY > rect.bottom) {
+                returnToNormalState(e);
+            }
+        }, { passive: false });
         
+        // Also add mouse events for desktop support (will be ignored on pure touch devices)
+        this.zoomButtonElement.addEventListener('mousedown', applyPressedState);
         this.zoomButtonElement.addEventListener('mouseup', (e) => {
-            e.preventDefault();
-            this.zoomButtonElement.style.transform = 'scale(1)';
+            returnToNormalState(e);
+            handleZoomAction(e);
         });
-        
-        this.zoomButtonElement.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.toggleZoomLevel();
-        });
+        this.zoomButtonElement.addEventListener('mouseleave', returnToNormalState);
         
         console.log('Touch UI elements created including zoom toggle button');
     }
