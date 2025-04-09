@@ -49,6 +49,7 @@ import { ArcadeManager3 } from './arcadeManager3.js'; // Import ArcadeManager3
 import { ArcadeManager4 } from './arcadeManager4.js'; // Import ArcadeManager4
 import { ArcadeManager5 } from './arcadeManager5.js'; // Import ArcadeManager5
 import { ArcadeManager6 } from './arcadeManager6.js'; // Import ArcadeManager6
+import { ArcadeManager7 } from './arcadeManager7.js'; // Import ArcadeManager7
 
 // Check browser compatibility before initializing the game
 const compatibilityResults = checkBrowserCompatibility();
@@ -207,7 +208,7 @@ if (compatibilityResults.allCriticalSupported) {
             console.log('Adding ceiling signs to scene...');
             signManager8.addSigns();
             console.log('Ceiling signs added successfully');
-            
+
             // Initialize JukeboxManager with game instance
             const jukeboxManager = new JukeboxManager(game);
             
@@ -451,6 +452,19 @@ if (compatibilityResults.allCriticalSupported) {
             
             // Change this - explicitly pass a scene name that will match our condition
             arcadeManager6.addEntities('startRoom');
+            console.log('Arcade cabinets added successfully');
+            
+            // Initialize ArcadeManager7 with game instance
+            const arcadeManager7 = new ArcadeManager7(game);
+            
+            // Preload arcade assets
+            arcadeManager7.preloadAssets(assetLoader);
+            
+            // Force window.assetLoader to be set for direct access by entity classes
+            window.assetLoader = assetLoader;
+            
+            // Change this - explicitly pass a scene name that will match our condition
+            arcadeManager7.addEntities('startRoom');
             console.log('Arcade cabinets added successfully');
             
             // Send initialization complete event
