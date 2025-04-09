@@ -18,7 +18,7 @@ class Player extends Entity {
         });
         
         // Player specific properties
-        this.speed = 3;             // Increased by 30% from 3.0 for faster portal navigation
+        this.speed = 4;             // Increased by 30% from 3.0 for faster portal navigation
         this.jumpStrength = 1.6;      // Jump strength (reduced from 2.0 for gameplay balance)
         this.jumpProgress = 0;        // Track jump animation progress
         this.isJumping = false;       // Track if player is currently jumping
