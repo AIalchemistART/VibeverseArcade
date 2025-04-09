@@ -1,9 +1,31 @@
 # Sound System Manipulations
 
 ## Overview
-This document tracks changes made to the sound implementation in Circuit Sanctum Arcade, focusing on replacing racing-themed sounds with outdoor adventure-themed audio.
+This document tracks changes made to the sound implementation in Circuit Sanctum Arcade, transitioning from racing-themed sounds to outdoor adventure-themed audio, and now to immersive Doom-themed sounds.
 
-## Recent Changes (2025-04-08)
+## Recent Changes (2025-04-09)
+
+### Doom-Themed Sound Implementation
+
+#### 1. Replaced Outdoor Adventure Sounds
+- Transformed all outdoor adventure-themed sounds to authentic Doom-inspired audio effects
+- Eliminated nature elements (birds, streams, forest ambience) in favor of hellish atmosphere
+- Shifted from peaceful outdoor aesthetics to intense demonic combat soundscapes
+
+#### 2. Updated Sound Methods
+- **playMenuCloseSound**: Implemented hellish portal closing sequence with:
+  - Demonic energy dissipation sounds
+  - Infernal machinery mechanical effects
+  - Hellgate closing ambience
+  - Unholy rumbling fadeouts
+
+- **playLaunchSound**: Created demonic battle preparation sequence featuring:
+  - Portal opening sounds with spatial depth
+  - Weapon charging and powering up effects (shotgun, chaingun, plasma)
+  - Battle cry sound effects ("RIP AND TEAR!")
+  - Hellish lava and ambient backgrounds
+
+## Previous Changes (2025-04-08)
 
 ### ArcadeEntity6.js Sound System Updates
 
@@ -41,6 +63,7 @@ This document tracks changes made to the sound implementation in Circuit Sanctum
   - Proper routing of audio nodes for spatial effects
 
 ## Next Steps
-- Continue testing and refining sound balance
-- Consider adding more subtle sound variations for enhanced immersion
-- Potentially implement additional ambient sound effects for menu navigation
+- Test the complete Doom-themed sound implementation during gameplay
+- Consider adding additional weapon-specific sound variations for increased variety
+- Potentially implement more ambient background effects for deeper immersion
+- Ensure all sound effects are balanced correctly for optimal player experience
