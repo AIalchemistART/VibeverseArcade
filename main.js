@@ -87,6 +87,9 @@ if (compatibilityResults.allCriticalSupported) {
         // Initialize camera with canvas dimensions
         const camera = new Camera(canvas.width, canvas.height);
         
+        // Expose camera to global scope for other components like touch controls
+        window.gameCamera = camera;
+        
         // Use scene's grid and cell dimensions for consistency
         camera.setMapBoundaries(scene.gridWidth, scene.gridHeight, scene.cellWidth, scene.cellHeight);
         

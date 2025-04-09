@@ -38,7 +38,12 @@ class TouchInputManager {
         this.joystickElement = null;
         this.joystickKnobElement = null;
         this.actionButtonElement = null;
+        this.zoomButtonElement = null;
         this.controlsVisible = false;
+        
+        // Zoom toggle state (0: default, 1: zoomed in, 2: zoomed out)
+        this.zoomState = 0;
+        this.zoomLevels = [1.0, 1.5, 0.75]; // Default, full zoom, 3/4 zoom out
         
         // Arcade navigation properties with cooldown
         this.arcadeNavigation = {
@@ -129,19 +134,82 @@ class TouchInputManager {
     }
     
     /**
+     * Toggle between zoom levels
+     */
+    toggleZoomLevel() {
+        // Cycle to next zoom state
+        this.zoomState = (this.zoomState + 1) % this.zoomLevels.length;
+        
+        // Get camera reference directly from the global scope
+        // We've added camera to window.gameCamera in main.js
+        const camera = window.gameCamera;
+        
+        if (!camera) {
+            console.warn('Camera not found for zoom toggle. Please reload the page.');
+            
+            // Show visual feedback that camera wasn't found
+            this.zoomButtonElement.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+            setTimeout(() => {
+                this.zoomButtonElement.style.backgroundColor = 'rgba(0, 183, 255, 0.5)';
+            }, 500);
+            return;
+        }
+        
+        // Apply the new zoom level
+        const newZoom = this.zoomLevels[this.zoomState];
+        camera.setZoom(newZoom);
+        
+        // Update button appearance to indicate current zoom state
+        let zoomIcon;
+        let backgroundColor;
+        
+        switch(this.zoomState) {
+            case 0: // Default
+                zoomIcon = '🔍';
+                backgroundColor = 'rgba(0, 183, 255, 0.5)';
+                break;
+            case 1: // Zoomed in
+                zoomIcon = '🔍+';
+                backgroundColor = 'rgba(0, 255, 128, 0.5)';
+                break;
+            case 2: // Zoomed out
+                zoomIcon = '🔍-';
+                backgroundColor = 'rgba(255, 128, 255, 0.5)';
+                break;
+        }
+        
+        // Update button appearance
+        this.zoomButtonElement.innerHTML = zoomIcon;
+        this.zoomButtonElement.style.backgroundColor = backgroundColor;
+        
+        // Apply a quick visual feedback animation - pulse effect
+        this.zoomButtonElement.style.transform = 'scale(1.1)';
+        this.zoomButtonElement.style.boxShadow = `0 0 12px ${backgroundColor}, 0 0 20px rgba(0, 255, 255, 0.8)`;
+        
+        setTimeout(() => {
+            this.zoomButtonElement.style.transform = 'scale(1)';
+            this.zoomButtonElement.style.boxShadow = '0 0 8px #00ffff, 0 0 16px rgba(0, 255, 255, 0.5)';
+        }, 200);
+        
+        console.log(`Zoom toggled to level ${this.zoomState}: ${newZoom}`);
+    }
+    
+    /**
      * Show virtual joystick and touch buttons
      */
     showTouchControls() {
         console.log('Showing touch controls');
-        if (this.joystickElement && this.actionButtonElement && this.escapeButtonElement) {
+        if (this.joystickElement && this.actionButtonElement && this.escapeButtonElement && this.zoomButtonElement) {
             this.joystickElement.style.display = 'block';
             this.actionButtonElement.style.display = 'block';
             this.escapeButtonElement.style.display = 'block';
+            this.zoomButtonElement.style.display = 'flex';
             
             // Ensure buttons are above any menus or overlays
             this.joystickElement.style.zIndex = '9999';
             this.actionButtonElement.style.zIndex = '9999';
             this.escapeButtonElement.style.zIndex = '9999';
+            this.zoomButtonElement.style.zIndex = '9999';
             
             this.controlsVisible = true;
             console.log('Touch control elements are now visible and above overlays');
@@ -162,9 +230,10 @@ class TouchInputManager {
      * Hide virtual joystick and touch buttons
      */
     hideTouchControls() {
-        if (this.joystickElement && this.actionButtonElement && this.escapeButtonElement) {
+        if (this.joystickElement && this.actionButtonElement && this.escapeButtonElement && this.zoomButtonElement) {
             this.joystickElement.style.display = 'none';
             this.actionButtonElement.style.display = 'none';
+            this.zoomButtonElement.style.display = 'none';
             this.escapeButtonElement.style.display = 'none';
             this.controlsVisible = false;
             console.log('Touch controls hidden');
@@ -172,7 +241,7 @@ class TouchInputManager {
     }
     
     /**
-     * Creates touch UI elements (virtual joystick and action button)
+     * Creates touch UI elements (virtual joystick, action button, and zoom toggle)
      */
     createTouchUI() {
         // Create joystick base
@@ -261,6 +330,73 @@ class TouchInputManager {
         document.body.appendChild(this.joystickElement);
         document.body.appendChild(this.actionButtonElement);
         document.body.appendChild(this.escapeButtonElement);
+        
+        // Create zoom toggle button with enhanced touch-friendly design
+        this.zoomButtonElement = document.createElement('div');
+        this.zoomButtonElement.id = 'zoomToggleButton';
+        this.zoomButtonElement.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: rgba(0, 183, 255, 0.5);
+            border: 2px solid rgba(0, 255, 255, 0.8);
+            box-shadow: 0 0 8px #00ffff, 0 0 16px rgba(0, 255, 255, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 0 5px #00ffff, 0 0 10px rgba(0, 255, 255, 0.8);
+            transition: all 0.2s ease;
+            padding: 12px;
+            cursor: pointer;
+        `;
+        this.zoomButtonElement.innerHTML = '🔍';
+        document.body.appendChild(this.zoomButtonElement);
+        
+        // Add touch event listeners for the zoom button with visual feedback
+        this.zoomButtonElement.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Apply pressed visual state
+            this.zoomButtonElement.style.transform = 'scale(0.97)';
+            this.toggleZoomLevel();
+        }, { passive: false });
+        
+        this.zoomButtonElement.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Return to normal state
+            this.zoomButtonElement.style.transform = 'scale(1)';
+        }, { passive: false });
+        
+        // Also add mouse events for desktop support
+        this.zoomButtonElement.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            this.zoomButtonElement.style.transform = 'scale(0.97)';
+        });
+        
+        this.zoomButtonElement.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            this.zoomButtonElement.style.transform = 'scale(1)';
+        });
+        
+        this.zoomButtonElement.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggleZoomLevel();
+        });
+        
+        console.log('Touch UI elements created including zoom toggle button');
     }
     
     /**
@@ -278,7 +414,7 @@ class TouchInputManager {
             width: 100%;
             height: 100%;
             z-index: 999;
-            touch-action: none;
+            touch-action: pan-x pan-y; /* Allow wheel events to pass through */
             background-color: transparent;
         `;
         document.body.appendChild(touchOverlay);
@@ -288,6 +424,22 @@ class TouchInputManager {
         document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
         document.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
         document.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
+        
+        // Make sure wheel events still work for zooming
+        touchOverlay.addEventListener('wheel', (e) => {
+            // Just let the wheel event pass through to the canvas
+            const wheelEvent = new WheelEvent('wheel', {
+                deltaX: e.deltaX,
+                deltaY: e.deltaY,
+                deltaZ: e.deltaZ,
+                deltaMode: e.deltaMode,
+                clientX: e.clientX,
+                clientY: e.clientY,
+                bubbles: true,
+                cancelable: true
+            });
+            canvas.dispatchEvent(wheelEvent);
+        }, { passive: false });
         
         // Special listener for the action button
         this.actionButtonElement.addEventListener('touchstart', (e) => {
@@ -726,10 +878,12 @@ class TouchInputManager {
             // Make sure buttons are displayed and with high z-index
             this.actionButtonElement.style.display = 'block';
             this.escapeButtonElement.style.display = 'block';
+            this.zoomButtonElement.style.display = 'flex';
             
             // Use very high z-index to ensure they appear above everything
             this.actionButtonElement.style.zIndex = '9999';
             this.escapeButtonElement.style.zIndex = '9999';
+            this.zoomButtonElement.style.zIndex = '9999';
             
             console.log('Touch controls visibility and z-index refreshed');
         }
