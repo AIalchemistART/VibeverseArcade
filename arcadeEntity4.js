@@ -3008,6 +3008,19 @@ createFallbackImage(game) {
         // Skip if menu not visible
         if (!this.gameSelectVisible) return;
         
+        // Debounce mechanism to prevent multiple rapid clicks
+        const now = Date.now();
+        if (!this._lastClickTime) {
+            this._lastClickTime = 0;
+        }
+        
+        // If less than 500ms since last click, ignore this click
+        if (now - this._lastClickTime < 500) {
+            debug(`ArcadeEntity4: Ignoring click - too soon after previous click`);
+            return;
+        }
+        this._lastClickTime = now;
+        
         // Check against stored clickable areas
         if (this.clickableAreas && this.clickableAreas.length > 0) {
             // Get canvas position for coordinate conversion
@@ -3032,20 +3045,37 @@ createFallbackImage(game) {
                 ) {
                     debug(`ArcadeEntity4: Clicked on area: ${area.type}`);
                     
+                    // Track the last clicked URL to prevent multiple windows
+                    if (!this._lastClickedUrls) {
+                        this._lastClickedUrls = {};
+                    }
+                    
                     // Handle different types of clickable areas
                     switch(area.type) {
                         case 'twitter':
-                            // Open the Twitter URL in a new tab
+                            // Open the Twitter URL in a new tab, but only if we haven't recently opened it
                             if (area.url) {
-                                debug(`ArcadeEntity4: Opening Twitter URL: ${area.url}`);
-                                window.open(area.url, '_blank');
+                                const urlLastClickTime = this._lastClickedUrls[area.url] || 0;
+                                if (now - urlLastClickTime > 2000) { // 2 second cooldown per URL
+                                    debug(`ArcadeEntity4: Opening Twitter URL: ${area.url}`);
+                                    window.open(area.url, '_blank');
+                                    this._lastClickedUrls[area.url] = now;
+                                } else {
+                                    debug(`ArcadeEntity4: Preventing duplicate URL open: ${area.url}`);
+                                }
                             }
                             break;
                         case 'creator':
-                            // Open the creator's URL in a new tab
+                            // Open the creator's URL in a new tab, with same protection
                             if (area.url) {
-                                debug(`ArcadeEntity4: Opening URL: ${area.url}`);
-                                window.open(area.url, '_blank');
+                                const urlLastClickTime = this._lastClickedUrls[area.url] || 0;
+                                if (now - urlLastClickTime > 2000) { // 2 second cooldown per URL
+                                    debug(`ArcadeEntity4: Opening URL: ${area.url}`);
+                                    window.open(area.url, '_blank');
+                                    this._lastClickedUrls[area.url] = now;
+                                } else {
+                                    debug(`ArcadeEntity4: Preventing duplicate URL open: ${area.url}`);
+                                }
                             }
                             break;
                     }
