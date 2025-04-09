@@ -1,0 +1,14 @@
+[build]
+  publish = "."
+  command = ""
+
+[build.environment]
+  NODE_VERSION = "16"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[dev]
+  framework = "#static"
