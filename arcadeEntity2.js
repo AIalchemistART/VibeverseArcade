@@ -31,7 +31,7 @@ class ArcadeEntity2 extends Entity {
         this.hasLoaded = false;
         this.asset = null;
         this.isInteractive = true;
-        this.interactionRadius = 4;
+        this.interactionRadius = 3.5;
         this.arcadeId = options.arcadeId || 'arcade-' + Math.floor(Math.random() * 10000);
         
         // Visual properties
@@ -2552,37 +2552,20 @@ class ArcadeEntity2 extends Entity {
                 ) {
                     debug(`ArcadeEntity2: Clicked on area: ${area.type}`);
                     
-                    // Track the last clicked URL to prevent multiple windows
-                    if (!this._lastClickedUrls) {
-                        this._lastClickedUrls = {};
-                    }
-                    
                     // Handle different types of clickable areas
                     switch(area.type) {
                         case 'twitter':
-                            // Open the Twitter URL in a new tab, but only if we haven't recently opened it
+                            // Open the Twitter URL in a new tab
                             if (area.url) {
-                                const urlLastClickTime = this._lastClickedUrls[area.url] || 0;
-                                if (now - urlLastClickTime > 2000) { // 2 second cooldown per URL
-                                    debug(`ArcadeEntity2: Opening Twitter URL: ${area.url}`);
-                                    window.open(area.url, '_blank');
-                                    this._lastClickedUrls[area.url] = now;
-                                } else {
-                                    debug(`ArcadeEntity2: Preventing duplicate URL open: ${area.url}`);
-                                }
+                                debug(`ArcadeEntity2: Opening Twitter URL: ${area.url}`);
+                                window.open(area.url, '_blank');
                             }
                             break;
                         case 'creator':
-                            // Open the creator's URL in a new tab, with same protection
+                            // Open the creator's URL in a new tab
                             if (area.url) {
-                                const urlLastClickTime = this._lastClickedUrls[area.url] || 0;
-                                if (now - urlLastClickTime > 2000) { // 2 second cooldown per URL
-                                    debug(`ArcadeEntity2: Opening URL: ${area.url}`);
-                                    window.open(area.url, '_blank');
-                                    this._lastClickedUrls[area.url] = now;
-                                } else {
-                                    debug(`ArcadeEntity2: Preventing duplicate URL open: ${area.url}`);
-                                }
+                                debug(`ArcadeEntity2: Opening URL: ${area.url}`);
+                                window.open(area.url, '_blank');
                             }
                             break;
                     }

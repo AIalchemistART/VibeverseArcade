@@ -6,7 +6,6 @@
 import { Entity } from './entity.js';
 import { debug } from './utils.js';
 import { getAssetPath } from './pathResolver.js';
-import { proximityManager } from './proximityManager.js';
 
 class ArcadeEntity extends Entity {
     /**
@@ -32,7 +31,7 @@ class ArcadeEntity extends Entity {
         this.hasLoaded = false;
         this.asset = null;
         this.isInteractive = true;
-        this.interactionRadius = 4;
+        this.interactionRadius = 3.5;
         this.arcadeId = options.arcadeId || 'arcade-' + Math.floor(Math.random() * 10000);
         
         // Visual properties
@@ -666,15 +665,13 @@ class ArcadeEntity extends Entity {
         // Check if player is within interaction radius
         const isNear = distance <= this.interactionRadius;
         
-        // Register with proximity manager if player is nearby
+        // Log details about the proximity check
         if (isNear) {
-            // Register this object with the proximity manager
-            proximityManager.registerNearbyObject(this, distance);
             debug(`ArcadeEntity: Player is nearby (distance: ${distance.toFixed(2)})`);
         }
         
         // Debug player distance occasionally
-        if (Math.random() < 0.01) {
+        if (Math.random() < 0.03) {
             console.log(`🎮 Player distance: ${distance.toFixed(2)}, Interaction radius: ${this.interactionRadius}`);
         }
         
@@ -688,34 +685,23 @@ class ArcadeEntity extends Entity {
      * @param {Entity} player - Player entity
      */
     update(deltaTime, player) {
-        // Clear proximity manager at the start of each frame
-        // We only do this from ONE arcade cabinet (the first one updated)
-        if (player && this.arcadeId === 'arcade-1') {
-            proximityManager.clearNearbyObjects();
-        }
-        
         // Check if player is near the arcade cabinet
         if (player) {
-            // First check raw proximity
             const isNearPlayer = this.isPlayerNearby(player);
             
-            // Then check if we should be the active interactive object
-            // Only one object will be active if multiple are in range
-            const shouldBeActive = isNearPlayer && proximityManager.shouldBeInteractive(this);
-            
-            // Only trigger state change effects if proximity or active state changed
-            if (shouldBeActive !== this.isNearPlayer) {
-                debug(`ArcadeEntity: Player proximity changed to ${shouldBeActive ? 'NEAR+ACTIVE' : 'FAR/INACTIVE'}`);
+            // Only trigger state change effects if proximity changed
+            if (isNearPlayer !== this.isNearPlayer) {
+                debug(`ArcadeEntity: Player proximity changed to ${isNearPlayer ? 'NEAR' : 'FAR'}`);
                 
-                // Trigger a pulse effect and sound when becoming the active object
-                if (shouldBeActive) {
+                // Trigger a pulse effect and sound when proximity changes
+                if (isNearPlayer) {
                     this.pulseGlow();
                     this.playProximitySound();
                 }
             }
             
-            // Update proximity state to reflect active status
-            this.isNearPlayer = shouldBeActive;
+            // Update proximity state
+            this.isNearPlayer = isNearPlayer;
         }
         
         // Handle input when player is nearby and not already interacting

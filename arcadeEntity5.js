@@ -31,7 +31,7 @@ class ArcadeEntity5 extends Entity {
         this.hasLoaded = false;
         this.asset = null;
         this.isInteractive = true;
-        this.interactionRadius = 4;
+        this.interactionRadius = 3.5;
         this.arcadeId = options.arcadeId || 'arcade5-' + Math.floor(Math.random() * 10000);
         
         // Visual properties
