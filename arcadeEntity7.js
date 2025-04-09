@@ -3167,6 +3167,11 @@ createFallbackImage(game) {
         ctx.fillStyle = `rgba(0, 255, 255, ${this.interactionPromptAlpha})`;
         ctx.fillText('[ ENTER ]', x, y + 15);
         
+        // Draw "Not Mobile Enabled" warning when player is near
+        if (this.isNearPlayer) {
+            this.drawMobileWarning(ctx, x, y + 70);
+        }
+        
         ctx.restore();
     }
     
@@ -3784,6 +3789,56 @@ createFallbackImage(game) {
             }
         }
     }
+    
+    /**
+     * Draw a warning that games in this arcade are not mobile-compatible
+     * @param {CanvasRenderingContext2D} ctx - Canvas rendering context
+     * @param {number} x - X position to draw at
+     * @param {number} y - Y position to draw at
+     */
+    drawMobileWarning(ctx, x, y) {
+        ctx.save();
+        
+        // Set up text style
+        ctx.font = 'bold 16px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        const warningText = 'Not Mobile Enabled';
+        
+        // Measure text for background
+        const textWidth = ctx.measureText(warningText).width;
+        const padding = 15;
+        const warningWidth = textWidth + (padding * 2);
+        const warningHeight = 32;
+        const warningX = x - (warningWidth / 2);
+        const warningY = y - (warningHeight / 2);
+        
+        // Create a dark to red gradient background for warning
+        const gradient = ctx.createLinearGradient(warningX, warningY, warningX, warningY + warningHeight);
+        gradient.addColorStop(0, `rgba(60, 0, 0, 0.9)`);
+        gradient.addColorStop(0.5, `rgba(100, 0, 0, 0.9)`);
+        gradient.addColorStop(1, `rgba(60, 0, 0, 0.9)`);
+        
+        // Draw background with gradient
+        ctx.fillStyle = gradient;
+        ctx.fillRect(warningX, warningY, warningWidth, warningHeight);
+        
+        // Draw border with red glow effect
+        ctx.shadowColor = 'red';
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = 'rgba(255, 50, 50, 0.9)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(warningX, warningY, warningWidth, warningHeight);
+        ctx.shadowBlur = 0;
+        
+        // Draw warning text
+        ctx.fillStyle = 'rgba(255, 200, 200, 0.9)';
+        ctx.fillText(warningText, x, y);
+        
+        ctx.restore();
+    }
+
 }
 
 export { ArcadeEntity7 };
