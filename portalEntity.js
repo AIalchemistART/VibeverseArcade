@@ -254,12 +254,26 @@ export class PortalEntity extends Entity {
             // Specific Enter key press detection (not just held down)
             const isNewEnterPress = isEnterPressed && !this.wasEnterPressed;
             
+            // Debounce mechanism to prevent multiple rapid interactions
+            const now = Date.now();
+            if (!this._lastInteractionTime) {
+                this._lastInteractionTime = 0;
+            }
+            
+            // If less than 1000ms since last interaction, ignore this one
+            if (now - this._lastInteractionTime < 1000) {
+                debug(`PortalEntity: Ignoring interaction - too soon after previous interaction`);
+                this.wasEnterPressed = isEnterPressed;
+                return;
+            }
+            
             // Aggressive logging to debug the issue
             console.log(`Portal interaction check:`, {
                 isPlayerNearby: this.isPlayerNearby,
                 isEnterPressed: isEnterPressed,
                 wasEnterPressed: this.wasEnterPressed,
                 isNewEnterPress: isNewEnterPress,
+                timeSinceLastInteraction: now - this._lastInteractionTime,
                 enterFlag: input.enterKeyPressed,
                 numpadEnterFlag: input.numpadEnterPressed,
                 enterKey: input.keys['Enter'],
@@ -271,6 +285,8 @@ export class PortalEntity extends Entity {
             // Only detect a new press (not holding)
             if (isNewEnterPress) {
                 console.log('PortalEntity: NEW Enter key press detected, navigating to URL!');
+                // Update the last interaction time
+                this._lastInteractionTime = now;
                 // Force this to run async to avoid any race conditions
                 setTimeout(() => this.interact(), 50);
             }
