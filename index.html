@@ -53,7 +53,7 @@
         .fullscreen-button {
             position: fixed;
             top: 20px;
-            right: 110px; /* Position to the left of zoom button */
+            right: 120px; /* Moved further left to avoid overlap with zoom button */
             width: 60px; /* Slightly smaller than zoom button */
             height: 60px;
             z-index: 2000; /* Ensure it's above everything including touch controls */
@@ -120,11 +120,32 @@
 
     <!-- Loading screen preloader - this ensures the loading screen appears before any other JS runs -->
     <script>
-        // Fullscreen functionality
+        // Fullscreen functionality with improved mobile compatibility
         document.addEventListener('DOMContentLoaded', function() {
             const fullscreenToggle = document.getElementById('fullscreenToggle');
             if (fullscreenToggle) {
+                // Add both click and touchend handlers for better mobile support
                 fullscreenToggle.addEventListener('click', toggleFullScreen);
+                fullscreenToggle.addEventListener('touchend', function(e) {
+                    e.preventDefault(); // Prevent double-firing on touch devices
+                    toggleFullScreen(e);
+                });
+                
+                // Apply visual feedback for touch events
+                fullscreenToggle.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    fullscreenToggle.style.transform = 'scale(0.97)';
+                    fullscreenToggle.style.boxShadow = '0 0 12px rgba(0, 255, 204, 0.9)';
+                }, { passive: false });
+                
+                fullscreenToggle.addEventListener('touchcancel', function() {
+                    fullscreenToggle.style.transform = 'scale(1)';
+                    fullscreenToggle.style.boxShadow = '0 0 8px #00ffff, 0 0 16px rgba(0, 255, 204, 0.5)';
+                }, { passive: false });
+                
+                console.log('Fullscreen toggle button handlers attached');
+            } else {
+                console.error('Fullscreen toggle button not found in the DOM');
             }
             
             // Update button state when fullscreen changes
@@ -133,34 +154,55 @@
             document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
             document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
             
-            function toggleFullScreen() {
+            function toggleFullScreen(e) {
+                if (e) e.stopPropagation(); // Prevent event bubbling
+                console.log('Fullscreen toggle clicked/touched');
+                
                 if (!document.fullscreenElement && 
                     !document.mozFullScreenElement && 
                     !document.webkitFullscreenElement && 
                     !document.msFullscreenElement) {
                     // Enter fullscreen
                     const gameContainer = document.body;
+                    console.log('Attempting to enter fullscreen mode');
                     
-                    if (gameContainer.requestFullscreen) {
-                        gameContainer.requestFullscreen();
-                    } else if (gameContainer.mozRequestFullScreen) { // Firefox
-                        gameContainer.mozRequestFullScreen();
-                    } else if (gameContainer.webkitRequestFullscreen) { // Chrome, Safari
-                        gameContainer.webkitRequestFullscreen();
-                    } else if (gameContainer.msRequestFullscreen) { // IE/Edge
-                        gameContainer.msRequestFullscreen();
+                    try {
+                        if (gameContainer.requestFullscreen) {
+                            gameContainer.requestFullscreen();
+                        } else if (gameContainer.mozRequestFullScreen) { // Firefox
+                            gameContainer.mozRequestFullScreen();
+                        } else if (gameContainer.webkitRequestFullscreen) { // Chrome, Safari
+                            gameContainer.webkitRequestFullscreen();
+                        } else if (gameContainer.msRequestFullscreen) { // IE/Edge
+                            gameContainer.msRequestFullscreen();
+                        }
+                    } catch (err) {
+                        console.error('Fullscreen request failed:', err);
                     }
                 } else {
                     // Exit fullscreen
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.mozCancelFullScreen) {
-                        document.mozCancelFullScreen();
-                    } else if (document.webkitExitFullscreen) {
-                        document.webkitExitFullscreen();
-                    } else if (document.msExitFullscreen) {
-                        document.msExitFullscreen();
+                    console.log('Attempting to exit fullscreen mode');
+                    try {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        } else if (document.mozCancelFullScreen) {
+                            document.mozCancelFullScreen();
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        } else if (document.msExitFullscreen) {
+                            document.msExitFullscreen();
+                        }
+                    } catch (err) {
+                        console.error('Exit fullscreen request failed:', err);
                     }
+                }
+                
+                // Reset button appearance
+                if (fullscreenToggle) {
+                    setTimeout(() => {
+                        fullscreenToggle.style.transform = 'scale(1)';
+                        fullscreenToggle.style.boxShadow = '0 0 8px #00ffff, 0 0 16px rgba(0, 255, 204, 0.5)';
+                    }, 300);
                 }
             }
             
@@ -168,14 +210,24 @@
                 const button = document.getElementById('fullscreenToggle');
                 if (!button) return;
                 
-                if (document.fullscreenElement || 
-                    document.mozFullScreenElement || 
-                    document.webkitFullscreenElement || 
-                    document.msFullscreenElement) {
-                    button.querySelector('span').textContent = 'EXIT FULL';
-                } else {
-                    button.querySelector('span').textContent = 'FULLSCREEN';
+                const isFullscreen = document.fullscreenElement || 
+                                     document.mozFullScreenElement || 
+                                     document.webkitFullscreenElement || 
+                                     document.msFullscreenElement;
+                
+                // Update icon instead of text
+                const iconElement = button.querySelector('.fullscreen-icon');
+                if (iconElement) {
+                    if (isFullscreen) {
+                        iconElement.innerHTML = '<span style="font-size: 28px; color: #00ffcc; text-shadow: 0 0 5px rgba(0, 255, 204, 0.9);">⤢</span>';
+                        button.style.backgroundColor = 'rgba(0, 66, 77, 0.9)';
+                    } else {
+                        iconElement.innerHTML = '<span style="font-size: 28px; color: #00ffcc; text-shadow: 0 0 5px rgba(0, 255, 204, 0.9);">⤢</span>';
+                        button.style.backgroundColor = 'rgba(26, 5, 54, 0.9)';
+                    }
                 }
+                
+                console.log('Fullscreen state updated:', isFullscreen ? 'fullscreen' : 'normal');
             }
         });
     </script>
