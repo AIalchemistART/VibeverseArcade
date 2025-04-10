@@ -54,10 +54,10 @@
             position: fixed;
             top: 15px;
             left: 15px;
-            z-index: 1000;
+            z-index: 1000; /* Ensure it's above everything else */
             display: flex;
             align-items: center;
-            background: rgba(26, 5, 54, 0.7);
+            background: rgba(26, 5, 54, 0.9); /* More opaque background */
             border: 2px solid #00ffcc;
             border-radius: 6px;
             padding: 6px 12px;
@@ -71,6 +71,7 @@
             text-shadow: 0 0 5px rgba(0, 255, 204, 0.7);
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            pointer-events: auto; /* Ensure it's clickable */
         }
         
         .fullscreen-button:hover, .fullscreen-button:active {
@@ -772,10 +773,12 @@
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     
-    <!-- Fullscreen toggle button -->
-    <div id="fullscreenToggle" class="fullscreen-button">
-        <div class="fullscreen-icon"></div>
-        <span>FULLSCREEN</span>
+    <!-- Fullscreen toggle wrapper with explicit positioning to overcome any layout issues -->
+    <div style="position: fixed; top: 0; left: 0; z-index: 9999; pointer-events: none;">
+        <div id="fullscreenToggle" class="fullscreen-button">
+            <div class="fullscreen-icon"></div>
+            <span>FULLSCREEN</span>
+        </div>
     </div>
     
     <!-- Overlay for decorative elements -->
