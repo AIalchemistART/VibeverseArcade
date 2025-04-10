@@ -156,6 +156,74 @@ function configureLogging(config) {
     info('Logging configuration updated', LOG_CONFIG);
 }
 
+/**
+ * Global interaction debounce system to prevent multiple interactions from triggering in quick succession
+ * Particularly useful for portals and trophies that open URLs
+ */
+const interactionDebounce = {
+    // Internal state tracking
+    _state: {
+        lastInteractionTime: 0,
+        activeInteraction: false,
+        entityId: null,
+        entityType: null
+    },
+    
+    /**
+     * Check if an interaction should be allowed based on debounce rules
+     * @param {string} entityId - Unique identifier for the entity
+     * @param {string} entityType - Type of entity (e.g., 'portal', 'trophy')
+     * @param {number} cooldownMs - Cooldown period in milliseconds
+     * @returns {boolean} - Whether the interaction should be allowed
+     */
+    shouldAllowInteraction(entityId, entityType, cooldownMs = 2000) {
+        const now = Date.now();
+        const timeSinceLastInteraction = now - this._state.lastInteractionTime;
+        
+        // Block if any interaction is active or if not enough time has passed
+        if (this._state.activeInteraction || timeSinceLastInteraction < cooldownMs) {
+            debug(`InteractionDebounce: Blocking ${entityType} interaction`, {
+                entityId,
+                timeSinceLastInteraction,
+                activeInteraction: this._state.activeInteraction,
+                currentActiveEntity: this._state.entityId,
+                cooldownMs
+            });
+            return false;
+        }
+        
+        // Allow interaction and update state
+        this._state.lastInteractionTime = now;
+        this._state.activeInteraction = true;
+        this._state.entityId = entityId;
+        this._state.entityType = entityType;
+        
+        debug(`InteractionDebounce: Allowing ${entityType} interaction`, { entityId });
+        return true;
+    },
+    
+    /**
+     * Mark the current interaction as complete
+     * @param {string} entityId - Entity ID that's releasing the interaction
+     * @param {number} releaseDelayMs - Optional delay before releasing (defaults to 1000ms)
+     */
+    releaseInteraction(entityId, releaseDelayMs = 1000) {
+        // Only allow the currently active entity to release the interaction
+        if (this._state.entityId !== entityId) {
+            debug(`InteractionDebounce: Entity ${entityId} attempted to release interaction but is not the active entity`);
+            return;
+        }
+        
+        // Schedule the release after a delay
+        setTimeout(() => {
+            this._state.activeInteraction = false;
+            debug(`InteractionDebounce: Released interaction for ${this._state.entityType}`, { 
+                entityId: this._state.entityId 
+            });
+        }, releaseDelayMs);
+    }
+};
+
 export {
     debug,
     info,
@@ -164,5 +232,6 @@ export {
     setLogLevelEnabled,
     configureLogging,
     LOG_LEVELS,
-    LOG_CONFIG
+    LOG_CONFIG,
+    interactionDebounce
 };

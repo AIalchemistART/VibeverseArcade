@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vibeverse Arcade</title>
+    
+    <!-- Include pathResolver directly in head to ensure it's available early -->
+    <script type="module">
+        import { getAssetPath } from './pathResolver.js';
+        window.getAssetPath = getAssetPath;
+        console.log('Path resolver loaded directly in head');
+    </script>
+    
+    <!-- Google Analytics moved to end of body to prevent loading interference -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Inline SVG favicon - medieval-cyberpunk themed -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2L2 6v12l10 4 10-4V6L12 2z' fill='%23111' stroke='%2300ffcc' stroke-width='1'/><path d='M12 6v12M8 8v8M16 8v8' stroke='%2300ffcc' stroke-width='0.7'/></svg>" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Metamorphous&display=swap" rel="stylesheet">
+
+    <!-- Loading screen styles -->
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes reverseSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes glow {
+            0% { filter: drop-shadow(0 0 2px #7e57c2); }
+            50% { filter: drop-shadow(0 0 8px #9c27b0); }
+            100% { filter: drop-shadow(0 0 2px #7e57c2); }
+        }
+        
+        /* Fullscreen button styles */
+        .fullscreen-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 10001; /* Higher than joystick (9999) */
+            display: flex;
+            align-items: center;
+            background: rgba(16, 0, 32, 0.95); /* Very opaque background */
+            border: 3px solid #00ffcc;
+            border-radius: 8px;
+            padding: 10px 16px;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.7), 0 0 20px rgba(0, 255, 204, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Metamorphous', serif;
+            color: #00ffcc;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.7), 0 0 10px rgba(0, 255, 204, 0.5);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            pointer-events: auto; /* Ensure it's clickable */
+            transform: translateZ(0); /* Force hardware acceleration */
+        }
+        
+        .fullscreen-button:hover, .fullscreen-button:active, .fullscreen-button.active {
+            background: rgba(26, 5, 64, 0.95);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.9), 0 0 30px rgba(0, 255, 204, 0.5);
+            transform: scale(1.05) translateZ(0);
+        }
+        
+        .fullscreen-icon {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00ffcc;
+            margin-right: 10px;
+            position: relative;
+            box-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
+        }
+        
+        .fullscreen-icon::before, .fullscreen-icon::after {
+            content: '';
+            position: absolute;
+            background: #00ffcc;
+        }
+        
+        .fullscreen-icon::before {
+            width: 6px;
+            height: 2px;
+            top: 7px;
+            left: 5px;
+        }
+        
+        .fullscreen-icon::after {
+            width: 2px;
+            height: 6px;
+            top: 5px;
+            left: 7px;
+        }
+        
+        /* Make button more visible for mobile users */
+        @media (max-width: 768px) {
+            .fullscreen-button {
+                padding: 12px 20px;
+                font-size: 18px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .fullscreen-icon {
+                width: 24px;
+                height: 24px;
+            }
+        }
+        
+        /* Create a clear touch area around the button to prevent joystick interference */
+        .fullscreen-button::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            z-index: -1;
+        }
+    </style>
+
+    <!-- Loading screen preloader - this ensures the loading screen appears before any other JS runs -->
+    <script>
+                
+                // Prevent fullscreen button from being affected by joystick
+                fullscreenToggle.addEventListener('touchmove', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }, {passive: false});
+            }
+            
+            // Update button state when fullscreen changes
+            document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
+            
+            // Handle touch start on fullscreen button
+            function handleTouchStart(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fullscreenToggle.classList.add('active');
+            }
+            
+            // Handle touch end (for mobile devices)
+            function handleTouchEnd(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fullscreenToggle.classList.remove('active');
+                toggleFullScreen();
+            }
+            
+            function toggleFullScreen() {
+                // Prevent joystick from interfering with fullscreen toggle
+                event?.stopPropagation();
+                
+                if (!document.fullscreenElement && 
+                    !document.mozFullScreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.msFullscreenElement) {
+                    // Enter fullscreen
+                    const gameContainer = document.body;
+                    
+                    if (gameContainer.requestFullscreen) {
+                        gameContainer.requestFullscreen();
+                    } else if (gameContainer.mozRequestFullScreen) { // Firefox
+                        gameContainer.mozRequestFullScreen();
+                    } else if (gameContainer.webkitRequestFullscreen) { // Chrome, Safari
+                        gameContainer.webkitRequestFullscreen();
+                    } else if (gameContainer.msRequestFullscreen) { // IE/Edge
+                        gameContainer.msRequestFullscreen();
+                    }
+                } else {
+                    // Exit fullscreen
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                }
+            }
+            
+            function updateFullscreenButtonState() {
+                const button = document.getElementById('fullscreenToggle');
+                if (!button) return;
+                
+                if (document.fullscreenElement || 
+                    document.mozFullScreenElement || 
+                    document.webkitFullscreenElement || 
+                    document.msFullscreenElement) {
+                    button.querySelector('span').textContent = 'EXIT FULL';
+                } else {
+                    button.querySelector('span').textContent = 'FULLSCREEN';
+                }
+            }
+        });
+    </script>
+    <script>
+        // Create a global variable to control the loading process
+        window.loadingController = {
+            assetCount: 0,
+            loadedAssets: 0,
+            loadingScreen: null,
+            originalImage: null,
+            mainGameLoaded: false,
+            
+            // Initialize the basic loading screen
+            init: function() {
+                // Prevent multiple initializations
+                if (this.loadingScreen) return;
+                
+                console.log('Loading screen initializing');
+                
+                // Create loading container
+                const loadingContainer = document.createElement('div');
+                loadingContainer.id = 'loading-screen';
+                loadingContainer.style.position = 'fixed';
+                loadingContainer.style.top = '0';
+                loadingContainer.style.left = '0';
+                loadingContainer.style.width = '100%';
+                loadingContainer.style.height = '100%';
+                loadingContainer.style.background = 'linear-gradient(135deg, #1a0536 0%, #000000 100%)'; // Deep purple to black gradient
+                loadingContainer.style.display = 'flex';
+                loadingContainer.style.flexDirection = 'column';
+                loadingContainer.style.justifyContent = 'center';
+                loadingContainer.style.alignItems = 'center';
+                loadingContainer.style.zIndex = '9999';
+                loadingContainer.style.transition = 'opacity 1s ease-out';
+                loadingContainer.style.animation = 'pulse 2s infinite ease-in-out';
+                
+                // Portal frame - cyberpunk/synthwave style container
+                const portalFrame = document.createElement('div');
+                portalFrame.style.width = '80%';
+                portalFrame.style.maxWidth = '600px';
+                portalFrame.style.height = '80%';
+                portalFrame.style.maxHeight = '600px';
+                portalFrame.style.background = 'radial-gradient(ellipse at center, rgba(255,0,255,0.2) 0%, rgba(26,5,54,0.8) 70%)';
+                portalFrame.style.borderRadius = '10px';
+                portalFrame.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 40px rgba(255, 0, 255, 0.2)';
+                portalFrame.style.border = '4px solid rgba(0, 255, 255, 0.5)';
+                portalFrame.style.position = 'relative';
+                portalFrame.style.display = 'flex';
+                portalFrame.style.flexDirection = 'column';
+                portalFrame.style.justifyContent = 'space-between';
+                portalFrame.style.alignItems = 'center';
+                portalFrame.style.padding = '20px';
+                
+                // Add neon grid lines
+                const gridLines = document.createElement('div');
+                gridLines.style.position = 'absolute';
+                gridLines.style.top = '0';
+                gridLines.style.left = '0';
+                gridLines.style.width = '100%';
+                gridLines.style.height = '100%';
+                gridLines.style.backgroundImage = 'linear-gradient(0deg, rgba(0,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,0,255,0.1) 1px, transparent 1px)';
+                gridLines.style.backgroundSize = '20px 20px';
+                gridLines.style.pointerEvents = 'none';
+                
+                // Add synth glow
+                const synthGlow = document.createElement('div');
+                synthGlow.style.position = 'absolute';
+                synthGlow.style.bottom = '0';
+                synthGlow.style.left = '0';
+                synthGlow.style.width = '100%';
+                synthGlow.style.height = '30%';
+                synthGlow.style.background = 'linear-gradient(to top, rgba(255,0,255,0.2) 0%, transparent 100%)';
+                synthGlow.style.opacity = '0.7';
+                synthGlow.style.pointerEvents = 'none';
+                
+                // Create title
+                const title = document.createElement('h1');
+                title.textContent = "Vibeverse Arcade";
+                title.style.color = '#ff00ff'; // Neon purple
+                title.style.fontFamily = '"Cinzel Decorative", "Metamorphous", serif';
+                title.style.fontSize = '3.5rem';
+                title.style.marginTop = '20px';
+                title.style.marginBottom = '10px';
+                title.style.textShadow = '0 0 10px rgba(255, 0, 255, 0.7), 0 0 20px rgba(255, 0, 255, 0.5)';
+                title.style.textAlign = 'center';
+                title.style.animation = 'glow 3s infinite ease-in-out';
+                
+                // Add animated portal/vortex element
+                const svgContainer = document.createElement('div');
+                svgContainer.style.width = '150px';
+                svgContainer.style.height = '150px';
+                svgContainer.style.margin = '20px auto';
+                svgContainer.style.position = 'relative';
+                svgContainer.style.animation = 'float 3s infinite ease-in-out';
+                
+                // Create the portal symbol SVG
+                const portalSymbol = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                portalSymbol.setAttribute('width', '150');
+                portalSymbol.setAttribute('height', '150');
+                portalSymbol.setAttribute('viewBox', '0 0 100 100');
+                portalSymbol.style.animation = 'spin 12s infinite linear';
+                portalSymbol.style.filter = 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.7))';
+                
+                // Create an advanced portal effect with SVG
+                portalSymbol.innerHTML = `
+                    <defs>
+                        <radialGradient id="portal-gradient" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#ff00ff" stop-opacity="0.7" />
+                            <stop offset="70%" stop-color="#00ffff" stop-opacity="0.3" />
+                            <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+                        </radialGradient>
+                        <filter id="glow-effect" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    
+                    <!-- Portal background -->
+                    <circle cx="50" cy="50" r="40" fill="url(#portal-gradient)" filter="url(#glow-effect)" />
+                    
+                    <!-- Portal rings -->
+                    <circle cx="50" cy="50" r="40" stroke="#ff00ff" stroke-width="1" fill="none" filter="url(#glow-effect)">
+                        <animate attributeName="stroke-opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite" />
+                    </circle>
+                    
+                    <circle cx="50" cy="50" r="30" stroke="#00ffff" stroke-width="0.7" fill="none" opacity="0.7">
+                        <animate attributeName="r" values="28;32;28" dur="3s" repeatCount="indefinite" />
+                    </circle>
+                    
+                    <circle cx="50" cy="50" r="20" stroke="#ff00ff" stroke-width="0.5" fill="none" opacity="0.5">
+                        <animate attributeName="r" values="18;22;18" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                    
+                    <!-- Grid lines -->
+                    <path d="M10,50 h80 M50,10 v80" stroke="#00ffff" stroke-width="0.3" stroke-opacity="0.5" />
+                    <path d="M20,20 L80,80 M20,80 L80,20" stroke="#ff00ff" stroke-width="0.3" stroke-opacity="0.5" />
+                    
+                    <!-- Digital edges for cyberpunk feel -->
+                    <rect x="5" y="5" width="10" height="2" fill="#ff00ff" opacity="0.8" />
+                    <rect x="5" y="5" width="2" height="10" fill="#ff00ff" opacity="0.8" />
+                    
+                    <rect x="85" y="5" width="10" height="2" fill="#00ffff" opacity="0.8" />
+                    <rect x="93" y="5" width="2" height="10" fill="#00ffff" opacity="0.8" />
+                    
+                    <rect x="5" y="93" width="10" height="2" fill="#00ffff" opacity="0.8" />
+                    <rect x="5" y="85" width="2" height="10" fill="#00ffff" opacity="0.8" />
+                    
+                    <rect x="85" y="93" width="10" height="2" fill="#ff00ff" opacity="0.8" />
+                    <rect x="93" y="85" width="2" height="10" fill="#ff00ff" opacity="0.8" />
+                `;
+                
+                // Add cyberpunk/synthwave particles around the symbol
+                svgContainer.appendChild(portalSymbol);
+                
+                // Add glowing particles around the symbol
+                const particles = document.createElement('div');
+                particles.style.position = 'absolute';
+                particles.style.top = '0';
+                particles.style.left = '0';
+                particles.style.width = '100%';
+                particles.style.height = '100%';
+                particles.style.pointerEvents = 'none';
+                
+                // Create 8 random particles
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.style.position = 'absolute';
+                    particle.style.width = `${2 + Math.random() * 4}px`;
+                    particle.style.height = particle.style.width;
+                    particle.style.backgroundColor = `hsl(${280 + Math.random() * 60}, 100%, 70%)`;
+                    particle.style.borderRadius = '50%';
+                    particle.style.top = `${Math.random() * 100}%`;
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.filter = 'blur(1px)';
+                    
+                    // Random animations
+                    const duration = 2 + Math.random() * 4;
+                    particle.style.animation = `float ${duration}s infinite ease-in-out ${Math.random() * 2}s, pulse ${duration/2}s infinite ease-in-out`;
+                    
+                    particles.appendChild(particle);
+                }
+                svgContainer.appendChild(particles);
+                
+                // Add a loading message with arcane styling
+                const loadingMessage = document.createElement('div');
+                loadingMessage.textContent = "Firing up the cabinets...";
+                loadingMessage.style.color = '#f0e6d2';
+                loadingMessage.style.fontFamily = '"Metamorphous", serif';
+                loadingMessage.style.fontSize = '1.3rem';
+                loadingMessage.style.marginBottom = '2rem';
+                loadingMessage.style.fontStyle = 'italic';
+                loadingMessage.style.textAlign = 'center';
+                loadingMessage.style.padding = '0 40px';
+                loadingMessage.style.textShadow = '0 0 5px rgba(156, 39, 176, 0.7)';
+                
+                // Create progress container styled with neon cyberpunk aesthetics
+                const progressContainer = document.createElement('div');
+                progressContainer.style.width = '80%';
+                progressContainer.style.maxWidth = '400px';
+                progressContainer.style.height = '20px';
+                progressContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                progressContainer.style.borderRadius = '10px';
+                progressContainer.style.overflow = 'hidden';
+                progressContainer.style.border = '2px solid rgba(0, 255, 255, 0.5)';
+                progressContainer.style.boxShadow = '0 0 15px rgba(255, 0, 255, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.5)';
+                progressContainer.style.margin = '10px auto 30px auto';
+                progressContainer.style.position = 'relative';
+                
+                // Add cyberpunk icons along the progress bar border
+                for (let i = 0; i < 5; i++) {
+                    const icon = document.createElement('div');
+                    icon.style.position = 'absolute';
+                    icon.style.top = '-8px';
+                    icon.style.left = `${12.5 + i * 25}%`;
+                    icon.style.fontSize = '12px';
+                    icon.style.color = i % 2 === 0 ? '#ff00ff' : '#00ffff'; // Alternate colors
+                    icon.style.textShadow = `0 0 5px ${icon.style.color}`;
+                    icon.style.transform = 'translateX(-50%)';
+                    icon.textContent = ['🌀', '🔮', '⚡', '🎮', '🌐'][i];
+                    progressContainer.appendChild(icon);
+                }
+                
+                // Create progress bar with animated cyberpunk gradient
+                const progressBar = document.createElement('div');
+                progressBar.style.width = '0%';
+                progressBar.style.height = '100%';
+                progressBar.style.transition = 'width 0.5s ease-out';
+                progressBar.style.backgroundImage = 'linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff)';
+                progressBar.style.backgroundSize = '300% 100%';
+                progressBar.style.animation = 'gradientMove 3s ease infinite';
+                progressBar.style.boxShadow = '0 0 10px rgba(255, 0, 255, 0.5), 0 0 15px rgba(0, 255, 255, 0.3)';
+                
+                // Add keyframes for animations
+                const keyframes = document.createElement('style');
+                keyframes.textContent = `
+                    @keyframes gradientMove {
+                        0% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                        100% { background-position: 0% 50%; }
+                    }
+                    
+                    @keyframes glow {
+                        0% { text-shadow: 0 0 10px rgba(255, 0, 255, 0.7), 0 0 20px rgba(255, 0, 255, 0.5); }
+                        50% { text-shadow: 0 0 15px rgba(255, 0, 255, 0.9), 0 0 30px rgba(255, 0, 255, 0.7); }
+                        100% { text-shadow: 0 0 10px rgba(255, 0, 255, 0.7), 0 0 20px rgba(255, 0, 255, 0.5); }
+                    }
+                `;
+                document.head.appendChild(keyframes);
+                
+                // Create progress text with cyberpunk styling
+                const progressText = document.createElement('div');
+                progressText.textContent = '0%';
+                progressText.style.color = '#00ffff';
+                progressText.style.textShadow = '0 0 5px rgba(0, 255, 255, 0.7)';
+                progressText.style.marginTop = '0.5rem';
+                progressText.style.fontFamily = 'monospace';
+                progressText.style.fontFamily = 'monospace';
+                progressText.style.textAlign = 'center';
+                
+                // Add decorative Vibeverse portal animation in the background
+                const vibePortal = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                vibePortal.setAttribute('width', '100%');
+                vibePortal.setAttribute('height', '100%');
+                vibePortal.setAttribute('viewBox', '0 0 100 100');
+                vibePortal.setAttribute('preserveAspectRatio', 'none');
+                vibePortal.style.position = 'absolute';
+                vibePortal.style.top = '0';
+                vibePortal.style.left = '0';
+                vibePortal.style.pointerEvents = 'none';
+                vibePortal.style.zIndex = '-1';
+                vibePortal.innerHTML = `
+                    <defs>
+                        <radialGradient id="portal-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                            <stop offset="0%" style="stop-color:#ff00ff;stop-opacity:0.3" />
+                            <stop offset="70%" style="stop-color:#4b0082;stop-opacity:0.1" />
+                            <stop offset="100%" style="stop-color:#000;stop-opacity:0" />
+                        </radialGradient>
+                        <linearGradient id="neon-grid" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#00ffff;stop-opacity:0.2" />
+                            <stop offset="100%" style="stop-color:#ff00ff;stop-opacity:0.2" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Portal/vortex effect -->
+                    <circle cx="50%" cy="50%" r="30%" stroke="rgba(255,0,255,0.3)" stroke-width="0.5" fill="url(#portal-gradient)">
+                        <animate attributeName="r" values="28%;32%;28%" dur="4s" repeatCount="indefinite" />
+                        <animate attributeName="stroke-opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                    <!-- Cyberpunk/synthwave grid -->
+                    <path d="M0,20 L100,20 M0,40 L100,40 M0,60 L100,60 M0,80 L100,80" stroke="url(#neon-grid)" stroke-width="0.2">
+                        <animate attributeName="stroke-opacity" values="0.1;0.3;0.1" dur="4s" repeatCount="indefinite" />
+                    </path>
+                    <path d="M20,0 L20,100 M40,0 L40,100 M60,0 L60,100 M80,0 L80,100" stroke="url(#neon-grid)" stroke-width="0.2">
+                        <animate attributeName="stroke-opacity" values="0.1;0.3;0.1" dur="4s" repeatCount="indefinite" />
+                    </path>
+                    <!-- Vibrational wave patterns -->
+                    <path d="M10,50 Q25,40 40,50 T70,50 T100,50" stroke="rgba(255,0,255,0.15)" stroke-width="0.3" fill="none">
+                        <animate attributeName="d" values="M10,50 Q25,40 40,50 T70,50 T100,50; M10,50 Q25,60 40,50 T70,50 T100,50; M10,50 Q25,40 40,50 T70,50 T100,50" dur="5s" repeatCount="indefinite" />
+                    </path>
+                `;
+                
+                // Footer with cyber text
+                const footer = document.createElement('div');
+                footer.style.fontFamily = '"Metamorphous", serif';
+                footer.style.fontSize = '0.8rem';
+                footer.style.color = 'rgba(0, 255, 255, 0.6)';
+                footer.style.marginTop = '20px';
+                footer.style.textAlign = 'center';
+                footer.style.textShadow = '0 0 5px rgba(0, 255, 255, 0.3)';
+                footer.innerHTML = 'Vibeverse Network • Connected 2025';
+                
+                // Store references
+                this.progressBar = progressBar;
+                this.progressText = progressText;
+                this.loadingMessage = loadingMessage;
+                this.loadingContainer = loadingContainer;
+                
+                // Choose random loading messages
+                const loadingMessages = [
+                    "Synchronizing interdimensional portals...",
+                    "Calibrating vibrational frequencies...",
+                    "Connecting to the Vibeverse network...",
+                    "Loading digital consciousness matrix...",
+                    "Generating synthwave harmonics...",
+                    "Initializing neon grid systems...",
+                    "Activating retro-futuristic interfaces...",
+                    "Stabilizing arcade quantum processors...",
+                    "Amplifying community vibrations...",
+                    "Powering up arcade energy fields...",
+                    "Unlocking dimensional gateways..."
+                ];
+                
+                // Rotate between messages
+                setInterval(() => {
+                    const randomIndex = Math.floor(Math.random() * loadingMessages.length);
+                    this.loadingMessage.textContent = loadingMessages[randomIndex];
+                }, 3000);
+                
+                // Assemble the loading screen
+                portalFrame.appendChild(gridLines);
+                portalFrame.appendChild(synthGlow);
+                portalFrame.appendChild(title);
+                portalFrame.appendChild(svgContainer);
+                portalFrame.appendChild(loadingMessage);
+                progressContainer.appendChild(progressBar);
+                portalFrame.appendChild(progressContainer);
+                portalFrame.appendChild(progressText);
+                portalFrame.appendChild(footer);
+                loadingContainer.appendChild(vibePortal);
+                loadingContainer.appendChild(portalFrame);
+                
+                // Add to DOM
+                document.body.appendChild(loadingContainer);
+                
+                // Store reference to the loading screen
+                this.loadingScreen = loadingContainer;
+                
+                // Intercept Image loading to track progress
+                this.interceptImageLoading();
+                
+                // Start loading the game script immediately
+                this.loadGameScript();
+            },
+            
+            // Load the main game script
+            loadGameScript: function() {
+                const mainScript = document.createElement('script');
+                mainScript.type = 'module';
+                
+                // Smart path resolution that works across all environments
+                // Define possible environments
+                const isLocalhost = window.location.hostname === 'localhost' || 
+                                    window.location.hostname === '127.0.0.1';
+                const isCustomDomain = window.location.hostname.includes('aialchemist.net');
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                
+                console.log('Current hostname:', window.location.hostname);
+                console.log('Environment detection - Localhost:', isLocalhost, 'Custom domain:', isCustomDomain, 'GitHub Pages:', isGitHubPages);
+                
+                try {
+                    // Simple, reliable path resolution approach
+                    if (isLocalhost) {
+                        // For localhost, always use direct path
+                        mainScript.src = 'main.js';
+                        console.log('Local environment detected, using direct path:', mainScript.src);
+                    } else {
+                        // For all other environments (GitHub Pages or custom domain)
+                        // Try multiple fallback paths in sequence if the main one fails
+                        const attemptToLoad = (paths, index = 0) => {
+                            if (index >= paths.length) {
+                                console.error('All paths tried and failed');
+                                return;
+                            }
+                            
+                            const scriptElement = document.createElement('script');
+                            scriptElement.type = 'module';
+                            scriptElement.src = paths[index];
+                            
+                            console.log(`Attempting to load main.js from: ${paths[index]} (attempt ${index + 1}/${paths.length})`);
+                            
+                            scriptElement.onload = () => {
+                                console.log(`Successfully loaded main.js from: ${paths[index]}`);
+                                this.mainGameLoaded = true;
+                                this.checkLoadingComplete();
+                            };
+                            
+                            scriptElement.onerror = () => {
+                                console.warn(`Failed to load from: ${paths[index]}, trying next path...`);
+                                document.body.removeChild(scriptElement);
+                                attemptToLoad(paths, index + 1);
+                            };
+                            
+                            document.body.appendChild(scriptElement);
+                        };
+                        
+                        // Define the paths to try, in order of preference
+                        const pathsToTry = [
+                            'main.js',                     // Try direct path first
+                            '/main.js',                   // Try root path
+                            '/AIalchemistsLAIR/main.js'   // Try GitHub Pages path as last resort
+                        ];
+                        
+                        attemptToLoad(pathsToTry);
+                        return; // Skip the normal script addition below since we handle it in attemptToLoad
+                    }
+                } catch (e) {
+                    // Error recovery fallback
+                    console.error('Error in path resolution:', e);
+                    mainScript.src = 'main.js';
+                    console.log('Using fallback path after error:', mainScript.src);
+                }
+                
+                // Track when the main script is loaded
+                mainScript.onload = () => {
+                    console.log('Main game script loaded successfully');
+                    this.mainGameLoaded = true;
+                    this.checkLoadingComplete();
+                };
+                
+                mainScript.onerror = (err) => {
+                    console.error('Failed to load main.js, trying alternative path', err);
+                    // Try an alternative path if the first one fails
+                    mainScript.src = 'main.js';
+                };
+                
+                document.body.appendChild(mainScript);
+            },
+            
+            // Patch the Image constructor to track loading progress
+            interceptImageLoading: function() {
+                const self = this;
+                
+                // Store original Image constructor
+                this.originalImage = window.Image;
+                
+                // Override Image constructor
+                window.Image = function() {
+                    const img = new self.originalImage();
+                    
+                    // Track when this image starts loading
+                    self.assetCount++;
+                    
+                    // Track when this image finishes loading
+                    img.addEventListener('load', function() {
+                        self.assetLoaded();
+                    });
+                    
+                    // Also track errors as "loaded" to avoid hanging
+                    img.addEventListener('error', function() {
+                        console.error('Failed to load image:', img.src);
+                        self.assetLoaded();
+                    });
+                    
+                    return img;
+                };
+            },
+            
+            // Check if loading is complete
+            checkLoadingComplete: function() {
+                console.log(`Loading status: ${this.loadedAssets}/${this.assetCount} assets loaded, mainGameLoaded: ${this.mainGameLoaded}`);
+                
+                // Log more details about our conditions
+                if (!this.mainGameLoaded) {
+                    console.log('Waiting for main game script to load...');
+                }
+                
+                // Check for stuck loading (assets not loading after a period)
+                if (!this._loadingTimeoutSet && this.assetCount > 0) {
+                    this._loadingTimeoutSet = true;
+                    setTimeout(() => {
+                        if (this.loadedAssets === 0 && !this._hideScheduled) {
+                            console.warn('Loading appears to be stuck at 0 assets, forcing completion after timeout');
+                            this.mainGameLoaded = true;
+                            this.loadedAssets = Math.max(10, this.assetCount);
+                            this.hideLoadingScreen();
+                        }
+                    }, 8000); // 8 second timeout
+                }
+                
+                // Only complete if main game script is loaded and assets are loaded
+                if (this.mainGameLoaded && this.loadedAssets >= Math.max(10, this.assetCount)) {
+                    console.log('All conditions met, completing loading.');
+                    if (!this._hideScheduled) {
+                        this._hideScheduled = true;
+                        // Add a grace period
+                        setTimeout(() => this.hideLoadingScreen(), 1000);
+                    }
+                }
+            },
+            
+            // Track when an asset is loaded
+            assetLoaded: function() {
+                this.loadedAssets++;
+                
+                // Calculate progress
+                const progress = Math.min(100, Math.round((this.loadedAssets / Math.max(1, this.assetCount)) * 100));
+                
+                // Update loading UI
+                if (this.progressBar) {
+                    this.progressBar.style.width = progress + '%';
+                    this.progressText.textContent = progress + '%';
+                }
+                
+                // Check if loading should be complete
+                this.checkLoadingComplete();
+            },
+            
+            // Hide the loading screen
+            hideLoadingScreen: function() {
+                if (this.loadingScreen) {
+                    console.log('Hiding loading screen, loaded ' + this.loadedAssets + ' assets');
+                    
+                    // Only hide if we have a reasonable number of assets
+                    if (this.loadedAssets < 10) {
+                        console.log('Not enough assets loaded yet, waiting...');
+                        this._hideScheduled = false;
+                        return;
+                    }
+                    
+                    // Fade out
+                    this.loadingScreen.style.opacity = '0';
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        if (this.loadingScreen && this.loadingScreen.parentNode) {
+                            this.loadingScreen.parentNode.removeChild(this.loadingScreen);
+                        }
+                        
+                        // Dispatch event that loading is complete
+                        window.dispatchEvent(new CustomEvent('loadingComplete'));
+                        
+                        // Reset keyboard input state
+                        this.resetInputState();
+                        
+                        // Restore original Image constructor
+                        if (this.originalImage) {
+                            window.Image = this.originalImage;
+                        }
+                    }, 1000);
+                }
+            },
+            
+            // Reset keyboard input state
+            resetInputState: function() {
+                // Force a clean state for all keyboard input
+                document.dispatchEvent(new CustomEvent('inputReset'));
+                
+                // Create a clean keyup event to reset any stuck keys
+                ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'].forEach(key => {
+                    const keyEvent = new KeyboardEvent('keyup', {
+                        key: key,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    document.dispatchEvent(keyEvent);
+                });
+                
+                console.log('Input state reset completed');
+            }
+        };
+        
+        // Initialize loading screen immediately
+        document.addEventListener('DOMContentLoaded', function() {
+            window.loadingController.init();
+        });
+        
+        // Also init immediately if the document is already loaded
+        if (document.readyState !== 'loading') {
+            window.loadingController.init();
+        }
+    </script>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <!-- Fullscreen toggle wrapper with explicit positioning to overcome any layout issues -->
+    <div style="position: fixed; top: 0; left: 0; z-index: 10001; pointer-events: none; display: block;">
+        <div id="fullscreenToggle" class="fullscreen-button" style="display: flex;">
+            <div class="fullscreen-icon"></div>
+            <span>FULLSCREEN</span>
+        </div>
+    </div>
+    
+    <!-- Overlay for decorative elements -->
+    <div id="decorativeOverlay" style="position: absolute; top: 0; left: 0; width: 800px; height: 600px; pointer-events: none; z-index: 10; display: none;">
+        <!-- SE Door -->
+        <div id="seDoor" style="position: absolute; top: 350px; left: 550px; width: 60px; height: 80px; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 60px; height: 80px; background: rgba(0,0,0,0.7); border: 4px solid #ff00ff; border-radius: 30px 30px 0 0;"></div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #ff00ff; margin-top: -50px;"></div>
+            <div style="color: white; font-size: 12px; margin-top: 10px; text-shadow: 0 0 5px #ff00ff;">SE Door</div>
+        </div>
+        
+        <!-- SW Door -->
+        <div id="swDoor" style="position: absolute; top: 450px; left: 250px; width: 60px; height: 80px; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 60px; height: 80px; background: rgba(0,0,0,0.7); border: 4px solid #00ffff; border-radius: 30px 30px 0 0;"></div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #00ffff; margin-top: -50px;"></div>
+            <div style="color: white; font-size: 12px; margin-top: 10px; text-shadow: 0 0 5px #00ffff;">SW Door</div>
+        </div>
+    </div>
+    
+    <!-- Debug info for keyboard input - hidden by default -->
+    <div id="input-debug" style="position: fixed; bottom: 5px; right: 5px; color: white; font-size: 10px; font-family: monospace; background: rgba(0,0,0,0.5); padding: 5px; display: none;">Input Ready</div>
+    
+    <!-- Cleanup script to remove any debug elements while preserving fixes -->
+    <script src="cleanupDebug.js"></script>
+    
+    <!-- Fullscreen toggle functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fullscreenToggle = document.getElementById('fullscreenToggle');
+            if (fullscreenToggle) {
+                // Add both touch and mouse event handlers
+                fullscreenToggle.addEventListener('click', toggleFullScreen);
+                
+                // Add touch-specific event handlers
+                fullscreenToggle.addEventListener('touchstart', handleTouchStart, {passive: false});
+                fullscreenToggle.addEventListener('touchend', handleTouchEnd, {passive: false});
+                
+                // Prevent fullscreen button from being affected by joystick
+                fullscreenToggle.addEventListener('touchmove', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }, {passive: false});
+            } else {
+                console.error('Fullscreen toggle button not found in DOM');
+            }
+            
+            // Update button state when fullscreen changes
+            document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
+            
+            // Handle touch start on fullscreen button
+            function handleTouchStart(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fullscreenToggle.classList.add('active');
+            }
+            
+            // Handle touch end (for mobile devices)
+            function handleTouchEnd(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fullscreenToggle.classList.remove('active');
+                toggleFullScreen();
+            }
+            
+            function toggleFullScreen(e) {
+                // Prevent joystick from interfering with fullscreen toggle
+                if (e) e.stopPropagation();
+                
+                console.log('Toggling fullscreen mode');
+                
+                if (!document.fullscreenElement && 
+                    !document.mozFullScreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.msFullscreenElement) {
+
+            
+            // Make sure button is initially visible
+            fullscreenToggle.style.display = 'flex';
+            console.log('Fullscreen toggle button initialized');
+        });
+    </script>
+    
+    <!-- Direct Enter key fix that manually handles Enter key events at document level -->
+    <script type="module" src="enterKeyFix.js"></script>
+    
+    <!-- Direct keyboard handler for immediate entity interactions -->
+    <script type="module" src="directKeyboardHandler.js"></script>
+    
+    <!-- Key diagnostic system to ensure Enter key detection is robust -->
+    <script type="module" src="keyDiagnostic.js"></script>
+    
+    <!-- Main game script is now loaded dynamically through loadGameScript() function -->
+    <!-- The static script tag was removed to prevent double loading -->
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9TEJCGYMPT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-9TEJCGYMPT');
+    </script>
+</body>
+</html>

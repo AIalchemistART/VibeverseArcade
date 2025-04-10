@@ -6,7 +6,7 @@
 import { Entity } from './entity.js';
 import assetLoader from './assetLoader.js';
 import { input } from './input.js';
-import { debug } from './utils.js';
+import { debug, interactionDebounce } from './utils.js';
 
 export class PortalEntity extends Entity {
     /**
