@@ -338,8 +338,8 @@ class TouchInputManager {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 80px;
-            height: 80px;
+            width: 60px; /* Reduced by 1/4 from 80px */
+            height: 60px; /* Reduced by 1/4 from 80px */
             border-radius: 50%;
             background-color: rgba(0, 183, 255, 0.5);
             border: 2px solid rgba(0, 255, 255, 0.8);
@@ -354,12 +354,12 @@ class TouchInputManager {
             -webkit-user-select: none;
             user-select: none;
             font-family: Arial, sans-serif;
-            font-size: 28px;
+            font-size: 22px; /* Reduced to keep proportional */
             font-weight: bold;
             color: #ffffff;
             text-shadow: 0 0 5px #00ffff, 0 0 10px rgba(0, 255, 255, 0.8);
             transition: all 0.2s ease;
-            padding: 15px 20px;
+            padding: 10px 15px; /* Reduced padding to match smaller size */
             cursor: pointer;
         `;
         this.zoomButtonElement.innerHTML = '🔍';
