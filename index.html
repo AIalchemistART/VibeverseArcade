@@ -49,100 +49,135 @@
             100% { filter: drop-shadow(0 0 2px #7e57c2); }
         }
         
-        /* Fullscreen button styles */
+        /* Fullscreen button styles - circular design positioned in top right */
         .fullscreen-button {
             position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 10001; /* Higher than joystick (9999) */
+            top: 20px;
+            right: 110px; /* Position to the left of zoom button */
+            width: 60px; /* Slightly smaller than zoom button */
+            height: 60px;
+            z-index: 2000; /* Ensure it's above everything including touch controls */
             display: flex;
+            justify-content: center;
             align-items: center;
-            background: rgba(16, 0, 32, 0.95); /* Very opaque background */
-            border: 3px solid #00ffcc;
-            border-radius: 8px;
-            padding: 10px 16px;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.7), 0 0 20px rgba(0, 255, 204, 0.5);
+            background: rgba(26, 5, 54, 0.9);
+            border: 2px solid #00ffcc;
+            border-radius: 50%; /* Circular shape */
+            box-shadow: 0 0 8px #00ffff, 0 0 16px rgba(0, 255, 204, 0.5);
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Metamorphous', serif;
+            transition: all 0.2s ease;
             color: #00ffcc;
-            font-size: 16px;
+            font-size: 22px; /* Larger text for better visibility */
             font-weight: bold;
-            text-shadow: 0 0 5px rgba(0, 255, 204, 0.7), 0 0 10px rgba(0, 255, 204, 0.5);
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.7);
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             pointer-events: auto; /* Ensure it's clickable */
-            transform: translateZ(0); /* Force hardware acceleration */
+            touch-action: manipulation; /* Better touch behavior */
         }
         
-        .fullscreen-button:hover, .fullscreen-button:active, .fullscreen-button.active {
-            background: rgba(26, 5, 64, 0.95);
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.9), 0 0 30px rgba(0, 255, 204, 0.5);
-            transform: scale(1.05) translateZ(0);
+        .fullscreen-button:hover, .fullscreen-button:active {
+            background: rgba(26, 5, 54, 1);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.9);
+            transform: scale(1.05);
         }
         
+        .fullscreen-button:active {
+            transform: scale(0.97);
+        }
+        
+        /* Redesigned fullscreen icon */
         .fullscreen-icon {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #00ffcc;
-            margin-right: 10px;
+            width: 24px;
+            height: 24px;
             position: relative;
-            box-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
-        .fullscreen-icon::before, .fullscreen-icon::after {
-            content: '';
-            position: absolute;
-            background: #00ffcc;
-        }
-        
+        /* Four corner arrows to indicate fullscreen */
         .fullscreen-icon::before {
-            width: 6px;
-            height: 2px;
-            top: 7px;
-            left: 5px;
-        }
-        
-        .fullscreen-icon::after {
-            width: 2px;
-            height: 6px;
-            top: 5px;
-            left: 7px;
+            content: '⤢';
+            font-size: 28px;
+            color: #00ffcc;
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.9);
         }
         
         /* Make button more visible for mobile users */
         @media (max-width: 768px) {
             .fullscreen-button {
-                padding: 12px 20px;
-                font-size: 18px;
-                top: 15px;
-                left: 15px;
+                padding: 8px 15px;
+                font-size: 16px;
             }
             
             .fullscreen-icon {
-                width: 24px;
-                height: 24px;
+                width: 18px;
+                height: 18px;
             }
-        }
-        
-        /* Create a clear touch area around the button to prevent joystick interference */
-        .fullscreen-button::before {
-            content: '';
-            position: absolute;
-            top: -15px;
-            left: -15px;
-            right: -15px;
-            bottom: -15px;
-            z-index: -1;
         }
     </style>
 
     <!-- Loading screen preloader - this ensures the loading screen appears before any other JS runs -->
     <script>
-        // Loading screen controller
-        window.loadingController = {
-            // Loading screen properties will be set in the init method
-        };
+        // Fullscreen functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const fullscreenToggle = document.getElementById('fullscreenToggle');
+            if (fullscreenToggle) {
+                fullscreenToggle.addEventListener('click', toggleFullScreen);
+            }
+            
+            // Update button state when fullscreen changes
+            document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
+            
+            function toggleFullScreen() {
+                if (!document.fullscreenElement && 
+                    !document.mozFullScreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.msFullscreenElement) {
+                    // Enter fullscreen
+                    const gameContainer = document.body;
+                    
+                    if (gameContainer.requestFullscreen) {
+                        gameContainer.requestFullscreen();
+                    } else if (gameContainer.mozRequestFullScreen) { // Firefox
+                        gameContainer.mozRequestFullScreen();
+                    } else if (gameContainer.webkitRequestFullscreen) { // Chrome, Safari
+                        gameContainer.webkitRequestFullscreen();
+                    } else if (gameContainer.msRequestFullscreen) { // IE/Edge
+                        gameContainer.msRequestFullscreen();
+                    }
+                } else {
+                    // Exit fullscreen
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                }
+            }
+            
+            function updateFullscreenButtonState() {
+                const button = document.getElementById('fullscreenToggle');
+                if (!button) return;
+                
+                if (document.fullscreenElement || 
+                    document.mozFullScreenElement || 
+                    document.webkitFullscreenElement || 
+                    document.msFullscreenElement) {
+                    button.querySelector('span').textContent = 'EXIT FULL';
+                } else {
+                    button.querySelector('span').textContent = 'FULLSCREEN';
+                }
+            }
+        });
     </script>
     <script>
         // Create a global variable to control the loading process
@@ -735,12 +770,9 @@
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     
-    <!-- Fullscreen toggle wrapper with explicit positioning to overcome any layout issues -->
-    <div style="position: fixed; top: 0; left: 0; z-index: 10001; pointer-events: none; display: block;">
-        <div id="fullscreenToggle" class="fullscreen-button" style="display: flex;">
-            <div class="fullscreen-icon"></div>
-            <span>FULLSCREEN</span>
-        </div>
+    <!-- Fullscreen toggle button - simplified circular design for top-right positioning -->
+    <div id="fullscreenToggle" class="fullscreen-button">
+        <div class="fullscreen-icon"></div>
     </div>
     
     <!-- Overlay for decorative elements -->
@@ -765,106 +797,6 @@
     
     <!-- Cleanup script to remove any debug elements while preserving fixes -->
     <script src="cleanupDebug.js"></script>
-    
-    <!-- Fullscreen toggle functionality -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const fullscreenToggle = document.getElementById('fullscreenToggle');
-            if (fullscreenToggle) {
-                // Add both touch and mouse event handlers
-                fullscreenToggle.addEventListener('click', toggleFullScreen);
-                
-                // Add touch-specific event handlers
-                fullscreenToggle.addEventListener('touchstart', handleTouchStart, {passive: false});
-                fullscreenToggle.addEventListener('touchend', handleTouchEnd, {passive: false});
-                
-                // Prevent fullscreen button from being affected by joystick
-                fullscreenToggle.addEventListener('touchmove', function(e) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                }, {passive: false});
-            } else {
-                console.error('Fullscreen toggle button not found in DOM');
-            }
-            
-            // Update button state when fullscreen changes
-            document.addEventListener('fullscreenchange', updateFullscreenButtonState);
-            document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
-            document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
-            document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
-            
-            // Handle touch start on fullscreen button
-            function handleTouchStart(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                fullscreenToggle.classList.add('active');
-            }
-            
-            // Handle touch end (for mobile devices)
-            function handleTouchEnd(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                fullscreenToggle.classList.remove('active');
-                toggleFullScreen();
-            }
-            
-            function toggleFullScreen(e) {
-                // Prevent joystick from interfering with fullscreen toggle
-                if (e) e.stopPropagation();
-                
-                console.log('Toggling fullscreen mode');
-                
-                if (!document.fullscreenElement && 
-                    !document.mozFullScreenElement && 
-                    !document.webkitFullscreenElement && 
-                    !document.msFullscreenElement) {
-                    // Enter fullscreen
-                    const docElm = document.documentElement;
-                    if (docElm.requestFullscreen) {
-                        docElm.requestFullscreen();
-                    } else if (docElm.mozRequestFullScreen) { // Firefox
-                        docElm.mozRequestFullScreen();
-                    } else if (docElm.webkitRequestFullscreen) { // Chrome, Safari and Opera
-                        docElm.webkitRequestFullscreen();
-                    } else if (docElm.msRequestFullscreen) { // IE/Edge
-                        docElm.msRequestFullscreen();
-                    }
-                } else {
-                    // Exit fullscreen
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.mozCancelFullScreen) { // Firefox
-                        document.mozCancelFullScreen();
-                    } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
-                        document.webkitExitFullscreen();
-                    } else if (document.msExitFullscreen) { // IE/Edge
-                        document.msExitFullscreen();
-                    }
-                }
-                
-                // Update button state after toggle
-                setTimeout(updateFullscreenButtonState, 100);
-            }
-            
-            function updateFullscreenButtonState() {
-                const buttonTextSpan = fullscreenToggle.querySelector('span');
-                if (!buttonTextSpan) return;
-                
-                if (document.fullscreenElement || 
-                    document.mozFullScreenElement || 
-                    document.webkitFullscreenElement || 
-                    document.msFullscreenElement) {
-                    buttonTextSpan.textContent = 'EXIT FULL';
-                } else {
-                    buttonTextSpan.textContent = 'FULLSCREEN';
-                }
-            }
-            
-            // Make sure button is initially visible
-            fullscreenToggle.style.display = 'flex';
-            console.log('Fullscreen toggle button initialized');
-        });
-    </script>
     
     <!-- Direct Enter key fix that manually handles Enter key events at document level -->
     <script type="module" src="enterKeyFix.js"></script>
