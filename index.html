@@ -48,9 +48,139 @@
             50% { filter: drop-shadow(0 0 8px #9c27b0); }
             100% { filter: drop-shadow(0 0 2px #7e57c2); }
         }
+        
+        /* Fullscreen button styles */
+        .fullscreen-button {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            background: rgba(26, 5, 54, 0.7);
+            border: 2px solid #00ffcc;
+            border-radius: 6px;
+            padding: 6px 12px;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Metamorphous', serif;
+            color: #00ffcc;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.7);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .fullscreen-button:hover, .fullscreen-button:active {
+            background: rgba(26, 5, 54, 0.9);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.7);
+        }
+        
+        .fullscreen-icon {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #00ffcc;
+            margin-right: 8px;
+            position: relative;
+        }
+        
+        .fullscreen-icon::before, .fullscreen-icon::after {
+            content: '';
+            position: absolute;
+            background: #00ffcc;
+        }
+        
+        .fullscreen-icon::before {
+            width: 6px;
+            height: 2px;
+            top: 7px;
+            left: 5px;
+        }
+        
+        .fullscreen-icon::after {
+            width: 2px;
+            height: 6px;
+            top: 5px;
+            left: 7px;
+        }
+        
+        /* Make button more visible for mobile users */
+        @media (max-width: 768px) {
+            .fullscreen-button {
+                padding: 8px 15px;
+                font-size: 16px;
+            }
+            
+            .fullscreen-icon {
+                width: 18px;
+                height: 18px;
+            }
+        }
     </style>
 
     <!-- Loading screen preloader - this ensures the loading screen appears before any other JS runs -->
+    <script>
+        // Fullscreen functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const fullscreenToggle = document.getElementById('fullscreenToggle');
+            if (fullscreenToggle) {
+                fullscreenToggle.addEventListener('click', toggleFullScreen);
+            }
+            
+            // Update button state when fullscreen changes
+            document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
+            
+            function toggleFullScreen() {
+                if (!document.fullscreenElement && 
+                    !document.mozFullScreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.msFullscreenElement) {
+                    // Enter fullscreen
+                    const gameContainer = document.body;
+                    
+                    if (gameContainer.requestFullscreen) {
+                        gameContainer.requestFullscreen();
+                    } else if (gameContainer.mozRequestFullScreen) { // Firefox
+                        gameContainer.mozRequestFullScreen();
+                    } else if (gameContainer.webkitRequestFullscreen) { // Chrome, Safari
+                        gameContainer.webkitRequestFullscreen();
+                    } else if (gameContainer.msRequestFullscreen) { // IE/Edge
+                        gameContainer.msRequestFullscreen();
+                    }
+                } else {
+                    // Exit fullscreen
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                }
+            }
+            
+            function updateFullscreenButtonState() {
+                const button = document.getElementById('fullscreenToggle');
+                if (!button) return;
+                
+                if (document.fullscreenElement || 
+                    document.mozFullScreenElement || 
+                    document.webkitFullscreenElement || 
+                    document.msFullscreenElement) {
+                    button.querySelector('span').textContent = 'EXIT FULL';
+                } else {
+                    button.querySelector('span').textContent = 'FULLSCREEN';
+                }
+            }
+        });
+    </script>
     <script>
         // Create a global variable to control the loading process
         window.loadingController = {
@@ -641,6 +771,12 @@
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <!-- Fullscreen toggle button -->
+    <div id="fullscreenToggle" class="fullscreen-button">
+        <div class="fullscreen-icon"></div>
+        <span>FULLSCREEN</span>
+    </div>
     
     <!-- Overlay for decorative elements -->
     <div id="decorativeOverlay" style="position: absolute; top: 0; left: 0; width: 800px; height: 600px; pointer-events: none; z-index: 10; display: none;">
