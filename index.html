@@ -139,93 +139,10 @@
 
     <!-- Loading screen preloader - this ensures the loading screen appears before any other JS runs -->
     <script>
-        // Fullscreen functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const fullscreenToggle = document.getElementById('fullscreenToggle');
-            if (fullscreenToggle) {
-                // Add both touch and mouse event handlers
-                fullscreenToggle.addEventListener('click', toggleFullScreen);
-                
-                // Add touch-specific event handlers
-                fullscreenToggle.addEventListener('touchstart', handleTouchStart, {passive: false});
-                fullscreenToggle.addEventListener('touchend', handleTouchEnd, {passive: false});
-                
-                // Prevent fullscreen button from being affected by joystick
-                fullscreenToggle.addEventListener('touchmove', function(e) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                }, {passive: false});
-            }
-            
-            // Update button state when fullscreen changes
-            document.addEventListener('fullscreenchange', updateFullscreenButtonState);
-            document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
-            document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
-            document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
-            
-            // Handle touch start on fullscreen button
-            function handleTouchStart(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                fullscreenToggle.classList.add('active');
-            }
-            
-            // Handle touch end (for mobile devices)
-            function handleTouchEnd(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                fullscreenToggle.classList.remove('active');
-                toggleFullScreen();
-            }
-            
-            function toggleFullScreen() {
-                // Prevent joystick from interfering with fullscreen toggle
-                event?.stopPropagation();
-                
-                if (!document.fullscreenElement && 
-                    !document.mozFullScreenElement && 
-                    !document.webkitFullscreenElement && 
-                    !document.msFullscreenElement) {
-                    // Enter fullscreen
-                    const gameContainer = document.body;
-                    
-                    if (gameContainer.requestFullscreen) {
-                        gameContainer.requestFullscreen();
-                    } else if (gameContainer.mozRequestFullScreen) { // Firefox
-                        gameContainer.mozRequestFullScreen();
-                    } else if (gameContainer.webkitRequestFullscreen) { // Chrome, Safari
-                        gameContainer.webkitRequestFullscreen();
-                    } else if (gameContainer.msRequestFullscreen) { // IE/Edge
-                        gameContainer.msRequestFullscreen();
-                    }
-                } else {
-                    // Exit fullscreen
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.mozCancelFullScreen) {
-                        document.mozCancelFullScreen();
-                    } else if (document.webkitExitFullscreen) {
-                        document.webkitExitFullscreen();
-                    } else if (document.msExitFullscreen) {
-                        document.msExitFullscreen();
-                    }
-                }
-            }
-            
-            function updateFullscreenButtonState() {
-                const button = document.getElementById('fullscreenToggle');
-                if (!button) return;
-                
-                if (document.fullscreenElement || 
-                    document.mozFullScreenElement || 
-                    document.webkitFullscreenElement || 
-                    document.msFullscreenElement) {
-                    button.querySelector('span').textContent = 'EXIT FULL';
-                } else {
-                    button.querySelector('span').textContent = 'FULLSCREEN';
-                }
-            }
-        });
+        // Loading screen controller
+        window.loadingController = {
+            // Loading screen properties will be set in the init method
+        };
     </script>
     <script>
         // Create a global variable to control the loading process
@@ -819,8 +736,8 @@
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     
     <!-- Fullscreen toggle wrapper with explicit positioning to overcome any layout issues -->
-    <div style="position: fixed; top: 0; left: 0; z-index: 10001; pointer-events: none;">
-        <div id="fullscreenToggle" class="fullscreen-button">
+    <div style="position: fixed; top: 0; left: 0; z-index: 10001; pointer-events: none; display: block;">
+        <div id="fullscreenToggle" class="fullscreen-button" style="display: flex;">
             <div class="fullscreen-icon"></div>
             <span>FULLSCREEN</span>
         </div>
@@ -848,6 +765,106 @@
     
     <!-- Cleanup script to remove any debug elements while preserving fixes -->
     <script src="cleanupDebug.js"></script>
+    
+    <!-- Fullscreen toggle functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fullscreenToggle = document.getElementById('fullscreenToggle');
+            if (fullscreenToggle) {
+                // Add both touch and mouse event handlers
+                fullscreenToggle.addEventListener('click', toggleFullScreen);
+                
+                // Add touch-specific event handlers
+                fullscreenToggle.addEventListener('touchstart', handleTouchStart, {passive: false});
+                fullscreenToggle.addEventListener('touchend', handleTouchEnd, {passive: false});
+                
+                // Prevent fullscreen button from being affected by joystick
+                fullscreenToggle.addEventListener('touchmove', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }, {passive: false});
+            } else {
+                console.error('Fullscreen toggle button not found in DOM');
+            }
+            
+            // Update button state when fullscreen changes
+            document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
+            
+            // Handle touch start on fullscreen button
+            function handleTouchStart(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fullscreenToggle.classList.add('active');
+            }
+            
+            // Handle touch end (for mobile devices)
+            function handleTouchEnd(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fullscreenToggle.classList.remove('active');
+                toggleFullScreen();
+            }
+            
+            function toggleFullScreen(e) {
+                // Prevent joystick from interfering with fullscreen toggle
+                if (e) e.stopPropagation();
+                
+                console.log('Toggling fullscreen mode');
+                
+                if (!document.fullscreenElement && 
+                    !document.mozFullScreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.msFullscreenElement) {
+                    // Enter fullscreen
+                    const docElm = document.documentElement;
+                    if (docElm.requestFullscreen) {
+                        docElm.requestFullscreen();
+                    } else if (docElm.mozRequestFullScreen) { // Firefox
+                        docElm.mozRequestFullScreen();
+                    } else if (docElm.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                        docElm.webkitRequestFullscreen();
+                    } else if (docElm.msRequestFullscreen) { // IE/Edge
+                        docElm.msRequestFullscreen();
+                    }
+                } else {
+                    // Exit fullscreen
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.mozCancelFullScreen) { // Firefox
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) { // IE/Edge
+                        document.msExitFullscreen();
+                    }
+                }
+                
+                // Update button state after toggle
+                setTimeout(updateFullscreenButtonState, 100);
+            }
+            
+            function updateFullscreenButtonState() {
+                const buttonTextSpan = fullscreenToggle.querySelector('span');
+                if (!buttonTextSpan) return;
+                
+                if (document.fullscreenElement || 
+                    document.mozFullScreenElement || 
+                    document.webkitFullscreenElement || 
+                    document.msFullscreenElement) {
+                    buttonTextSpan.textContent = 'EXIT FULL';
+                } else {
+                    buttonTextSpan.textContent = 'FULLSCREEN';
+                }
+            }
+            
+            // Make sure button is initially visible
+            fullscreenToggle.style.display = 'flex';
+            console.log('Fullscreen toggle button initialized');
+        });
+    </script>
     
     <!-- Direct Enter key fix that manually handles Enter key events at document level -->
     <script type="module" src="enterKeyFix.js"></script>
