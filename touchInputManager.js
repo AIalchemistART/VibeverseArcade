@@ -134,6 +134,52 @@ class TouchInputManager {
     }
     
     /**
+     * Update zoom button icon based on current zoom state
+     */
+    updateZoomButtonIcon() {
+        if (!this.zoomButtonElement) return;
+        
+        let svgIcon;
+        let glowColor;
+        
+        // Remove all state classes
+        this.zoomButtonElement.classList.remove('zoom-state-0', 'zoom-state-1', 'zoom-state-2');
+        
+        switch(this.zoomState) {
+            case 0: // Default zoom
+                glowColor = '#00ffcc';
+                svgIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10.5" cy="10.5" r="6.5" stroke="${glowColor}" stroke-width="2"/>
+                    <path d="M15 15L20 20" stroke="${glowColor}" stroke-width="2" stroke-linecap="round"/>
+                </svg>`;
+                this.zoomButtonElement.classList.add('zoom-state-0');
+                break;
+            case 1: // Zoomed in
+                glowColor = '#00ffff';
+                svgIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10.5" cy="10.5" r="6.5" stroke="${glowColor}" stroke-width="2"/>
+                    <path d="M15 15L20 20" stroke="${glowColor}" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M8 10.5H13" stroke="${glowColor}" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M10.5 8V13" stroke="${glowColor}" stroke-width="2" stroke-linecap="round"/>
+                </svg>`;
+                this.zoomButtonElement.classList.add('zoom-state-1');
+                break;
+            case 2: // Zoomed out
+                glowColor = '#ff00ff';
+                svgIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10.5" cy="10.5" r="6.5" stroke="${glowColor}" stroke-width="2"/>
+                    <path d="M15 15L20 20" stroke="${glowColor}" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M8 10.5H13" stroke="${glowColor}" stroke-width="2" stroke-linecap="round"/>
+                </svg>`;
+                this.zoomButtonElement.classList.add('zoom-state-2');
+                break;
+        }
+        
+        // Apply the SVG icon with neon glow effect
+        this.zoomButtonElement.innerHTML = `<div style="filter: drop-shadow(0 0 3px ${glowColor});">${svgIcon}</div>`;
+    }
+    
+    /**
      * Toggle between zoom levels
      */
     toggleZoomLevel() {
@@ -148,9 +194,9 @@ class TouchInputManager {
             console.warn('Camera not found for zoom toggle. Please reload the page.');
             
             // Show visual feedback that camera wasn't found
-            this.zoomButtonElement.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+            this.zoomButtonElement.style.backgroundColor = 'rgba(255, 0, 0, 0.7)';
             setTimeout(() => {
-                this.zoomButtonElement.style.backgroundColor = 'rgba(0, 183, 255, 0.5)';
+                this.updateZoomButtonIcon(); // Reset to proper state
             }, 500);
             return;
         }
@@ -159,39 +205,37 @@ class TouchInputManager {
         const newZoom = this.zoomLevels[this.zoomState];
         camera.setZoom(newZoom);
         
-        // Update button appearance to indicate current zoom state
-        let zoomIcon;
-        let backgroundColor;
-        
+        // Get glow color based on state for animation
+        let glowColor;
         switch(this.zoomState) {
             case 0: // Default
-                zoomIcon = '🔍';
-                backgroundColor = 'rgba(0, 183, 255, 0.5)';
+                glowColor = '#00ffcc';
                 break;
             case 1: // Zoomed in
-                zoomIcon = '🔍+';
-                backgroundColor = 'rgba(0, 255, 128, 0.5)';
+                glowColor = '#00ffff';
                 break;
             case 2: // Zoomed out
-                zoomIcon = '🔍-';
-                backgroundColor = 'rgba(255, 128, 255, 0.5)';
+                glowColor = '#ff00ff';
                 break;
         }
         
-        // Update button appearance
-        this.zoomButtonElement.innerHTML = zoomIcon;
-        this.zoomButtonElement.style.backgroundColor = backgroundColor;
+        // Update the SVG icon and state colors based on current zoom state
+        this.updateZoomButtonIcon();
         
-        // Apply a quick visual feedback animation - pulse effect
+        // Apply a quick visual feedback animation with cyberpunk effects
         this.zoomButtonElement.style.transform = 'scale(1.1)';
-        this.zoomButtonElement.style.boxShadow = `0 0 12px ${backgroundColor}, 0 0 20px rgba(0, 255, 255, 0.8)`;
+        this.zoomButtonElement.style.boxShadow = `0 0 20px ${glowColor}, 0 0 35px ${glowColor}80`;
         
+        // After animation, let CSS classes handle the colors
         setTimeout(() => {
             this.zoomButtonElement.style.transform = 'scale(1)';
-            this.zoomButtonElement.style.boxShadow = '0 0 8px #00ffff, 0 0 16px rgba(0, 255, 255, 0.5)';
-        }, 200);
+            
+            // Ensure only inline transform is reset, so CSS class styling takes effect
+            // Do NOT set box-shadow here; let the CSS classes handle it
+            this.zoomButtonElement.style.removeProperty('box-shadow');
+        }, 300);
         
-        console.log(`Zoom toggled to level ${this.zoomState}: ${newZoom}`);
+        console.log(`Zoom toggled to level ${this.zoomState}: ${newZoom} with color ${glowColor}`);
     }
     
     /**
@@ -244,7 +288,17 @@ class TouchInputManager {
      * Creates touch UI elements (virtual joystick, action button, and zoom toggle)
      */
     createTouchUI() {
-        // Create joystick base
+        // Import cyberpunk font if not already in the document
+        if (!document.getElementById('cyberpunk-font')) {
+            const fontLink = document.createElement('link');
+            fontLink.id = 'cyberpunk-font';
+            fontLink.rel = 'stylesheet';
+            fontLink.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap';
+            document.head.appendChild(fontLink);
+            console.log('Added Orbitron cyberpunk font');
+        }
+        
+        // Create joystick base with cyberpunk/synthwave styling
         this.joystickElement = document.createElement('div');
         this.joystickElement.id = 'virtualJoystick';
         this.joystickElement.style.cssText = `
@@ -253,16 +307,19 @@ class TouchInputManager {
             left: 120px;
             width: 150px;
             height: 150px;
-            background-color: rgba(255, 255, 255, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.6);
+            background: radial-gradient(circle, rgba(77, 5, 232, 0.2) 0%, rgba(41, 0, 128, 0.3) 70%, rgba(128, 0, 255, 0.4) 100%);
+            border: 2px solid rgba(191, 87, 255, 0.8);
+            box-shadow: 0 0 15px rgba(123, 31, 162, 0.7), inset 0 0 10px rgba(191, 87, 255, 0.5);
             border-radius: 50%;
             z-index: 1000;
             touch-action: none;
             display: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
         `;
-        console.log('Created virtual joystick element');
+        console.log('Created virtual joystick with cyberpunk styling');
         
-        // Create joystick knob
+        // Create joystick knob with neon glow
         this.joystickKnobElement = document.createElement('div');
         this.joystickKnobElement.id = 'joystickKnob';
         this.joystickKnobElement.style.cssText = `
@@ -272,12 +329,15 @@ class TouchInputManager {
             transform: translate(-50%, -50%);
             width: 60px;
             height: 60px;
-            background-color: rgba(255, 255, 255, 0.8);
+            background: radial-gradient(circle, rgba(255, 41, 250, 0.9) 0%, rgba(199, 0, 221, 0.7) 70%);
+            border: 2px solid rgba(255, 92, 255, 0.9);
+            box-shadow: 0 0 10px rgba(252, 25, 255, 0.8), 0 0 20px rgba(252, 25, 255, 0.4);
             border-radius: 50%;
             pointer-events: none;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
         `;
         
-        // Create interact button (previously action button)
+        // Create interact button with magical cyberpunk styling
         this.actionButtonElement = document.createElement('div');
         this.actionButtonElement.id = 'interactButton';
         this.actionButtonElement.style.cssText = `
@@ -286,22 +346,26 @@ class TouchInputManager {
             right: 120px;
             width: 100px;
             height: 100px;
-            background-color: rgba(100, 200, 100, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.6);
+            background: radial-gradient(circle, rgba(72, 255, 168, 0.8) 0%, rgba(0, 192, 112, 0.7) 70%);
+            border: 2px solid rgba(0, 255, 170, 0.9);
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.7), inset 0 0 8px rgba(157, 255, 204, 0.6);
             border-radius: 50%;
             z-index: 1000;
             touch-action: none;
             display: none;
-            font-family: Arial, sans-serif;
+            font-family: 'Orbitron', sans-serif;
             color: white;
             text-align: center;
             line-height: 100px;
             font-size: 16px;
             font-weight: bold;
+            text-shadow: 0 0 5px #00ffaa, 0 0 10px rgba(0, 255, 170, 0.6);
+            transition: all 0.2s ease;
+            backdrop-filter: blur(2px);
         `;
         this.actionButtonElement.textContent = 'INTERACT';
         
-        // Create escape button
+        // Create escape button with synthwave alert styling
         this.escapeButtonElement = document.createElement('div');
         this.escapeButtonElement.id = 'escapeButton';
         this.escapeButtonElement.style.cssText = `
@@ -310,18 +374,22 @@ class TouchInputManager {
             right: 140px;
             width: 60px;
             height: 60px;
-            background-color: rgba(255, 100, 100, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.6);
+            background: radial-gradient(circle, rgba(255, 82, 82, 0.8) 0%, rgba(192, 0, 0, 0.7) 70%);
+            border: 2px solid rgba(255, 61, 61, 0.9);
+            box-shadow: 0 0 15px rgba(230, 0, 0, 0.7), inset 0 0 8px rgba(255, 157, 157, 0.6);
             border-radius: 50%;
             z-index: 1000;
             touch-action: none;
             display: none;
-            font-family: Arial, sans-serif;
+            font-family: 'Orbitron', sans-serif;
             color: white;
             text-align: center;
             line-height: 60px;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
+            text-shadow: 0 0 5px #ff3838, 0 0 10px rgba(255, 0, 0, 0.6);
+            transition: all 0.2s ease;
+            backdrop-filter: blur(2px);
         `;
         this.escapeButtonElement.textContent = 'ESC';
         
@@ -331,19 +399,19 @@ class TouchInputManager {
         document.body.appendChild(this.actionButtonElement);
         document.body.appendChild(this.escapeButtonElement);
         
-        // Create zoom toggle button with enhanced touch-friendly design for better mobile support
+        // Create zoom toggle button with enhanced cyberpunk magical styling
         this.zoomButtonElement = document.createElement('div');
         this.zoomButtonElement.id = 'zoomToggleButton';
         this.zoomButtonElement.style.cssText = `
             position: fixed;
             top: 20px;
-            right: 20px;
-            width: 60px; /* Reduced by 1/4 from 80px */
-            height: 60px; /* Reduced by 1/4 from 80px */
+            right: 50px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            background-color: rgba(0, 183, 255, 0.5);
-            border: 2px solid rgba(0, 255, 255, 0.8);
-            box-shadow: 0 0 8px #00ffff, 0 0 16px rgba(0, 255, 255, 0.5);
+            background: rgba(26, 5, 54, 0.9);
+            border: 2px solid #00ffcc;
+            box-shadow: 0 0 8px #00ffff, 0 0 16px rgba(0, 255, 204, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -353,16 +421,54 @@ class TouchInputManager {
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
-            font-family: Arial, sans-serif;
-            font-size: 22px; /* Reduced to keep proportional */
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
             font-weight: bold;
-            color: #ffffff;
-            text-shadow: 0 0 5px #00ffff, 0 0 10px rgba(0, 255, 255, 0.8);
-            transition: all 0.2s ease;
-            padding: 10px 15px; /* Reduced padding to match smaller size */
+            color: #00ffcc;
+            text-shadow: 0 0 5px #00ffcc, 0 0 10px rgba(0, 255, 204, 0.7);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
+            backdrop-filter: blur(3px);
+            animation: neonZoomPulse 3s infinite;
         `;
-        this.zoomButtonElement.innerHTML = '🔍';
+        
+        // Add key frames for subtle pulse animation and zoom button states
+        if (!document.getElementById('cyberpunk-animations')) {
+            const styleSheet = document.createElement('style');
+            styleSheet.id = 'cyberpunk-animations';
+            styleSheet.textContent = `
+                @keyframes neonZoomPulse {
+                    0% { box-shadow: 0 0 8px #00ffcc, 0 0 12px #00ffcc; }
+                    50% { box-shadow: 0 0 15px #00ffcc, 0 0 25px #00ffcc; }
+                    100% { box-shadow: 0 0 8px #00ffcc, 0 0 12px #00ffcc; }
+                }
+                @keyframes textGlow {
+                    0% { text-shadow: 0 0 5px #00ffcc, 0 0 10px rgba(0, 255, 204, 0.7); }
+                    100% { text-shadow: 0 0 8px #00ffcc, 0 0 15px rgba(0, 255, 204, 0.9); }
+                }
+                
+                /* Zoom Button State Classes - More distinctive colors */
+                #zoomToggleButton.zoom-state-0 { 
+                    background-color: rgba(26, 5, 54, 0.9) !important;
+                    border-color: #00ffcc !important;
+                    box-shadow: 0 0 10px #00ffcc, 0 0 20px rgba(0, 255, 204, 0.5) !important;
+                }
+                #zoomToggleButton.zoom-state-1 { 
+                    background-color: rgba(0, 80, 95, 0.9) !important;
+                    border-color: #00ffff !important;
+                    box-shadow: 0 0 10px #00ffff, 0 0 20px rgba(0, 255, 255, 0.5) !important;
+                }
+                #zoomToggleButton.zoom-state-2 { 
+                    background-color: rgba(90, 0, 120, 0.9) !important;
+                    border-color: #ff00ff !important;
+                    box-shadow: 0 0 10px #ff00ff, 0 0 20px rgba(255, 0, 255, 0.5) !important;
+                }
+            `;
+            document.head.appendChild(styleSheet);
+        }
+        
+        // Create SVG icon for zoom button that changes based on zoom state
+        this.updateZoomButtonIcon();
         document.body.appendChild(this.zoomButtonElement);
         
         // Create a single handler function for zoom level toggle to ensure consistent behavior
@@ -373,11 +479,13 @@ class TouchInputManager {
             return false; // Prevent any default actions
         };
 
-        // Apply pressed visual state function
+        // Apply pressed visual state function with enhanced cyberpunk feedback
         const applyPressedState = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            this.zoomButtonElement.style.transform = 'scale(0.97)';
+            this.zoomButtonElement.style.transform = 'scale(0.92)';
+            this.zoomButtonElement.style.boxShadow = '0 0 20px #00ffcc, 0 0 35px rgba(0, 255, 204, 0.8)';
+            this.zoomButtonElement.style.background = 'rgba(0, 66, 77, 0.9)';
             return false;
         };
 
@@ -386,7 +494,58 @@ class TouchInputManager {
             e.preventDefault();
             e.stopPropagation();
             this.zoomButtonElement.style.transform = 'scale(1)';
+            this.zoomButtonElement.style.boxShadow = '';
+            this.zoomButtonElement.style.background = 'rgba(26, 5, 54, 0.9)';
             return false;
+        };
+        
+        // Apply similar visual feedback for interaction buttons with actual functionality
+        const applyActionPressedState = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Visual feedback
+            this.actionButtonElement.style.transform = 'scale(0.92)';
+            this.actionButtonElement.style.boxShadow = '0 0 20px rgba(0, 230, 118, 0.9), inset 0 0 12px rgba(157, 255, 204, 0.8)';
+            this.actionButtonElement.style.textShadow = '0 0 8px #00ffaa, 0 0 15px rgba(0, 255, 170, 0.8)';
+            // Critical functionality: Activate interaction in the game
+            this.setAction(true);
+        };
+        
+        const returnActionToNormalState = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Visual feedback
+            this.actionButtonElement.style.transform = 'scale(1)';
+            this.actionButtonElement.style.boxShadow = '0 0 15px rgba(0, 230, 118, 0.7), inset 0 0 8px rgba(157, 255, 204, 0.6)';
+            this.actionButtonElement.style.textShadow = '0 0 5px #00ffaa, 0 0 10px rgba(0, 255, 170, 0.6)';
+            // Critical functionality: Deactivate interaction in the game
+            this.setAction(false);
+        };
+        
+        // Apply escape button visual feedback with red synthwave glow & escape functionality
+        const applyEscapePressedState = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Visual feedback
+            this.escapeButtonElement.style.transform = 'scale(0.92)';
+            this.escapeButtonElement.style.boxShadow = '0 0 20px rgba(230, 0, 0, 0.9), inset 0 0 12px rgba(255, 157, 157, 0.8)';
+            this.escapeButtonElement.style.textShadow = '0 0 8px #ff3838, 0 0 15px rgba(255, 0, 0, 0.8)';
+            // Critical functionality: Activate escape in the game
+            this.setEscape(true);
+        };
+        
+        const returnEscapeToNormalState = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Visual feedback
+            this.escapeButtonElement.style.transform = 'scale(1)';
+            this.escapeButtonElement.style.boxShadow = '0 0 15px rgba(230, 0, 0, 0.7), inset 0 0 8px rgba(255, 157, 157, 0.6)';
+            this.escapeButtonElement.style.textShadow = '0 0 5px #ff3838, 0 0 10px rgba(255, 0, 0, 0.6)';
+            // Critical functionality: Deactivate escape in the game
+            this.setEscape(false);
+            
+            // Also simulate Escape key press for menus that require it
+            this.simulateKeyPress('Escape');
         };
 
         // Add Android-friendly touch events (must be added before mouse events)
@@ -394,6 +553,100 @@ class TouchInputManager {
         this.zoomButtonElement.addEventListener('touchend', (e) => {
             returnToNormalState(e);
             handleZoomAction(e);
+        }, { passive: false });
+        
+        // Add enhanced touch events for action button with direct simulation
+        this.actionButtonElement.addEventListener('touchstart', (e) => {
+            // Apply visual effects
+            applyActionPressedState(e);
+            
+            // DIRECT KEY SIMULATION: Trigger an Enter key event
+            // This directly simulates a keyboard event without relying on input system
+            const enterEvent = new KeyboardEvent('keydown', {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true
+            });
+            document.dispatchEvent(enterEvent);
+            console.log('🎮 INTERACT: Direct Enter keydown event dispatched');
+            
+            // Also set the global input flags just to be thorough
+            if (window.input && window.input.keys) {
+                window.input.keys['Enter'] = true;
+                if (typeof window.input.enterKeyPressed !== 'undefined') {
+                    window.input.enterKeyPressed = true;
+                }
+            }
+        }, { passive: false });
+        
+        this.actionButtonElement.addEventListener('touchend', (e) => {
+            // Apply visual effects
+            returnActionToNormalState(e);
+            
+            // DIRECT KEY SIMULATION: Trigger an Enter key up event
+            const enterUpEvent = new KeyboardEvent('keyup', {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true
+            });
+            document.dispatchEvent(enterUpEvent);
+            console.log('🎮 INTERACT: Direct Enter keyup event dispatched');
+            
+            // Clear the global input flags
+            if (window.input && window.input.keys) {
+                window.input.keys['Enter'] = false;
+                if (typeof window.input.enterKeyPressed !== 'undefined') {
+                    window.input.enterKeyPressed = false;
+                }
+            }
+        }, { passive: false });
+        
+        // Add enhanced touch events for escape button with direct simulation
+        this.escapeButtonElement.addEventListener('touchstart', (e) => {
+            // Apply visual effects
+            applyEscapePressedState(e);
+            
+            // DIRECT KEY SIMULATION: Trigger an Escape key event
+            // This directly simulates a keyboard event without relying on input system
+            const escapeEvent = new KeyboardEvent('keydown', {
+                key: 'Escape',
+                code: 'Escape',
+                keyCode: 27,
+                which: 27,
+                bubbles: true
+            });
+            document.dispatchEvent(escapeEvent);
+            console.log('🎮 ESCAPE: Direct Escape keydown event dispatched');
+            
+            // Also set the global input flags just to be thorough
+            if (window.input && window.input.keys) {
+                window.input.keys['Escape'] = true;
+            }
+        }, { passive: false });
+        
+        this.escapeButtonElement.addEventListener('touchend', (e) => {
+            // Apply visual effects
+            returnEscapeToNormalState(e);
+            
+            // DIRECT KEY SIMULATION: Trigger an Escape key up event
+            const escapeUpEvent = new KeyboardEvent('keyup', {
+                key: 'Escape',
+                code: 'Escape',
+                keyCode: 27,
+                which: 27,
+                bubbles: true
+            });
+            document.dispatchEvent(escapeUpEvent);
+            console.log('🎮 ESCAPE: Direct Escape keyup event dispatched');
+            
+            // Clear the global input flags
+            if (window.input && window.input.keys) {
+                window.input.keys['Escape'] = false;
+            }
         }, { passive: false });
         
         // Cancel touch if moved out of button
@@ -416,7 +669,16 @@ class TouchInputManager {
         });
         this.zoomButtonElement.addEventListener('mouseleave', returnToNormalState);
         
-        console.log('Touch UI elements created including zoom toggle button');
+        // Add mouse events for action and escape buttons
+        this.actionButtonElement.addEventListener('mousedown', applyActionPressedState);
+        this.actionButtonElement.addEventListener('mouseup', returnActionToNormalState);
+        this.actionButtonElement.addEventListener('mouseleave', returnActionToNormalState);
+        
+        this.escapeButtonElement.addEventListener('mousedown', applyEscapePressedState);
+        this.escapeButtonElement.addEventListener('mouseup', returnEscapeToNormalState);
+        this.escapeButtonElement.addEventListener('mouseleave', returnEscapeToNormalState);
+        
+        console.log('Touch UI elements created with cyberpunk/synthwave styling');
     }
     
     /**
@@ -461,16 +723,8 @@ class TouchInputManager {
             canvas.dispatchEvent(wheelEvent);
         }, { passive: false });
         
-        // Special listener for the action button
-        this.actionButtonElement.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.setAction(true);
-        });
-        
-        this.actionButtonElement.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.setAction(false);
-        });
+        // Note: we removed these listeners since they're now handled in createTouchUI
+        // with our cyberpunk styling effect functions that also set the action state
     }
     
     /**
@@ -917,15 +1171,52 @@ class TouchInputManager {
         this.activeDirections.action = active;
         console.log('Touch: setAction called with active =', active);
         
-        // Update input system - now using Enter key for interaction
+        // Update BOTH input system and window.input for interaction
+        // This is critical because ArcadeEntity checks window.input instead of input
         if (active) {
+            // Update local input object
             input.keys['Enter'] = true; // Enter key for interaction
             input.enterKeyPressed = true; // Also set the special flag
-            console.log('Touch: Enter key and flag set to true');
+            
+            // Also update global window.input object directly as ArcadeEntity checks this
+            if (window.input) {
+                window.input.keys['Enter'] = true;
+                window.input.enterKeyPressed = true;
+            }
+            
+            // Simulate a proper keydown event to ensure game systems detect it
+            const enterEvent = new KeyboardEvent('keydown', {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true
+            });
+            document.dispatchEvent(enterEvent);
+            
+            console.log('Touch: Enter key and flag set to true (with window.input update)');
         } else {
+            // Update local input object
             input.keys['Enter'] = false;
             input.enterKeyPressed = false;
-            console.log('Touch: Enter key and flag set to false');
+            
+            // Also update global window.input object directly
+            if (window.input) {
+                window.input.keys['Enter'] = false;
+                window.input.enterKeyPressed = false;
+            }
+            
+            // Simulate a proper keyup event
+            const enterEvent = new KeyboardEvent('keyup', {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true
+            });
+            document.dispatchEvent(enterEvent);
+            
+            console.log('Touch: Enter key and flag set to false (with window.input update)');
         }
     }
     

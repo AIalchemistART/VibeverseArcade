@@ -210,6 +210,27 @@ Each entry contains:
 - **Search Term**: `drawIsometricLabel circuitGridX`
 - **Description**: Changed room label from 'CIRCUIT SANCTUM' to 'AI ALCHEMIST\'S LAIR' and repositioned from { x: -18.7, y: -15.2 } → { x: 107.5, y: 26 } to match the expanded layout.
 
+### Touch Controls Enhancement - Zoom & Fullscreen Buttons
+- **File**: touchInputManager.js, index.html
+- **Line**: ~135-230 (touchInputManager.js), ~220-255 (index.html)
+- **Search Term**: `toggleZoomLevel updateZoomButtonIcon fullscreenToggle`
+- **Description**: Enhanced touch controls with cyberpunk-styled zoom and fullscreen buttons:
+  1. **Zoom Button**:
+     - Implemented state-based SVG icons with distinct visual styling for each zoom level
+     - Created 3 zoom states (default, zoomed in, zoomed out) with unique colors (cyan, blue, magenta)
+     - Added CSS classes with dynamic color changes and glow effects that respond to state changes
+     - Positioned for easy access on mobile devices with optimized touch areas
+  2. **Fullscreen Button**:
+     - Added state-based styling with distinct colors for fullscreen vs. normal mode
+     - Implemented SVG icons with neon glow effects that match the game's cyberpunk aesthetic
+     - Ensured proper mobile touch handling with appropriate touch-action properties
+  3. **Common Enhancements**:
+     - Applied consistent cyberpunk color scheme (dark purple backgrounds, neon glows)
+     - Added subtle animation effects (scale and glow transitions) for touch feedback
+     - Optimized touch target sizes for better mobile usability
+     - Enhanced visual communication through color-coding of different states
+  These improvements maintain the cyberpunk/synthwave aesthetic while providing clear visual feedback for touch interactions across different device types.
+
 ---
 
 ## Game Logic

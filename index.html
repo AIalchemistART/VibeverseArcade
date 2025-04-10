@@ -76,9 +76,19 @@
             touch-action: manipulation; /* Better touch behavior */
         }
         
+        @keyframes neonPulse {
+            0% { box-shadow: 0 0 8px #00ffcc, 0 0 12px #00ffcc; }
+            50% { box-shadow: 0 0 15px #00ffcc, 0 0 25px #00ffcc; }
+            100% { box-shadow: 0 0 8px #00ffcc, 0 0 12px #00ffcc; }
+        }
+        
+        .fullscreen-button {
+            animation: neonPulse 3s infinite;
+        }
+        
         .fullscreen-button:hover, .fullscreen-button:active {
             background: rgba(26, 5, 54, 1);
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.9);
+            box-shadow: 0 0 20px #00ffcc, 0 0 35px rgba(0, 255, 204, 0.8);
             transform: scale(1.05);
         }
         
@@ -154,6 +164,9 @@
             document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
             document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
             
+            // Initialize button icon state immediately
+            updateFullscreenButtonState();
+            
             function toggleFullScreen(e) {
                 if (e) e.stopPropagation(); // Prevent event bubbling
                 console.log('Fullscreen toggle clicked/touched');
@@ -219,11 +232,27 @@
                 const iconElement = button.querySelector('.fullscreen-icon');
                 if (iconElement) {
                     if (isFullscreen) {
-                        iconElement.innerHTML = '<span style="font-size: 28px; color: #00ffcc; text-shadow: 0 0 5px rgba(0, 255, 204, 0.9);">⤢</span>';
+                        // Exit fullscreen icon - shows a minimized window symbol with teal color theme
+                        const glowColor = '#00ffff';
+                        iconElement.innerHTML = `<div style="font-size: 22px; color: ${glowColor}; text-shadow: 0 0 8px ${glowColor}, 0 0 15px ${glowColor}; display: flex; justify-content: center; align-items: center;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8" stroke="${glowColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>`;
                         button.style.backgroundColor = 'rgba(0, 66, 77, 0.9)';
+                        button.style.borderColor = glowColor;
+                        button.style.boxShadow = `0 0 10px ${glowColor}, 0 0 20px ${glowColor}80`;
                     } else {
-                        iconElement.innerHTML = '<span style="font-size: 28px; color: #00ffcc; text-shadow: 0 0 5px rgba(0, 255, 204, 0.9);">⤢</span>';
+                        // Enter fullscreen icon - shows an expanded window symbol with standard cyan theme
+                        const glowColor = '#00ffcc';
+                        iconElement.innerHTML = `<div style="font-size: 22px; color: ${glowColor}; text-shadow: 0 0 8px ${glowColor}, 0 0 15px ${glowColor}; display: flex; justify-content: center; align-items: center;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 8V5C3 3.89543 3.89543 3 5 3H8M16 3H19C20.1046 3 21 3.89543 21 5V8M21 16V19C21 20.1046 20.1046 21 19 21H16M8 21H5C3.89543 21 3 20.1046 3 19V16" stroke="${glowColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>`;
                         button.style.backgroundColor = 'rgba(26, 5, 54, 0.9)';
+                        button.style.borderColor = glowColor;
+                        button.style.boxShadow = `0 0 10px ${glowColor}, 0 0 20px ${glowColor}80`;
                     }
                 }
                 
@@ -849,6 +878,9 @@
     
     <!-- Cleanup script to remove any debug elements while preserving fixes -->
     <script src="cleanupDebug.js"></script>
+    
+    <!-- Interaction debounce system to prevent multiple windows from opening -->
+    <script type="module" src="interactionDebounce.js"></script>
     
     <!-- Direct Enter key fix that manually handles Enter key events at document level -->
     <script type="module" src="enterKeyFix.js"></script>
