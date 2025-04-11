@@ -338,23 +338,35 @@ class VisitorCounterEntity extends Entity {
         // Draw the counter background (isometric panel)
         this.drawCounterPanel(ctx, screenX, screenY, totalWidth, totalHeight);
         
-        // Draw each digit
+        // Create a transformation matrix for the digits to match isometric view
+        ctx.save();
+        
+        // Apply isometric transform for digit display
+        const isoAngle = Math.PI / 4; // 45 degrees in radians
+        ctx.translate(screenX, screenY);
+        ctx.rotate(-isoAngle * 0.2); // Slight rotation to match panel
+        ctx.scale(0.85, 0.7); // Scale to match isometric perspective
+        
+        // Draw each digit with isometric positioning
+        const startX = -(((this.digitWidth * 4) + (this.digitGap * 3)) / 2) + (this.digitWidth / 2);
+        const digitY = -5; // Slightly raised from center
+        
         for (let i = 0; i < 4; i++) {
-            const digitX = screenX - (totalWidth / 2) + 20 + (i * (this.digitWidth + this.digitGap));
-            const digitY = screenY - (totalHeight / 2) + 20;
-            
+            const digitX = startX + (i * (this.digitWidth + this.digitGap));
             this.drawDigit(ctx, digitX, digitY, this.digits[i]);
         }
         
-        // Draw the label
-        this.drawLabel(ctx, screenX, screenY + (totalHeight / 2) + 15);
+        ctx.restore();
+        
+        // Draw the label below with isometric perspective
+        this.drawLabel(ctx, screenX, screenY + (totalHeight / 2) + 10);
         
         // Check if it's time to refresh the count
         this.checkForRefresh();
     }
     
     /**
-     * Draw the counter panel with cyberpunk/synthwave aesthetics
+     * Draw the counter panel with cyberpunk/synthwave aesthetics in isometric perspective
      * @param {CanvasRenderingContext2D} ctx - Canvas rendering context
      * @param {number} x - Center X position
      * @param {number} y - Center Y position
@@ -365,56 +377,105 @@ class VisitorCounterEntity extends Entity {
         // Save context
         ctx.save();
         
-        // Calculate corner coordinates for isometric panel
-        const left = x - (width / 2);
-        const top = y - (height / 2);
-        const right = x + (width / 2);
-        const bottom = y + (height / 2);
+        // Isometric parameters
+        const isoAngle = Math.PI / 4; // 45 degrees in radians
+        const isoSkewX = 0.5; // Horizontal skew factor
+        const isoSkewY = 0.3; // Vertical compression factor
         
-        // Draw isometric panel with neon cyberpunk style
-        ctx.fillStyle = 'rgba(0, 10, 20, 0.8)';
-        ctx.strokeStyle = this.glowColor;
-        ctx.lineWidth = 2;
+        // Calculate isometric dimensions
+        const isoWidth = width * 0.85; // Slightly narrower in isometric view
+        const isoHeight = height * 0.7; // Shorter in isometric view
         
-        // Main panel
+        // Calculate corner coordinates
+        const centerX = x;
+        const centerY = y + (height * 0.1); // Shift down slightly for better perspective
+        
+        // Create isometric panel path
+        ctx.translate(centerX, centerY);
+        ctx.rotate(-isoAngle * 0.2); // Slight rotation for isometric effect
+        
+        // Draw panel base - darker for depth effect
+        ctx.fillStyle = '#000a0a'; // Very dark teal for depth
+        
+        // Draw the main panel with isometric perspective
         ctx.beginPath();
-        ctx.moveTo(left + 10, top);
-        ctx.lineTo(right - 10, top);
-        ctx.quadraticCurveTo(right, top, right, top + 10);
-        ctx.lineTo(right, bottom - 10);
-        ctx.quadraticCurveTo(right, bottom, right - 10, bottom);
-        ctx.lineTo(left + 10, bottom);
-        ctx.quadraticCurveTo(left, bottom, left, bottom - 10);
-        ctx.lineTo(left, top + 10);
-        ctx.quadraticCurveTo(left, top, left + 10, top);
+        // Bottom face (slightly visible)
+        ctx.moveTo(-isoWidth/2, isoHeight*0.4);
+        ctx.lineTo(isoWidth/2, isoHeight*0.4);
+        ctx.lineTo(isoWidth/2 + isoWidth*0.1, isoHeight*0.5);
+        ctx.lineTo(-isoWidth/2 + isoWidth*0.1, isoHeight*0.5);
         ctx.closePath();
         ctx.fill();
         
-        // Neon border
+        // Side face (right)
+        ctx.fillStyle = '#001212'; // Dark teal for side
+        ctx.beginPath();
+        ctx.moveTo(isoWidth/2, -isoHeight*0.5);
+        ctx.lineTo(isoWidth/2, isoHeight*0.4);
+        ctx.lineTo(isoWidth/2 + isoWidth*0.1, isoHeight*0.5);
+        ctx.lineTo(isoWidth/2 + isoWidth*0.1, -isoHeight*0.4);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Top face (main display area)
+        ctx.fillStyle = 'rgba(0, 10, 20, 0.8)'; // Match existing color but with transparency
+        ctx.beginPath();
+        ctx.moveTo(-isoWidth/2, -isoHeight*0.5); // Top-left
+        ctx.lineTo(isoWidth/2, -isoHeight*0.5);  // Top-right
+        ctx.lineTo(isoWidth/2, isoHeight*0.4);   // Bottom-right
+        ctx.lineTo(-isoWidth/2, isoHeight*0.4);  // Bottom-left
+        ctx.closePath();
+        ctx.fill();
+        
+        // Add outer glow
         ctx.shadowColor = this.glowColor;
         ctx.shadowBlur = this.glowIntensity;
+        
+        // Draw panel borders with glow
+        ctx.strokeStyle = this.glowColor;
+        ctx.lineWidth = 2;
+        
+        // Top face border
+        ctx.beginPath();
+        ctx.moveTo(-isoWidth/2, -isoHeight*0.5);
+        ctx.lineTo(isoWidth/2, -isoHeight*0.5);
+        ctx.lineTo(isoWidth/2, isoHeight*0.4);
+        ctx.lineTo(-isoWidth/2, isoHeight*0.4);
+        ctx.closePath();
         ctx.stroke();
         
-        // Add grid lines for cyberpunk effect
-        ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+        // Side edge
+        ctx.beginPath();
+        ctx.moveTo(isoWidth/2, -isoHeight*0.5);
+        ctx.lineTo(isoWidth/2 + isoWidth*0.1, -isoHeight*0.4);
+        ctx.stroke();
+        
+        // Bottom edge
+        ctx.beginPath();
+        ctx.moveTo(isoWidth/2, isoHeight*0.4);
+        ctx.lineTo(isoWidth/2 + isoWidth*0.1, isoHeight*0.5);
+        ctx.stroke();
+        
+        // Add inner grid lines (subtle techno effect)
+        ctx.strokeStyle = 'rgba(0, 255, 255, 0.15)';
         ctx.lineWidth = 1;
         ctx.shadowBlur = 0;
         
         // Horizontal grid lines
         for (let i = 1; i < 4; i++) {
-            const lineY = top + (height * (i / 4));
+            const lineY = (-isoHeight*0.5) + (isoHeight * 0.9 * (i / 4));
             ctx.beginPath();
-            ctx.moveTo(left + 5, lineY);
-            ctx.lineTo(right - 5, lineY);
+            ctx.moveTo(-isoWidth/2 + 5, lineY);
+            ctx.lineTo(isoWidth/2 - 5, lineY);
             ctx.stroke();
         }
         
         // Vertical grid lines
         for (let i = 1; i < 4; i++) {
-            const lineX = left + (width * (i / 4));
+            const lineX = (-isoWidth/2) + (isoWidth * (i / 4));
             ctx.beginPath();
-            ctx.moveTo(lineX, top + 5);
-            ctx.lineTo(lineX, bottom - 5);
+            ctx.moveTo(lineX, -isoHeight*0.5 + 5);
+            ctx.lineTo(lineX, isoHeight*0.4 - 5);
             ctx.stroke();
         }
         
@@ -604,13 +665,19 @@ class VisitorCounterEntity extends Entity {
     }
     
     /**
-     * Draw the label below the counter
+     * Draw the label below the counter with isometric perspective
      * @param {CanvasRenderingContext2D} ctx - Canvas rendering context
      * @param {number} x - Center X position
      * @param {number} y - Center Y position
      */
     drawLabel(ctx, x, y) {
         ctx.save();
+        
+        // Apply isometric transform for the label
+        const isoAngle = Math.PI / 4; // 45 degrees in radians
+        ctx.translate(x, y);
+        ctx.rotate(-isoAngle * 0.2); // Slight rotation to match panel
+        ctx.scale(0.85, 0.7); // Scale to match isometric perspective
         
         // Set up text styles
         ctx.font = '12px "Press Start 2P", monospace';
@@ -620,10 +687,10 @@ class VisitorCounterEntity extends Entity {
         
         // Add glow effect
         ctx.shadowColor = this.glowColor;
-        ctx.shadowBlur = this.glowIntensity;
+        ctx.shadowBlur = this.glowIntensity * 1.5; // Extra glow for visibility
         
         // Draw the text
-        ctx.fillText(this.counterLabel, x, y);
+        ctx.fillText(this.counterLabel, 0, 0);
         
         ctx.restore();
     }
