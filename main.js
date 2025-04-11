@@ -54,6 +54,7 @@ import { ArcadeManager8 } from './arcadeManager8.js'; // Import ArcadeManager8
 import { ArcadeManager9 } from './arcadeManager9.js'; // Import ArcadeManager9
 import { ArcadeManager10 } from './arcadeManager10.js'; // Import ArcadeManager10
 import { ArcadeManager11 } from './arcadeManager11.js'; // Import ArcadeManager11
+import { VisitorCounterManager } from './visitorCounterManager.js'; // Import VisitorCounterManager
 
 // Check browser compatibility before initializing the game
 const compatibilityResults = checkBrowserCompatibility();
@@ -525,6 +526,14 @@ if (compatibilityResults.allCriticalSupported) {
             // Change this - explicitly pass a scene name that will match our condition
             arcadeManager11.addEntities('startRoom');
             console.log('Arcade cabinets added successfully');
+            
+            // Initialize VisitorCounterManager with game instance
+            const visitorCounterManager = new VisitorCounterManager(game);
+            
+            // Add visitor counter to scene near the arcade cabinet
+            console.log('Adding visitor counter to scene...');
+            visitorCounterManager.addEntities('startRoom');
+            console.log('Visitor counter added successfully');
             
             // Send initialization complete event
         }, 500);
