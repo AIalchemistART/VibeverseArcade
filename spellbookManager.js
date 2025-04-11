@@ -90,7 +90,7 @@ export class SpellbookManager {
     getDefaultSpellbookConfigs() {
         return [
             {
-                position: { x: 95, y: 18, z: 0 },
+                position: { x: 95, y: 21, z: 0 },
                 id: 'spellbook1',
                 glowColor: '#008080', // Teal color
                 interactionDistance: 3.0,

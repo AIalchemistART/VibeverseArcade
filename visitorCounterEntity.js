@@ -14,12 +14,22 @@ class VisitorCounterEntity extends Entity {
      * @param {object} options - Additional options
      */
     constructor(x, y, options = {}) {
-        // Create a counter with standard settings as a static entity
+        // Create a counter with standard settings as a static entity that's ceiling-mounted
         super(x, y, 1.0, 0.6, {
             isStatic: true,
-            zHeight: 0.6,
-            collidable: false
+            zHeight: 10.0, // Very high Z position for ceiling mounting (10 grid units up)
+            collidable: false // Explicitly not collidable since it's ceiling-mounted
         });
+        
+        // Physically position the entity high on the Z-axis
+        this.z = 10.0; // Ensure Z coordinate matches zHeight
+        
+        // Completely disable collision by making the collision box non-existent
+        this.collisionWidth = 0;
+        this.collisionHeight = 0;
+        
+        // Apply a significant visual offset upward
+        this.renderOffsetY = -140; // Even larger offset to ensure it appears high above player reach
         
         // Counter specific properties
         this.visitorCount = 0;
@@ -331,6 +341,8 @@ class VisitorCounterEntity extends Entity {
      * @param {number} screenY - Screen Y coordinate
      */
     draw(ctx, screenX, screenY) {
+        // Apply ceiling mount position adjustment
+        screenY += this.renderOffsetY || 0;
         // Calculate the total width of the display
         const totalWidth = (this.digitWidth * 4) + (this.digitGap * 3) + 40; // 40px padding
         const totalHeight = this.digitHeight + 40; // 40px padding
@@ -342,9 +354,10 @@ class VisitorCounterEntity extends Entity {
         ctx.save();
         
         // Apply isometric transform for digit display
-        const isoAngle = Math.PI / 4; // 45 degrees in radians
+        const isoAngle = Math.PI / 4; // 45 degrees in radians (kept for reference)
         ctx.translate(screenX, screenY);
-        ctx.rotate(-isoAngle * 0.2); // Slight rotation to match panel
+        // Apply transformation for isometric view with foreshortening
+        ctx.transform(1, -0.17, 0, 1, 0, 0); // Add horizontal skew for foreshortening
         ctx.scale(0.85, 0.7); // Scale to match isometric perspective
         
         // Draw each digit with isometric positioning
@@ -380,7 +393,7 @@ class VisitorCounterEntity extends Entity {
         // Isometric parameters
         const isoAngle = Math.PI / 4; // 45 degrees in radians
         const isoSkewX = 0.5; // Horizontal skew factor
-        const isoSkewY = 0.3; // Vertical compression factor
+        const isoSkewY = 0.2; // Vertical compression factor
         
         // Calculate isometric dimensions
         const isoWidth = width * 0.85; // Slightly narrower in isometric view
@@ -392,28 +405,22 @@ class VisitorCounterEntity extends Entity {
         
         // Create isometric panel path
         ctx.translate(centerX, centerY);
-        ctx.rotate(-isoAngle * 0.2); // Slight rotation for isometric effect
+        // Apply transformation for isometric view with foreshortening
+        ctx.transform(1, -0.17, 0, 1, 0, 0); // Add horizontal skew for foreshortening
         
         // Draw panel base - darker for depth effect
         ctx.fillStyle = '#000a0a'; // Very dark teal for depth
         
-        // Draw the main panel with isometric perspective
+        // Draw a panel with foreshortening effect (left side wider than right)
         ctx.beginPath();
-        // Bottom face (slightly visible)
-        ctx.moveTo(-isoWidth/2, isoHeight*0.4);
-        ctx.lineTo(isoWidth/2, isoHeight*0.4);
-        ctx.lineTo(isoWidth/2 + isoWidth*0.1, isoHeight*0.5);
-        ctx.lineTo(-isoWidth/2 + isoWidth*0.1, isoHeight*0.5);
-        ctx.closePath();
-        ctx.fill();
+        // Calculate foreshortening effect (wider on left side)
+        const foreshortening = isoWidth * 0.15; // 15% wider on the left side
         
-        // Side face (right)
-        ctx.fillStyle = '#001212'; // Dark teal for side
-        ctx.beginPath();
-        ctx.moveTo(isoWidth/2, -isoHeight*0.5);
-        ctx.lineTo(isoWidth/2, isoHeight*0.4);
-        ctx.lineTo(isoWidth/2 + isoWidth*0.1, isoHeight*0.5);
-        ctx.lineTo(isoWidth/2 + isoWidth*0.1, -isoHeight*0.4);
+        // Draw trapezoid shape with wider left side
+        ctx.moveTo(-isoWidth/2 - foreshortening, -isoHeight*0.5); // Top-left (wider)
+        ctx.lineTo(isoWidth/2, -isoHeight*0.5);                 // Top-right
+        ctx.lineTo(isoWidth/2, isoHeight*0.4);                  // Bottom-right
+        ctx.lineTo(-isoWidth/2 - foreshortening, isoHeight*0.4); // Bottom-left (wider)
         ctx.closePath();
         ctx.fill();
         
@@ -435,25 +442,14 @@ class VisitorCounterEntity extends Entity {
         ctx.strokeStyle = this.glowColor;
         ctx.lineWidth = 2;
         
-        // Top face border
+        // Panel border with foreshortening effect
         ctx.beginPath();
-        ctx.moveTo(-isoWidth/2, -isoHeight*0.5);
-        ctx.lineTo(isoWidth/2, -isoHeight*0.5);
-        ctx.lineTo(isoWidth/2, isoHeight*0.4);
-        ctx.lineTo(-isoWidth/2, isoHeight*0.4);
+        const borderForeshortening = isoWidth * 0.15; // Match the fill shape
+        ctx.moveTo(-isoWidth/2 - borderForeshortening, -isoHeight*0.5); // Top-left (wider)
+        ctx.lineTo(isoWidth/2, -isoHeight*0.5);                       // Top-right
+        ctx.lineTo(isoWidth/2, isoHeight*0.4);                        // Bottom-right
+        ctx.lineTo(-isoWidth/2 - borderForeshortening, isoHeight*0.4); // Bottom-left (wider)
         ctx.closePath();
-        ctx.stroke();
-        
-        // Side edge
-        ctx.beginPath();
-        ctx.moveTo(isoWidth/2, -isoHeight*0.5);
-        ctx.lineTo(isoWidth/2 + isoWidth*0.1, -isoHeight*0.4);
-        ctx.stroke();
-        
-        // Bottom edge
-        ctx.beginPath();
-        ctx.moveTo(isoWidth/2, isoHeight*0.4);
-        ctx.lineTo(isoWidth/2 + isoWidth*0.1, isoHeight*0.5);
         ctx.stroke();
         
         // Add inner grid lines (subtle techno effect)
@@ -674,9 +670,10 @@ class VisitorCounterEntity extends Entity {
         ctx.save();
         
         // Apply isometric transform for the label
-        const isoAngle = Math.PI / 4; // 45 degrees in radians
+        const isoAngle = Math.PI / 4; // 45 degrees in radians (kept for reference)
         ctx.translate(x, y);
-        ctx.rotate(-isoAngle * 0.2); // Slight rotation to match panel
+        // Apply transformation for isometric view with foreshortening
+        ctx.transform(1, -0.17, 0, 1, 0, 0); // Add horizontal skew for foreshortening
         ctx.scale(0.85, 0.7); // Scale to match isometric perspective
         
         // Set up text styles

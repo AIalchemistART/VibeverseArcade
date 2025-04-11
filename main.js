@@ -29,6 +29,7 @@ import { SignManager5 } from './signManager5.js'; // Import ceiling SignManager5
 import { SignManager6 } from './signManager6.js'; // Import ceiling SignManager6
 import { SignManager7 } from './signManager7.js'; // Import ceiling SignManager7
 import { SignManager8 } from './signManager8.js'; // Import ceiling SignManager8
+import { SignManager9 } from './signManager9.js'; // Import ceiling SignManager9
 import { JukeboxManager } from './jukeboxManager.js'; // Import JukeboxManager
 import { TVManager } from './tvManager.js'; // Import TVManager
 import { CouchManager } from './couchManager.js'; // Import CouchManager
@@ -217,6 +218,17 @@ if (compatibilityResults.allCriticalSupported) {
             signManager8.addSigns();
             console.log('Ceiling signs added successfully');
 
+            // Initialize ceiling SignManager9 with game instance
+            const signManager9 = new SignManager9(game);
+            
+            // Preload ceiling sign assets
+            signManager9.preloadSigns();
+            
+            // Add ceiling signs to scene
+            console.log('Adding ceiling signs to scene...');
+            signManager9.addSigns();
+            console.log('Ceiling signs added successfully');
+
             // Initialize JukeboxManager with game instance
             const jukeboxManager = new JukeboxManager(game);
             
@@ -269,7 +281,7 @@ if (compatibilityResults.allCriticalSupported) {
             vibePortalManager.addPortals(
                 // Start portal options (red) - positioned in lower right corner
                 { 
-                    position: { x: 87, y: 2, z: -3 },
+                    position: { x: 81, y: 2, z: -3 },
                     label: 'RETURN PORTAL',
                     interactionDistance: 3.5,  // Slightly larger interaction range
                     entryDetectionRange: 2.0   // Easier to enter

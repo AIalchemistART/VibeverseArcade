@@ -131,7 +131,7 @@ class ArcadeManager3 {
         
         // Place arcade cabinet in a visible area but not in the way of other elements
         const arcadeX = 86.5; // Position in the room
-        const arcadeY = 7; // Position in the room
+        const arcadeY = 4; // Position in the room
         
         // Define game for this cabinet
         const arcadeGames = [
