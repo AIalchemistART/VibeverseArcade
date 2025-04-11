@@ -1,62 +1,33 @@
-// Netlify function to handle visitor counting
-// This avoids CORS issues by proxying requests to CountAPI
+// Simplified Netlify function to ensure it works
+exports.handler = async function() {
+  // Basic CORS headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS'
+  };
 
-// Use node-fetch v2 syntax for compatibility
-const fetch = require('node-fetch');
-
-// The namespace and key for our counter - using vibeversearcade to match the site name
-const NAMESPACE = 'vibeversearcade';
-const KEY = 'visitors';
-
-exports.handler = async function(event, context) {
   try {
-    // Set CORS headers to allow requests from our site
-    const headers = {
-      'Access-Control-Allow-Origin': '*', // Or restrict to your domain
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Methods': 'GET'
-    };
+    // Just return a static response for testing
+    const staticCount = Math.floor(1000 + Math.random() * 1000); // A random number between 1000-2000
     
-    // Handle preflight OPTIONS request
-    if (event.httpMethod === 'OPTIONS') {
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ message: 'CORS preflight successful' })
-      };
-    }
-    
-    // Call CountAPI to increment and get visitor count
-    const response = await fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`);
-    
-    // Check if the request was successful
-    if (!response.ok) {
-      throw new Error(`CountAPI returned status: ${response.status}`);
-    }
-    
-    // Parse the JSON response
-    const data = await response.json();
-    
-    // Return the visitor count to the client
+    // Return a simple JSON response to confirm function is working
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ 
-        count: data.value,
-        source: 'CountAPI',
+      body: JSON.stringify({
+        count: staticCount,
+        source: 'static-test',
         timestamp: new Date().toISOString()
       })
     };
   } catch (error) {
-    // Log error and return fallback response
-    console.error('Error fetching visitor count:', error);
+    console.error('Error in function:', error);
     return {
       statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({ 
-        error: 'Failed to fetch visitor count',
+      headers,
+      body: JSON.stringify({
+        error: 'Internal Error',
         message: error.message
       })
     };
