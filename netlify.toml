@@ -6,6 +6,10 @@
 [build.environment]
   NODE_VERSION = "16"
 
+# Plugin to automatically install function dependencies
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
+
 # First redirect for API endpoints
 [[redirects]]
   from = "/api/*"

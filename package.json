@@ -1,0 +1,14 @@
+{
+  "name": "circuit-sanctum-arcade",
+  "version": "1.0.0",
+  "description": "Circuit Sanctum Arcade - Cyberpunk/Synthwave Web Game",
+  "main": "main.js",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "scripts": {
+    "start": "serve ."
+  },
+  "author": "AIalchemistART",
+  "license": "MIT"
+}
