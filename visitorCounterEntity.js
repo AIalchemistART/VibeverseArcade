@@ -113,11 +113,12 @@ class VisitorCounterEntity extends Entity {
             // Determine the API endpoint - use relative URL that works in both dev and production
             let apiUrl;
             
-            // In production (GitHub Pages with Netlify for functions)
-            if (window.location.hostname.includes('github.io') || 
-                window.location.hostname.includes('netlify.app')) {
-                // Use the absolute URL to the Netlify function
-                apiUrl = 'https://circuit-sanctum-arcade.netlify.app/.netlify/functions/visitor-count';
+            // In production (Netlify site)
+            if (window.location.hostname.includes('netlify.app')) {
+                // Use the SAME domain for the function to avoid CORS issues
+                // This ensures we call the function on the same domain where the site is hosted
+                apiUrl = `https://${window.location.hostname}/.netlify/functions/visitor-count`;
+                console.log(`Using same-origin endpoint: ${apiUrl}`);
             } else {
                 // For local development, use the local endpoint
                 apiUrl = '/.netlify/functions/visitor-count';
