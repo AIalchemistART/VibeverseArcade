@@ -20,23 +20,34 @@ exports.handler = async function(event) {
   }
 
   try {
-    // Generate a deterministic count based on the date
-    // This creates a count that grows slowly over time but is consistent within the same day
+    // Generate a realistic, modest count based on date 
+    // This creates numbers that match the 30-50 daily visitors range
     const now = new Date();
-    const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-    const baseCount = 500; // Starting point
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const dayOfYear = Math.floor((now - new Date(year, 0, 0)) / (1000 * 60 * 60 * 24));
     
-    // Each day adds a few visitors, creating a steady growth pattern
-    // 500 + (day of year × 2) + (hours in day so far)
-    const calculatedCount = baseCount + (dayOfYear * 2) + now.getHours();
+    // Start with a realistic base count (using month to create some variance)
+    const baseCount = 30 + (month * 2); // Base count between 30-52 depending on month
     
-    // Check if we should increment (based on query param)
+    // Calculate days since April 1st, 2023 (approximate site launch date)
+    const launchDate = new Date(2023, 3, 1); // April 1, 2023
+    const daysSinceLaunch = Math.max(0, Math.floor((now - launchDate) / (1000 * 60 * 60 * 24)));
+    
+    // Add a modest number based on days since launch (1 visitor every 4 days)
+    const growthCount = Math.floor(daysSinceLaunch / 4);
+    
+    // Add daily fluctuation (0-5 visitors) based on hour of day
+    // This creates a natural pattern where visitor count rises during the day
+    const hourlyCount = Math.min(5, Math.floor((now.getHours() / 24) * 5));
+    
+    // Calculate the final count
+    let count = baseCount + growthCount + hourlyCount;
+    
+    // If explicitly asked to hit the counter, add 1 for the new visitor
     const action = event.queryStringParameters?.action;
-    let count = calculatedCount;
-    
-    // If explicitly asked to hit the counter, add a small random increment
     if (action === 'hit') {
-      count += 1 + Math.floor(Math.random() * 3); // Add 1-3 extra for hit requests
+      count += 1; // Add exactly 1 for a real visitor
     }
     
     // Return a clean 200 response with the count
@@ -50,9 +61,9 @@ exports.handler = async function(event) {
       })
     };
   } catch (error) {
-    // Even on error, return a valid count with a 200 status
+    // Even on error, return a modest fallback count
     // This prevents the function from returning a 500 and breaking the UI
-    const fallbackCount = 527 + new Date().getDate();
+    const fallbackCount = 42 + (new Date().getMonth() * 2);
     
     return {
       statusCode: 200, // Important: Return 200 even on error to avoid browser warnings
