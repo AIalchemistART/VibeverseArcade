@@ -53,6 +53,7 @@ import { ArcadeManager7 } from './arcadeManager7.js'; // Import ArcadeManager7
 import { ArcadeManager8 } from './arcadeManager8.js'; // Import ArcadeManager8
 import { ArcadeManager9 } from './arcadeManager9.js'; // Import ArcadeManager9
 import { ArcadeManager10 } from './arcadeManager10.js'; // Import ArcadeManager10
+import { ArcadeManager11 } from './arcadeManager11.js'; // Import ArcadeManager11
 
 // Check browser compatibility before initializing the game
 const compatibilityResults = checkBrowserCompatibility();
@@ -510,6 +511,19 @@ if (compatibilityResults.allCriticalSupported) {
             
             // Change this - explicitly pass a scene name that will match our condition
             arcadeManager10.addEntities('startRoom');
+            console.log('Arcade cabinets added successfully');
+            
+            // Initialize ArcadeManager11 with game instance
+            const arcadeManager11 = new ArcadeManager11(game);
+            
+            // Preload arcade assets
+            arcadeManager11.preloadAssets(assetLoader);
+            
+            // Force window.assetLoader to be set for direct access by entity classes
+            window.assetLoader = assetLoader;
+            
+            // Change this - explicitly pass a scene name that will match our condition
+            arcadeManager11.addEntities('startRoom');
             console.log('Arcade cabinets added successfully');
             
             // Send initialization complete event
