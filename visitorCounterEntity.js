@@ -38,34 +38,36 @@ class VisitorCounterEntity extends Entity {
         // Visual properties
         this.glowColor = '#00FFFF';
         this.glowIntensity = 0;
-        this.maxGlowIntensity = 10;
+        this.maxGlowIntensity = 8;
         this.glowPulseSpeed = 0.05;
         this.glowDirection = 1;
         
         // Counter display properties
-        this.digitWidth = 30;
+        this.digitWidth = 32; // Wider for more clarity
         this.digitHeight = 50;
-        this.digitGap = 10;
-        this.digitThickness = 5;
-        this.digitOnColor = '#00FFFF'; // Bright cyan for active segments
-        this.digitOffColor = '#001414'; // Very dark cyan for inactive segments
+        this.digitGap = 8; // Smaller gap to fit better
+        this.digitThickness = 6; // Thicker segments for readability
+        this.digitOnColor = '#00ffff'; // Bright cyan for active segments
+        this.digitOffColor = '#001010'; // Very dark for inactive segments 
         this.digitGlowColor = 'rgba(0, 255, 255, 0.7)'; // Stronger glow effect
         
         // Label for the counter
         this.counterLabel = 'DAILY VISITORS';
         
         // Cache for digit patterns (each digit is a configuration of 7 segments)
+        // Using standard 7-segment display patterns for maximum readability
+        // Format: [top, top-right, bottom-right, bottom, bottom-left, top-left, middle]
         this.digitPatterns = [
-            [1, 1, 1, 0, 1, 1, 1], // 0
-            [0, 0, 1, 0, 0, 1, 0], // 1
-            [1, 0, 1, 1, 1, 0, 1], // 2
-            [1, 0, 1, 1, 0, 1, 1], // 3
-            [0, 1, 1, 1, 0, 1, 0], // 4
-            [1, 1, 0, 1, 0, 1, 1], // 5
-            [1, 1, 0, 1, 1, 1, 1], // 6
-            [1, 0, 1, 0, 0, 1, 0], // 7
-            [1, 1, 1, 1, 1, 1, 1], // 8
-            [1, 1, 1, 1, 0, 1, 1]  // 9
+            [1, 1, 1, 1, 1, 1, 0], // 0: all segments except middle
+            [0, 1, 1, 0, 0, 0, 0], // 1: only right segments
+            [1, 1, 0, 1, 1, 0, 1], // 2: top, top-right, middle, bottom-left, bottom
+            [1, 1, 1, 1, 0, 0, 1], // 3: top, top-right, middle, bottom-right, bottom
+            [0, 1, 1, 0, 0, 1, 1], // 4: top-left, middle, top-right, bottom-right
+            [1, 0, 1, 1, 0, 1, 1], // 5: top, top-left, middle, bottom-right, bottom
+            [1, 0, 1, 1, 1, 1, 1], // 6: all except top-right
+            [1, 1, 1, 0, 0, 0, 0], // 7: top, top-right, bottom-right
+            [1, 1, 1, 1, 1, 1, 1], // 8: all segments lit
+            [1, 1, 1, 1, 0, 1, 1]  // 9: all except bottom-left
         ];
         
         // Initialize with zeros
@@ -414,16 +416,11 @@ class VisitorCounterEntity extends Entity {
         // Get the segment pattern for this digit
         const pattern = this.digitPatterns[digit];
         
-        // Digital glitch effect - occasionally show a static/corrupt frame
-        // But make sure it reverts quickly to maintain readability
-        const shouldGlitch = Math.random() < 0.01; // Very rare glitch (1%)
+        // Reduce glitch probability to improve readability
+        const shouldGlitch = Math.random() < 0.005; // Very rare glitch (0.5%)
         
         // Save context
         ctx.save();
-        
-        // Setup for the glow effect
-        ctx.shadowColor = this.digitGlowColor;
-        ctx.shadowBlur = this.glowIntensity;
         
         // Draw background rectangle for the digit
         ctx.fillStyle = '#001010';
@@ -434,27 +431,85 @@ class VisitorCounterEntity extends Entity {
         if (shouldGlitch) {
             this.drawDigitGlitch(ctx, x, y);
         } else {
+            // Add a border to each digit for better separation
+            ctx.strokeStyle = '#003f3f';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, this.digitWidth, this.digitHeight);
+            
+            // Setup for the glow effect
+            ctx.shadowColor = this.digitGlowColor;
+            ctx.shadowBlur = this.glowIntensity;
+            
+            // Calculate padding to ensure segments don't touch the edges
+            const padding = 2;
+            
             // Draw the normal 7 segments (each segment can be on or off)
             // Segment A (top horizontal)
-            this.drawSegment(ctx, x, y, this.digitWidth, this.digitThickness, pattern[0]);
+            this.drawSegment(ctx, 
+                x + padding, 
+                y + padding, 
+                this.digitWidth - (padding * 2), 
+                this.digitThickness, 
+                pattern[0]
+            );
             
             // Segment B (top-right vertical)
-            this.drawSegment(ctx, x + this.digitWidth - this.digitThickness, y, this.digitThickness, this.digitHeight / 2, pattern[1], true);
+            this.drawSegment(ctx, 
+                x + this.digitWidth - this.digitThickness - padding, 
+                y + padding, 
+                this.digitThickness, 
+                this.digitHeight / 2 - padding, 
+                pattern[1], 
+                true
+            );
             
             // Segment C (bottom-right vertical)
-            this.drawSegment(ctx, x + this.digitWidth - this.digitThickness, y + this.digitHeight / 2, this.digitThickness, this.digitHeight / 2, pattern[2], true);
+            this.drawSegment(ctx, 
+                x + this.digitWidth - this.digitThickness - padding, 
+                y + this.digitHeight / 2, 
+                this.digitThickness, 
+                this.digitHeight / 2 - padding, 
+                pattern[2], 
+                true
+            );
             
             // Segment D (bottom horizontal)
-            this.drawSegment(ctx, x, y + this.digitHeight - this.digitThickness, this.digitWidth, this.digitThickness, pattern[3]);
+            this.drawSegment(ctx, 
+                x + padding, 
+                y + this.digitHeight - this.digitThickness - padding, 
+                this.digitWidth - (padding * 2), 
+                this.digitThickness, 
+                pattern[3]
+            );
             
             // Segment E (bottom-left vertical)
-            this.drawSegment(ctx, x, y + this.digitHeight / 2, this.digitThickness, this.digitHeight / 2, pattern[4], true);
+            this.drawSegment(ctx, 
+                x + padding, 
+                y + this.digitHeight / 2, 
+                this.digitThickness, 
+                this.digitHeight / 2 - padding, 
+                pattern[4], 
+                true
+            );
             
             // Segment F (top-left vertical)
-            this.drawSegment(ctx, x, y, this.digitThickness, this.digitHeight / 2, pattern[5], true);
+            this.drawSegment(ctx, 
+                x + padding, 
+                y + padding, 
+                this.digitThickness, 
+                this.digitHeight / 2 - padding, 
+                pattern[5], 
+                true
+            );
             
             // Segment G (middle horizontal)
-            this.drawSegment(ctx, x, y + (this.digitHeight / 2) - (this.digitThickness / 2), this.digitWidth, this.digitThickness, pattern[6]);
+            this.drawSegment(ctx, 
+                x + padding, 
+                y + (this.digitHeight / 2) - (this.digitThickness / 2), 
+                this.digitWidth - (padding * 2), 
+                this.digitThickness, 
+                pattern[6]
+            );
         }
         
         // Restore context
@@ -500,47 +555,33 @@ class VisitorCounterEntity extends Entity {
         // Choose color based on segment state - ensure proper contrast
         ctx.fillStyle = isOn ? this.digitOnColor : this.digitOffColor;
         
-        // Calculate a small glitch offset to give character while keeping readability
-        // Small enough not to affect readability, but adds cyberpunk aesthetic
-        const glitchOffset = isOn ? (Math.random() * 0.5) : 0;
+        // No glitch offset for normal display - we want readable numbers
         
         if (isVertical) {
-            // Vertical segment - simpler, more readable shape
-            ctx.beginPath();
-            ctx.moveTo(x + glitchOffset, y);
-            ctx.lineTo(x + width + glitchOffset, y);
-            ctx.lineTo(x + width + glitchOffset, y + height);
-            ctx.lineTo(x + glitchOffset, y + height);
-            ctx.closePath();
-            ctx.fill();
+            // Simple rectangle for vertical segments - maximum readability
+            ctx.fillRect(x, y, width, height);
             
-            // Add highlight line for on segments
+            // Add glow effect for on segments
             if (isOn) {
+                ctx.shadowColor = this.digitGlowColor;
+                ctx.shadowBlur = 3;
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 0.5;
-                ctx.beginPath();
-                ctx.moveTo(x + width/2 + glitchOffset, y);
-                ctx.lineTo(x + width/2 + glitchOffset, y + height);
-                ctx.stroke();
+                ctx.strokeRect(x, y, width, height);
+                ctx.shadowBlur = 0;
             }
         } else {
-            // Horizontal segment - more readable version
-            ctx.beginPath();
-            ctx.moveTo(x, y + glitchOffset);
-            ctx.lineTo(x + width, y + glitchOffset);
-            ctx.lineTo(x + width, y + height + glitchOffset);
-            ctx.lineTo(x, y + height + glitchOffset);
-            ctx.closePath();
-            ctx.fill();
+            // Simple rectangle for horizontal segments - maximum readability
+            ctx.fillRect(x, y, width, height);
             
-            // Add highlight line for on segments
+            // Add glow effect for on segments
             if (isOn) {
+                ctx.shadowColor = this.digitGlowColor;
+                ctx.shadowBlur = 3;
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 0.5;
-                ctx.beginPath();
-                ctx.moveTo(x, y + height/2 + glitchOffset);
-                ctx.lineTo(x + width, y + height/2 + glitchOffset);
-                ctx.stroke();
+                ctx.strokeRect(x, y, width, height);
+                ctx.shadowBlur = 0;
             }
         }
     }
