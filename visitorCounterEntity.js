@@ -47,9 +47,9 @@ class VisitorCounterEntity extends Entity {
         this.digitHeight = 50;
         this.digitGap = 10;
         this.digitThickness = 5;
-        this.digitOnColor = '#00FFFF';
-        this.digitOffColor = '#001414';
-        this.digitGlowColor = 'rgba(0, 255, 255, 0.5)';
+        this.digitOnColor = '#00FFFF'; // Bright cyan for active segments
+        this.digitOffColor = '#001414'; // Very dark cyan for inactive segments
+        this.digitGlowColor = 'rgba(0, 255, 255, 0.7)'; // Stronger glow effect
         
         // Label for the counter
         this.counterLabel = 'DAILY VISITORS';
@@ -414,37 +414,76 @@ class VisitorCounterEntity extends Entity {
         // Get the segment pattern for this digit
         const pattern = this.digitPatterns[digit];
         
+        // Digital glitch effect - occasionally show a static/corrupt frame
+        // But make sure it reverts quickly to maintain readability
+        const shouldGlitch = Math.random() < 0.01; // Very rare glitch (1%)
+        
         // Save context
         ctx.save();
         
         // Setup for the glow effect
         ctx.shadowColor = this.digitGlowColor;
-        ctx.shadowBlur = this.glowIntensity / 2;
+        ctx.shadowBlur = this.glowIntensity;
         
-        // Draw the 7 segments (each segment can be on or off)
-        // Segment A (top horizontal)
-        this.drawSegment(ctx, x, y, this.digitWidth, this.digitThickness, pattern[0]);
+        // Draw background rectangle for the digit
+        ctx.fillStyle = '#001010';
+        ctx.fillRect(x, y, this.digitWidth, this.digitHeight);
         
-        // Segment B (top-right vertical)
-        this.drawSegment(ctx, x + this.digitWidth - this.digitThickness, y, this.digitThickness, this.digitHeight / 2, pattern[1], true);
-        
-        // Segment C (bottom-right vertical)
-        this.drawSegment(ctx, x + this.digitWidth - this.digitThickness, y + this.digitHeight / 2, this.digitThickness, this.digitHeight / 2, pattern[2], true);
-        
-        // Segment D (bottom horizontal)
-        this.drawSegment(ctx, x, y + this.digitHeight - this.digitThickness, this.digitWidth, this.digitThickness, pattern[3]);
-        
-        // Segment E (bottom-left vertical)
-        this.drawSegment(ctx, x, y + this.digitHeight / 2, this.digitThickness, this.digitHeight / 2, pattern[4], true);
-        
-        // Segment F (top-left vertical)
-        this.drawSegment(ctx, x, y, this.digitThickness, this.digitHeight / 2, pattern[5], true);
-        
-        // Segment G (middle horizontal)
-        this.drawSegment(ctx, x, y + (this.digitHeight / 2) - (this.digitThickness / 2), this.digitWidth, this.digitThickness, pattern[6]);
+        // If we're showing a glitch frame, display some visual noise
+        // This is very rare and only for visual effect
+        if (shouldGlitch) {
+            this.drawDigitGlitch(ctx, x, y);
+        } else {
+            // Draw the normal 7 segments (each segment can be on or off)
+            // Segment A (top horizontal)
+            this.drawSegment(ctx, x, y, this.digitWidth, this.digitThickness, pattern[0]);
+            
+            // Segment B (top-right vertical)
+            this.drawSegment(ctx, x + this.digitWidth - this.digitThickness, y, this.digitThickness, this.digitHeight / 2, pattern[1], true);
+            
+            // Segment C (bottom-right vertical)
+            this.drawSegment(ctx, x + this.digitWidth - this.digitThickness, y + this.digitHeight / 2, this.digitThickness, this.digitHeight / 2, pattern[2], true);
+            
+            // Segment D (bottom horizontal)
+            this.drawSegment(ctx, x, y + this.digitHeight - this.digitThickness, this.digitWidth, this.digitThickness, pattern[3]);
+            
+            // Segment E (bottom-left vertical)
+            this.drawSegment(ctx, x, y + this.digitHeight / 2, this.digitThickness, this.digitHeight / 2, pattern[4], true);
+            
+            // Segment F (top-left vertical)
+            this.drawSegment(ctx, x, y, this.digitThickness, this.digitHeight / 2, pattern[5], true);
+            
+            // Segment G (middle horizontal)
+            this.drawSegment(ctx, x, y + (this.digitHeight / 2) - (this.digitThickness / 2), this.digitWidth, this.digitThickness, pattern[6]);
+        }
         
         // Restore context
         ctx.restore();
+    }
+    
+    /**
+     * Draw a digital glitch effect for a digit
+     * @param {CanvasRenderingContext2D} ctx - Canvas rendering context
+     * @param {number} x - Left position of the digit
+     * @param {number} y - Top position of the digit
+     */
+    drawDigitGlitch(ctx, x, y) {
+        // Draw random digital noise for a glitched effect
+        ctx.fillStyle = this.digitOnColor;
+        
+        // Draw a few random bars
+        for (let i = 0; i < 3; i++) {
+            const barY = y + Math.random() * this.digitHeight;
+            const barHeight = Math.random() * 3 + 1;
+            ctx.fillRect(x, barY, this.digitWidth, barHeight);
+        }
+        
+        // Draw a few random vertical lines
+        for (let i = 0; i < 2; i++) {
+            const barX = x + Math.random() * this.digitWidth;
+            const barWidth = Math.random() * 2 + 1;
+            ctx.fillRect(barX, y, barWidth, this.digitHeight);
+        }
     }
     
     /**
@@ -458,32 +497,51 @@ class VisitorCounterEntity extends Entity {
      * @param {boolean} isVertical - Whether the segment is vertical
      */
     drawSegment(ctx, x, y, width, height, isOn, isVertical = false) {
-        // Choose color based on segment state
+        // Choose color based on segment state - ensure proper contrast
         ctx.fillStyle = isOn ? this.digitOnColor : this.digitOffColor;
         
-        // Draw the segment - rounded for vertical, flat for horizontal
+        // Calculate a small glitch offset to give character while keeping readability
+        // Small enough not to affect readability, but adds cyberpunk aesthetic
+        const glitchOffset = isOn ? (Math.random() * 0.5) : 0;
+        
         if (isVertical) {
-            // Vertical segment (with rounded ends)
+            // Vertical segment - simpler, more readable shape
             ctx.beginPath();
-            ctx.moveTo(x + width / 2, y);
-            ctx.lineTo(x + width, y + height / 4);
-            ctx.lineTo(x + width, y + height - height / 4);
-            ctx.lineTo(x + width / 2, y + height);
-            ctx.lineTo(x, y + height - height / 4);
-            ctx.lineTo(x, y + height / 4);
+            ctx.moveTo(x + glitchOffset, y);
+            ctx.lineTo(x + width + glitchOffset, y);
+            ctx.lineTo(x + width + glitchOffset, y + height);
+            ctx.lineTo(x + glitchOffset, y + height);
             ctx.closePath();
             ctx.fill();
+            
+            // Add highlight line for on segments
+            if (isOn) {
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(x + width/2 + glitchOffset, y);
+                ctx.lineTo(x + width/2 + glitchOffset, y + height);
+                ctx.stroke();
+            }
         } else {
-            // Horizontal segment (with flat ends and rounded corners)
+            // Horizontal segment - more readable version
             ctx.beginPath();
-            ctx.moveTo(x + height / 2, y);
-            ctx.lineTo(x + width - height / 2, y);
-            ctx.lineTo(x + width, y + height / 2);
-            ctx.lineTo(x + width - height / 2, y + height);
-            ctx.lineTo(x + height / 2, y + height);
-            ctx.lineTo(x, y + height / 2);
+            ctx.moveTo(x, y + glitchOffset);
+            ctx.lineTo(x + width, y + glitchOffset);
+            ctx.lineTo(x + width, y + height + glitchOffset);
+            ctx.lineTo(x, y + height + glitchOffset);
             ctx.closePath();
             ctx.fill();
+            
+            // Add highlight line for on segments
+            if (isOn) {
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(x, y + height/2 + glitchOffset);
+                ctx.lineTo(x + width, y + height/2 + glitchOffset);
+                ctx.stroke();
+            }
         }
     }
     
