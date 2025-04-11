@@ -1,11 +1,12 @@
 // Netlify function to handle visitor counting
 // This avoids CORS issues by proxying requests to CountAPI
 
+// Use node-fetch v2 syntax for compatibility
 const fetch = require('node-fetch');
 
-// The namespace and key for our counter
-const NAMESPACE = 'circuitsanctum';
-const KEY = 'visits';
+// The namespace and key for our counter - using vibeversearcade to match the site name
+const NAMESPACE = 'vibeversearcade';
+const KEY = 'visitors';
 
 exports.handler = async function(event, context) {
   try {

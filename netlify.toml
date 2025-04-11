@@ -1,7 +1,7 @@
 [build]
   publish = "."
-  command = ""
-  functions = "netlify/functions" # Add functions directory
+  command = "echo 'No build command needed'" 
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "16"
