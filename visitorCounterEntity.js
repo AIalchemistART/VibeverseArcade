@@ -26,9 +26,10 @@ class VisitorCounterEntity extends Entity {
         this.targetCount = 0;
         this.animationSpeed = 0.1;
         this.isAnimating = false;
-        this.lastUpdateTime = Date.now();
+        this.lastUpdateTime = 0; // Start at 0 to trigger immediate fetch
         this.updateInterval = 60000; // Update every minute
         this.isInitialized = false;
+        this.initRetries = 0; // Track API connection retries
         
         // Visual properties
         this.glowColor = '#00FFFF';
@@ -45,6 +46,9 @@ class VisitorCounterEntity extends Entity {
         this.digitOnColor = '#00FFFF';
         this.digitOffColor = '#001414';
         this.digitGlowColor = 'rgba(0, 255, 255, 0.5)';
+        
+        // Label for the counter
+        this.counterLabel = 'DAILY VISITORS';
         
         // Cache for digit patterns (each digit is a configuration of 7 segments)
         this.digitPatterns = [
@@ -70,7 +74,7 @@ class VisitorCounterEntity extends Entity {
     }
     
     /**
-     * Initialize the visitor count from Google Analytics
+     * Initialize the visitor count using CountAPI
      */
     initVisitorCount() {
         // Only initialize once
@@ -78,135 +82,115 @@ class VisitorCounterEntity extends Entity {
         
         console.log("VisitorCounterEntity: Initializing visitor count");
         
-        // Check if we have access to the Google Analytics data layer
-        if (window.dataLayer) {
-            try {
-                // First, try to use the Google Analytics Data API if available
-                this.fetchVisitorsFromGA();
-            } catch (error) {
-                console.error("VisitorCounterEntity: Error initializing GA data:", error);
-                // Fallback to a random number for demonstration
-                this.setRandomCount();
-            }
-        } else {
-            console.warn("VisitorCounterEntity: Google Analytics dataLayer not found");
-            // Fallback to a random number for demonstration
-            this.setRandomCount();
+        // Set a temporary count from localStorage if available
+        const storedCount = localStorage.getItem('arcadeVisitorCount');
+        if (storedCount) {
+            const count = parseInt(storedCount, 10);
+            console.log(`VisitorCounterEntity: Using temporary stored count: ${count}`);
+            this.visitorCount = count;
+            this.targetCount = count;
+            this.updateDigits();
         }
+        
+        // Fetch the visitor count using CountAPI
+        // Use a small delay to ensure the entity is fully initialized
+        setTimeout(() => {
+            this.fetchVisitorCount();
+        }, 500);
         
         this.isInitialized = true;
     }
     
     /**
-     * Fetch visitor count from Google Analytics
+     * Fetch visitor count using CountAPI
      */
-    fetchVisitorsFromGA() {
-        // Create a script element to load the Google Analytics API
-        const script = document.createElement('script');
-        script.src = 'https://apis.google.com/js/api.js';
-        
-        script.onload = () => {
-            // Load the analytics API
-            gapi.load('client', this.initGAClient.bind(this));
-        };
-        
-        script.onerror = () => {
-            console.error("VisitorCounterEntity: Failed to load Google API");
-            this.setRandomCount();
-        };
-        
-        document.head.appendChild(script);
-    }
-    
-    /**
-     * Initialize the Google Analytics client
-     */
-    initGAClient() {
-        gapi.client.init({
-            // This is a public API key that only works with Google Analytics
-            apiKey: 'AIzaSyBnMJEL8VX_nvj-9X0D3wgBCPYUcmyUdZ4',
-            discoveryDocs: ['https://analyticsdata.googleapis.com/$discovery/rest?version=v1beta'],
-        }).then(() => {
-            this.fetchAnalyticsData();
-        }).catch((error) => {
-            console.error("VisitorCounterEntity: GA client init error:", error);
-            this.setRandomCount();
-        });
-    }
-    
-    /**
-     * Fetch analytics data using the Google Analytics Data API
-     */
-    fetchAnalyticsData() {
-        // Format today's date for the query
-        const today = new Date();
-        const formattedDate = today.toISOString().split('T')[0];
-        
-        // Set up the analytics data request
-        // This requires proper API access and permissions that might not be available
-        // For demonstration, we'll use a simplified approach
+    async fetchVisitorCount() {
         try {
-            // For a public demo without authentication, we'll use a simpler approach
-            // In a real implementation, this would use proper GA4 authentication
-            this.fetchVisitorCountFromDataLayer();
+            // Use a simpler namespace and key to avoid potential issues
+            const namespace = 'circuitsanctum';
+            const key = 'visits';
+            
+            console.log("VisitorCounterEntity: Fetching visitor count from CountAPI");
+            
+            // Hit the counter (increments and returns the value)
+            // Using a more reliable endpoint structure
+            const response = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`, {
+                method: 'GET',
+                mode: 'cors', // Explicitly set CORS mode
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            // Check if the request was successful
+            if (!response.ok) {
+                throw new Error(`CountAPI returned status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Log the raw response for debugging
+            console.log("CountAPI raw response:", data);
+            
+            // Make sure we have a valid count value
+            if (data && typeof data.value === 'number') {
+                // Set the counter value
+                this.targetCount = data.value;
+                
+                // Store the count in localStorage as a backup
+                localStorage.setItem('arcadeVisitorCount', this.targetCount.toString());
+                
+                // Trigger animation to the new count
+                this.animateToCount(this.targetCount);
+                
+                console.log(`VisitorCounterEntity: Count from CountAPI: ${this.targetCount}`);
+                
+                // Track view in Google Analytics if available
+                if (typeof gtag === 'function') {
+                    gtag('event', 'visitor_counter_viewed', {
+                        'counter_value': this.targetCount
+                    });
+                }
+                
+                return; // Successfully updated the count
+            } else {
+                throw new Error('Invalid data format received from CountAPI');
+            }
         } catch (error) {
-            console.error("VisitorCounterEntity: Analytics data fetch error:", error);
-            this.setRandomCount();
+            console.error("VisitorCounterEntity: Error fetching from CountAPI:", error);
+            this.useBackupCount();
         }
     }
     
     /**
-     * Try to get visitor count from the dataLayer
+     * Use a backup visitor count if API fails
      */
-    fetchVisitorCountFromDataLayer() {
-        if (window.dataLayer) {
-            // In a real implementation, we'd query the GA4 API properly
-            // Since we can't directly query without setting up OAuth, we'll:
-            // 1. Add a custom event to the dataLayer
-            // 2. Set up a custom property to capture total visitors in the GA property
-            // 3. Use that to display the count
-            
-            // For now, we'll simulate this with local storage + a random increase
-            let storedCount = localStorage.getItem('arcadeVisitorCount');
-            
-            if (storedCount) {
-                this.targetCount = parseInt(storedCount, 10);
-                
-                // Randomly increase the count for demonstration
-                const randomIncrease = Math.floor(Math.random() * 10) + 1;
-                this.targetCount += randomIncrease;
-            } else {
-                // Initial count between 1000 and 2000
-                this.targetCount = 1000 + Math.floor(Math.random() * 1000);
-            }
-            
-            // Store the new count
-            localStorage.setItem('arcadeVisitorCount', this.targetCount.toString());
-            
-            // Trigger animation to the new count
-            this.animateToCount(this.targetCount);
-            
-            // Also track this in Google Analytics as a custom event
-            if (typeof gtag === 'function') {
-                gtag('event', 'visitor_counter_viewed', {
-                    'counter_value': this.targetCount
-                });
-            }
+    useBackupCount() {
+        // Try to use the stored count from localStorage
+        const storedCount = localStorage.getItem('arcadeVisitorCount');
+        
+        if (storedCount) {
+            this.targetCount = parseInt(storedCount, 10);
+            console.log(`VisitorCounterEntity: Using backup count from storage: ${this.targetCount}`);
         } else {
-            this.setRandomCount();
+            // Initial count between 1000 and 9000 (reasonable for an arcade site)
+            this.targetCount = 1000 + Math.floor(Math.random() * 8000);
+            console.log(`VisitorCounterEntity: Using generated count: ${this.targetCount}`);
+            
+            // Store this as a backup
+            localStorage.setItem('arcadeVisitorCount', this.targetCount.toString());
         }
+        
+        // Animate to this count
+        this.animateToCount(this.targetCount);
     }
     
     /**
      * Set a random visitor count for demonstration
+     * @deprecated Use useBackupCount() instead
      */
     setRandomCount() {
-        // Generate a random 4-digit number for demonstration
-        this.targetCount = 1000 + Math.floor(Math.random() * 9000);
-        console.log(`VisitorCounterEntity: Using demo count of ${this.targetCount}`);
-        
-        // Animate to this count
-        this.animateToCount(this.targetCount);
+        this.useBackupCount();
     }
     
     /**
@@ -225,7 +209,14 @@ class VisitorCounterEntity extends Entity {
         // Set the initial values for the animation
         if (this.visitorCount === 0) {
             // If starting from zero, jump to a closer number to avoid long animation
-            this.visitorCount = Math.max(0, this.targetCount - 100);
+            this.visitorCount = Math.max(0, this.targetCount - 20);
+        }
+        
+        // Ensure animation is visible but not too long
+        const diff = Math.abs(this.targetCount - this.visitorCount);
+        if (diff > 500) {
+            // For large differences, start closer to avoid too long animation
+            this.visitorCount = this.targetCount - 100 * Math.sign(this.targetCount - this.visitorCount);
         }
         
         console.log(`VisitorCounterEntity: Animating from ${this.visitorCount} to ${this.targetCount}`);
@@ -260,7 +251,11 @@ class VisitorCounterEntity extends Entity {
         // Check if it's time to refresh the count
         const currentTime = Date.now();
         if (currentTime - this.lastUpdateTime > this.updateInterval) {
-            this.fetchVisitorCountFromDataLayer();
+            // Only refresh if not currently animating
+            if (!this.isAnimating) {
+                console.log("VisitorCounterEntity: Time to refresh count");
+                this.fetchVisitorCount();
+            }
             this.lastUpdateTime = currentTime;
         }
     }
@@ -496,7 +491,7 @@ class VisitorCounterEntity extends Entity {
         ctx.shadowBlur = this.glowIntensity;
         
         // Draw the text
-        ctx.fillText('DAILY VISITORS', x, y);
+        ctx.fillText(this.counterLabel, x, y);
         
         ctx.restore();
     }
