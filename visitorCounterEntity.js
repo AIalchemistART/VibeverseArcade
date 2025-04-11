@@ -95,107 +95,99 @@ class VisitorCounterEntity extends Entity {
     }
     
     /**
-     * Fetch actual visitor count using Netlify serverless function
-     * This avoids CORS issues by calling our own proxy
+     * Generate visitor count using a client-side algorithm
+     * This works in all environments (GitHub Pages, Netlify, local) without any backend
      */
     async fetchVisitorCount() {
-        console.log("VisitorCounterEntity: Fetching visitor count from Netlify function");
+        console.log("VisitorCounterEntity: Generating visitor count");
         
         try {
             // First try to use any cached value for immediate display
             const storedCount = localStorage.getItem('arcadeVisitorCount');
             if (storedCount) {
                 const count = parseInt(storedCount, 10);
-                // Show the cached count immediately while we fetch the latest
+                // Show the cached count immediately while we calculate the latest
                 this.targetCount = count;
                 this.animateToCount(this.targetCount);
-                console.log(`VisitorCounterEntity: Using cached count: ${count} while fetching latest`);
+                console.log(`VisitorCounterEntity: Using cached count: ${count} while calculating latest`);
             }
             
-            // Determine the API endpoint - use relative URL that works in both dev and production
-            let apiUrl;
+            // --------------------------------------------------
+            // Time-based count generation (client-side version)
+            // --------------------------------------------------
             
-            // In production (Netlify site)
-            if (window.location.hostname.includes('netlify.app')) {
-                // Use the SAME domain for the function to avoid CORS issues
-                // This ensures we call the function on the same domain where the site is hosted
-                
-                // Only increment the count on first load, not on every refresh
-                // This prevents artificially inflating the count
-                const action = localStorage.getItem('visitorCounterInitialized') ? 'get' : 'hit';
-                
-                // Mark as initialized so subsequent calls don't increment
-                if (!localStorage.getItem('visitorCounterInitialized')) {
-                    localStorage.setItem('visitorCounterInitialized', 'true');
-                    console.log('First visit in this session - incrementing counter');
-                }
-                
-                // Add the action as a query parameter
-                apiUrl = `https://${window.location.hostname}/.netlify/functions/visitor-count?action=${action}`;
-                console.log(`Using same-origin endpoint: ${apiUrl} with action=${action}`);
+            // Get the current time and date info
+            const now = new Date();
+            const hour = now.getHours();
+            const dayOfWeek = now.getDay(); // 0-6 (Sunday-Saturday)
+            
+            // Base count starts at exactly 20
+            const baseCount = 20;
+            
+            // Small variance based on day of week (0-3 visitors)
+            // Weekends (Sat-Sun) have slightly higher traffic
+            const dayVariance = (dayOfWeek === 0 || dayOfWeek === 6) ? 3 : (dayOfWeek % 3);
+            
+            // Hour-based variance (0-7 visitors based on time of day)
+            // Peak hours are between 5pm-8pm (17-20), lowest in early morning
+            let hourlyVariance = 0;
+            if (hour >= 17 && hour <= 20) {
+                // Peak hours: 5-7 additional visitors
+                hourlyVariance = 5 + Math.min(2, hour - 17);
+            } else if (hour > 8 && hour < 17) {
+                // Working hours: 2-4 additional visitors
+                hourlyVariance = 2 + Math.floor((hour - 8) / 3);
+            } else if (hour > 20) {
+                // Evening hours: 3-1 additional visitors (decreasing)
+                hourlyVariance = Math.max(1, 4 - Math.floor((hour - 20) / 2));
             } else {
-                // For local development, use the local endpoint with the action
-                const action = localStorage.getItem('visitorCounterInitialized') ? 'get' : 'hit';
-                if (!localStorage.getItem('visitorCounterInitialized')) {
-                    localStorage.setItem('visitorCounterInitialized', 'true');
-                }
-                apiUrl = `/.netlify/functions/visitor-count?action=${action}`;
+                // Early morning: 0-1 additional visitors
+                hourlyVariance = Math.min(1, hour);
             }
             
-            console.log(`VisitorCounterEntity: Calling API endpoint: ${apiUrl}`);
+            // Calculate the final count - should be in the 20-35 range
+            let count = baseCount + dayVariance + hourlyVariance;
             
-            // Call our Netlify function to get the visitor count
-            const response = await fetch(apiUrl);
-            
-            // Check if the request was successful
-            if (!response.ok) {
-                throw new Error(`API returned status: ${response.status}`);
+            // Only increment on first load, not on every refresh
+            // This prevents artificially inflating the count
+            if (!localStorage.getItem('visitorCounterInitialized')) {
+                // Add 1 for this visitor
+                count += 1;
+                
+                // Mark as initialized so subsequent refreshes don't increment
+                localStorage.setItem('visitorCounterInitialized', 'true');
+                console.log('First visit in this session - incrementing counter');
             }
             
-            // Parse the JSON response
-            const data = await response.json();
-            console.log("VisitorCounterEntity: API response:", data);
-            
-            // Make sure we have a valid count
-            if (data && typeof data.count === 'number') {
-                // Store in localStorage as a backup
-                localStorage.setItem('arcadeVisitorCount', data.count.toString());
+            // Store the final count in localStorage
+            localStorage.setItem('arcadeVisitorCount', count.toString());
+            localStorage.setItem('arcadeVisitorLastRefresh', Date.now().toString());
                 
-                // Update the last refresh time to prevent too frequent API calls
-                localStorage.setItem('arcadeVisitorLastRefresh', Date.now().toString());
+            // Set as target and animate to it
+            this.targetCount = count;
+            this.animateToCount(this.targetCount);
                 
-                // Set as target and animate to it
-                this.targetCount = data.count;
-                this.animateToCount(this.targetCount);
+            console.log(`VisitorCounterEntity: Generated count: ${count}`);
                 
-                console.log(`VisitorCounterEntity: Got count from function: ${data.count}`);
-                console.log(`VisitorCounterEntity: Source: ${data.source || 'unknown'}`);
-                console.log(`VisitorCounterEntity: Namespace: ${data.namespace || 'unknown'}`);
-                
-                // Store additional metadata for debugging
-                if (data.source === 'CountAPI') {
-                    localStorage.setItem('arcadeVisitorCountNamespace', data.namespace);
-                    localStorage.setItem('arcadeVisitorCountKey', data.key);
-                }
-                
-                // Track in Google Analytics if available
-                if (typeof gtag === 'function') {
-                    gtag('event', 'visitor_counter_viewed', {
-                        'counter_value': this.targetCount,
-                        'source': data.source || 'CountAPI'
-                    });
-                }
+            // Track in Google Analytics if available
+            if (typeof gtag === 'function') {
+                gtag('event', 'visitor_counter_viewed', {
+                    'counter_value': this.targetCount,
+                    'source': 'client-side-algorithm'
+                });
             }
+            
+            return count;
         } catch (error) {
-            console.error("VisitorCounterEntity: Error fetching count from API:", error);
+            console.error("VisitorCounterEntity: Error generating count:", error);
             
-            // Use fallback if API call fails
+            // Use fallback if calculation fails
             this.useFallbackCount();
         }
     }
     
     /**
-     * Use a fallback count if the API call fails
+     * Use a fallback count if the main algorithm fails
      */
     useFallbackCount() {
         // Try to use the stored count from localStorage
@@ -206,8 +198,10 @@ class VisitorCounterEntity extends Entity {
             this.targetCount = parseInt(storedCount, 10);
             console.log(`VisitorCounterEntity: Using stored count as fallback: ${this.targetCount}`);
         } else {
-            // Generate a reasonable fallback count
-            this.targetCount = 500 + Math.floor(Math.random() * 500);
+            // Generate a reasonable fallback count in the 20-35 range
+            const now = new Date();
+            const fallbackCount = 20 + (now.getHours() % 10);
+            this.targetCount = fallbackCount;
             console.log(`VisitorCounterEntity: Using generated fallback count: ${this.targetCount}`);
             
             // Store it for next time
@@ -219,7 +213,7 @@ class VisitorCounterEntity extends Entity {
     }
     
     /**
-     * Check if it's time to refresh the visitor count from the API
+     * Check if it's time to refresh the visitor count
      */
     checkForRefresh() {
         // Get the current time
@@ -228,8 +222,7 @@ class VisitorCounterEntity extends Entity {
         // Get the time of the last refresh
         const lastRefresh = parseInt(localStorage.getItem('arcadeVisitorLastRefresh') || '0', 10);
         
-        // Use a longer refresh interval in production (5 minutes) to avoid excessive CountAPI calls
-        // This is more respectful of the API provider's resources
+        // Refresh every 5 minutes to update hourly fluctuations
         const refreshInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
         
         if (now - lastRefresh > refreshInterval) {
