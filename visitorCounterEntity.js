@@ -143,17 +143,21 @@ class VisitorCounterEntity extends Entity {
                 // Store in localStorage as a backup
                 localStorage.setItem('arcadeVisitorCount', data.count.toString());
                 
+                // Update the last refresh time to prevent too frequent API calls
+                localStorage.setItem('arcadeVisitorLastRefresh', Date.now().toString());
+                
                 // Set as target and animate to it
                 this.targetCount = data.count;
                 this.animateToCount(this.targetCount);
                 
-                console.log(`VisitorCounterEntity: Got real count from API: ${data.count}`);
+                console.log(`VisitorCounterEntity: Got count from function: ${data.count}`);
+                console.log(`VisitorCounterEntity: Source: ${data.source || 'unknown'}`);
                 
                 // Track in Google Analytics if available
                 if (typeof gtag === 'function') {
                     gtag('event', 'visitor_counter_viewed', {
                         'counter_value': this.targetCount,
-                        'source': 'netlify_function'
+                        'source': data.source || 'netlify_function'
                     });
                 }
             }
@@ -199,8 +203,8 @@ class VisitorCounterEntity extends Entity {
         // Get the time of the last refresh
         const lastRefresh = parseInt(localStorage.getItem('arcadeVisitorLastRefresh') || '0', 10);
         
-        // Only refresh every 5 minutes
-        const refreshInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
+        // Only refresh every minute during development (to avoid too many Netlify function calls)
+        const refreshInterval = 60 * 1000; // 1 minute in milliseconds
         
         if (now - lastRefresh > refreshInterval) {
             // Time to refresh
