@@ -119,11 +119,27 @@ class VisitorCounterEntity extends Entity {
             if (window.location.hostname.includes('netlify.app')) {
                 // Use the SAME domain for the function to avoid CORS issues
                 // This ensures we call the function on the same domain where the site is hosted
-                apiUrl = `https://${window.location.hostname}/.netlify/functions/visitor-count`;
-                console.log(`Using same-origin endpoint: ${apiUrl}`);
+                
+                // Only increment the count on first load, not on every refresh
+                // This prevents artificially inflating the count
+                const action = localStorage.getItem('visitorCounterInitialized') ? 'get' : 'hit';
+                
+                // Mark as initialized so subsequent calls don't increment
+                if (!localStorage.getItem('visitorCounterInitialized')) {
+                    localStorage.setItem('visitorCounterInitialized', 'true');
+                    console.log('First visit in this session - incrementing counter');
+                }
+                
+                // Add the action as a query parameter
+                apiUrl = `https://${window.location.hostname}/.netlify/functions/visitor-count?action=${action}`;
+                console.log(`Using same-origin endpoint: ${apiUrl} with action=${action}`);
             } else {
-                // For local development, use the local endpoint
-                apiUrl = '/.netlify/functions/visitor-count';
+                // For local development, use the local endpoint with the action
+                const action = localStorage.getItem('visitorCounterInitialized') ? 'get' : 'hit';
+                if (!localStorage.getItem('visitorCounterInitialized')) {
+                    localStorage.setItem('visitorCounterInitialized', 'true');
+                }
+                apiUrl = `/.netlify/functions/visitor-count?action=${action}`;
             }
             
             console.log(`VisitorCounterEntity: Calling API endpoint: ${apiUrl}`);
@@ -154,12 +170,19 @@ class VisitorCounterEntity extends Entity {
                 
                 console.log(`VisitorCounterEntity: Got count from function: ${data.count}`);
                 console.log(`VisitorCounterEntity: Source: ${data.source || 'unknown'}`);
+                console.log(`VisitorCounterEntity: Namespace: ${data.namespace || 'unknown'}`);
+                
+                // Store additional metadata for debugging
+                if (data.source === 'CountAPI') {
+                    localStorage.setItem('arcadeVisitorCountNamespace', data.namespace);
+                    localStorage.setItem('arcadeVisitorCountKey', data.key);
+                }
                 
                 // Track in Google Analytics if available
                 if (typeof gtag === 'function') {
                     gtag('event', 'visitor_counter_viewed', {
                         'counter_value': this.targetCount,
-                        'source': data.source || 'netlify_function'
+                        'source': data.source || 'CountAPI'
                     });
                 }
             }
@@ -205,8 +228,9 @@ class VisitorCounterEntity extends Entity {
         // Get the time of the last refresh
         const lastRefresh = parseInt(localStorage.getItem('arcadeVisitorLastRefresh') || '0', 10);
         
-        // Only refresh every minute during development (to avoid too many Netlify function calls)
-        const refreshInterval = 60 * 1000; // 1 minute in milliseconds
+        // Use a longer refresh interval in production (5 minutes) to avoid excessive CountAPI calls
+        // This is more respectful of the API provider's resources
+        const refreshInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
         
         if (now - lastRefresh > refreshInterval) {
             // Time to refresh
