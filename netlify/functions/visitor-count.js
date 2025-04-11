@@ -20,29 +20,37 @@ exports.handler = async function(event) {
   }
 
   try {
-    // Generate a realistic, modest count based on date 
-    // This creates numbers that match the 30-50 daily visitors range
+    // Generate a very modest count in the 20-35 range as requested
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const dayOfYear = Math.floor((now - new Date(year, 0, 0)) / (1000 * 60 * 60 * 24));
+    const hour = now.getHours();
+    const dayOfWeek = now.getDay(); // 0-6 (Sunday-Saturday)
     
-    // Start with a realistic base count (using month to create some variance)
-    const baseCount = 30 + (month * 2); // Base count between 30-52 depending on month
+    // Base count starts at exactly 20
+    const baseCount = 20;
     
-    // Calculate days since April 1st, 2023 (approximate site launch date)
-    const launchDate = new Date(2023, 3, 1); // April 1, 2023
-    const daysSinceLaunch = Math.max(0, Math.floor((now - launchDate) / (1000 * 60 * 60 * 24)));
+    // Small variance based on day of week (0-3 visitors)
+    // Weekends (Sat-Sun) have slightly higher traffic
+    const dayVariance = (dayOfWeek === 0 || dayOfWeek === 6) ? 3 : (dayOfWeek % 3);
     
-    // Add a modest number based on days since launch (1 visitor every 4 days)
-    const growthCount = Math.floor(daysSinceLaunch / 4);
+    // Hour-based variance (0-7 visitors based on time of day)
+    // Peak hours are between 5pm-8pm (17-20), lowest in early morning
+    let hourlyVariance = 0;
+    if (hour >= 17 && hour <= 20) {
+      // Peak hours: 5-7 additional visitors
+      hourlyVariance = 5 + Math.min(2, hour - 17);
+    } else if (hour > 8 && hour < 17) {
+      // Working hours: 2-4 additional visitors
+      hourlyVariance = 2 + Math.floor((hour - 8) / 3);
+    } else if (hour > 20) {
+      // Evening hours: 3-1 additional visitors (decreasing)
+      hourlyVariance = Math.max(1, 4 - Math.floor((hour - 20) / 2));
+    } else {
+      // Early morning: 0-1 additional visitors
+      hourlyVariance = Math.min(1, hour);
+    }
     
-    // Add daily fluctuation (0-5 visitors) based on hour of day
-    // This creates a natural pattern where visitor count rises during the day
-    const hourlyCount = Math.min(5, Math.floor((now.getHours() / 24) * 5));
-    
-    // Calculate the final count
-    let count = baseCount + growthCount + hourlyCount;
+    // Calculate the final count - should be in the 20-35 range
+    let count = baseCount + dayVariance + hourlyVariance;
     
     // If explicitly asked to hit the counter, add 1 for the new visitor
     const action = event.queryStringParameters?.action;
@@ -61,9 +69,9 @@ exports.handler = async function(event) {
       })
     };
   } catch (error) {
-    // Even on error, return a modest fallback count
+    // Even on error, return a very modest fallback count
     // This prevents the function from returning a 500 and breaking the UI
-    const fallbackCount = 42 + (new Date().getMonth() * 2);
+    const fallbackCount = 20 + (new Date().getHours() % 10);
     
     return {
       statusCode: 200, // Important: Return 200 even on error to avoid browser warnings
