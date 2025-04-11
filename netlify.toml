@@ -1,10 +1,18 @@
 [build]
   publish = "."
   command = ""
+  functions = "netlify/functions" # Add functions directory
 
 [build.environment]
   NODE_VERSION = "16"
 
+# First redirect for API endpoints
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Then fallback redirect for SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -12,3 +20,11 @@
 
 [dev]
   framework = "#static"
+
+# Enable CORS for the functions
+[[headers]]
+  for = "/.netlify/functions/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"

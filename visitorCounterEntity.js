@@ -73,7 +73,7 @@ class VisitorCounterEntity extends Entity {
         
         console.log(`VisitorCounterEntity: Initialized at position (${x}, ${y})`);
         
-        // Initialize visitor count - fetch from Google Analytics
+        // Initialize visitor count - fetch from our Netlify function
         this.initVisitorCount();
     }
     
@@ -93,90 +93,120 @@ class VisitorCounterEntity extends Entity {
     }
     
     /**
-     * Simulate visitor count that looks impressive to potential partners
-     * Using a simulated approach since cross-origin API calls are blocked
+     * Fetch actual visitor count using Netlify serverless function
+     * This avoids CORS issues by calling our own proxy
      */
-    fetchVisitorCount() {
-        // Generate a simulated count that's impressive for an arcade site
-        // Seed with today's date to keep it consistent per day
-        const today = new Date().toDateString();
-        const storedDate = localStorage.getItem('arcadeVisitorCountDate');
-        const storedCount = localStorage.getItem('arcadeVisitorCount');
+    async fetchVisitorCount() {
+        console.log("VisitorCounterEntity: Fetching visitor count from Netlify function");
         
-        console.log("VisitorCounterEntity: Generating simulated visitor count");
-        
-        // Base count - start with something impressive for partners to see
-        let visitorCount = 5000;
-        
-        // Use stored count if available and from today
-        if (storedCount && storedDate === today) {
-            visitorCount = parseInt(storedCount, 10);
-            console.log(`VisitorCounterEntity: Using stored count: ${visitorCount}`);
-        } else {
-            // If it's a new day, generate a new base count
-            // This makes the counter vary slightly day to day (looking more real)
-            const dayOfMonth = new Date().getDate();
-            const monthIndex = new Date().getMonth();
-            visitorCount = 5000 + (dayOfMonth * 100) + (monthIndex * 500);
+        try {
+            // First try to use any cached value for immediate display
+            const storedCount = localStorage.getItem('arcadeVisitorCount');
+            if (storedCount) {
+                const count = parseInt(storedCount, 10);
+                // Show the cached count immediately while we fetch the latest
+                this.targetCount = count;
+                this.animateToCount(this.targetCount);
+                console.log(`VisitorCounterEntity: Using cached count: ${count} while fetching latest`);
+            }
             
-            // Store this value for today
-            localStorage.setItem('arcadeVisitorCountDate', today);
-            localStorage.setItem('arcadeVisitorCount', visitorCount.toString());
-            console.log(`VisitorCounterEntity: Generated new base count: ${visitorCount}`);
-        }
-        
-        // Set as target and animate to it
-        this.targetCount = visitorCount;
-        this.animateToCount(this.targetCount);
-        
-        // Track in Google Analytics if available
-        if (typeof gtag === 'function') {
-            gtag('event', 'visitor_counter_viewed', {
-                'counter_value': this.targetCount
-            });
+            // Determine the API endpoint - use relative URL that works in both dev and production
+            let apiUrl;
+            
+            // In production (GitHub Pages with Netlify for functions)
+            if (window.location.hostname.includes('github.io') || 
+                window.location.hostname.includes('netlify.app')) {
+                // Use the absolute URL to the Netlify function
+                apiUrl = 'https://circuit-sanctum-arcade.netlify.app/.netlify/functions/visitor-count';
+            } else {
+                // For local development, use the local endpoint
+                apiUrl = '/.netlify/functions/visitor-count';
+            }
+            
+            console.log(`VisitorCounterEntity: Calling API endpoint: ${apiUrl}`);
+            
+            // Call our Netlify function to get the visitor count
+            const response = await fetch(apiUrl);
+            
+            // Check if the request was successful
+            if (!response.ok) {
+                throw new Error(`API returned status: ${response.status}`);
+            }
+            
+            // Parse the JSON response
+            const data = await response.json();
+            console.log("VisitorCounterEntity: API response:", data);
+            
+            // Make sure we have a valid count
+            if (data && typeof data.count === 'number') {
+                // Store in localStorage as a backup
+                localStorage.setItem('arcadeVisitorCount', data.count.toString());
+                
+                // Set as target and animate to it
+                this.targetCount = data.count;
+                this.animateToCount(this.targetCount);
+                
+                console.log(`VisitorCounterEntity: Got real count from API: ${data.count}`);
+                
+                // Track in Google Analytics if available
+                if (typeof gtag === 'function') {
+                    gtag('event', 'visitor_counter_viewed', {
+                        'counter_value': this.targetCount,
+                        'source': 'netlify_function'
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("VisitorCounterEntity: Error fetching count from API:", error);
+            
+            // Use fallback if API call fails
+            this.useFallbackCount();
         }
     }
     
     /**
-     * Increment the local visitor count by a small random amount
-     * This creates the appearance of real-time traffic changes
+     * Use a fallback count if the API call fails
      */
-    incrementLocalCount() {
-        const now = Date.now();
-        const lastIncrement = parseInt(localStorage.getItem('arcadeVisitorLastIncrement') || '0', 10);
-        
-        // Only increment every 10 minutes (in real time)
-        if (now - lastIncrement < 600000) return;
-        
+    useFallbackCount() {
+        // Try to use the stored count from localStorage
         const storedCount = localStorage.getItem('arcadeVisitorCount');
+        
         if (storedCount) {
-            // Get the current count
-            let count = parseInt(storedCount, 10);
+            // Use the stored count
+            this.targetCount = parseInt(storedCount, 10);
+            console.log(`VisitorCounterEntity: Using stored count as fallback: ${this.targetCount}`);
+        } else {
+            // Generate a reasonable fallback count
+            this.targetCount = 500 + Math.floor(Math.random() * 500);
+            console.log(`VisitorCounterEntity: Using generated fallback count: ${this.targetCount}`);
             
-            // Add a small random increment (1-5 visitors) to simulate real traffic
-            const increment = Math.floor(Math.random() * 5) + 1;
-            count += increment;
-            
-            // Ensure we don't exceed 9999 (display limit)
-            count = Math.min(count, 9999);
-            
-            // Update storage
-            localStorage.setItem('arcadeVisitorCount', count.toString());
-            localStorage.setItem('arcadeVisitorLastIncrement', now.toString());
-            
-            // Set as new target and animate to it
-            this.targetCount = count;
-            this.animateToCount(this.targetCount);
-            console.log(`VisitorCounterEntity: Incremented count by ${increment} to ${count}`);
+            // Store it for next time
+            localStorage.setItem('arcadeVisitorCount', this.targetCount.toString());
         }
+        
+        // Animate to this count
+        this.animateToCount(this.targetCount);
     }
     
     /**
-     * Set a random visitor count for demonstration
-     * @deprecated No longer used with simulated approach
+     * Check if it's time to refresh the visitor count from the API
      */
-    setRandomCount() {
-        this.fetchVisitorCount();
+    checkForRefresh() {
+        // Get the current time
+        const now = Date.now();
+        
+        // Get the time of the last refresh
+        const lastRefresh = parseInt(localStorage.getItem('arcadeVisitorLastRefresh') || '0', 10);
+        
+        // Only refresh every 5 minutes
+        const refreshInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
+        
+        if (now - lastRefresh > refreshInterval) {
+            // Time to refresh
+            console.log('VisitorCounterEntity: Time to refresh visitor count');
+            localStorage.setItem('arcadeVisitorLastRefresh', now.toString());
+            this.fetchVisitorCount();
+        }
     }
     
     /**
@@ -234,9 +264,8 @@ class VisitorCounterEntity extends Entity {
             this.updateDigits();
         }
         
-        // We don't need to refresh from an external API anymore
-        // The counter increments through the incrementLocalCount method
-        // when it's drawn, which happens every frame
+        // Nothing to update in the normal update cycle
+        // We handle API calls in the fetchVisitorCount method
     }
     
     /**
@@ -296,8 +325,8 @@ class VisitorCounterEntity extends Entity {
         // Draw the label
         this.drawLabel(ctx, screenX, screenY + (totalHeight / 2) + 15);
         
-        // Increment simulated view count in localStorage for demo purposes
-        this.incrementLocalCount();
+        // Check if it's time to refresh the count
+        this.checkForRefresh();
     }
     
     /**
