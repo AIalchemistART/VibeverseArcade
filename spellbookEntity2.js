@@ -656,7 +656,7 @@ export class SpellbookEntity2 extends Entity {
         testimonialSection.appendChild(testimonialQuote);
         
         const testimonialAuthor = document.createElement('p');
-        testimonialAuthor.textContent = "— AI AlCircuit Sanctum Developer";
+        testimonialAuthor.textContent = "— AI Alchemist | Vibeverse Arcade Developer";
         testimonialAuthor.style.textAlign = 'right';
         testimonialAuthor.style.margin = '0';
         testimonialAuthor.style.fontSize = '15px';
