@@ -404,6 +404,7 @@ export class SpellbookEntity2 extends Entity {
         spellbookPage.style.position = 'relative';
         spellbookPage.style.fontFamily = '"Rajdhani", "Orbitron", sans-serif';
         spellbookPage.style.scrollBehavior = 'smooth'; // Add smooth scrolling effect
+        spellbookPage.style.zIndex = '9000'; // Set z-index lower than radio button (10000) but above touch controls
         
         // Add visual indication that the page is scrollable
         const scrollIndicator = document.createElement('div');
@@ -418,9 +419,10 @@ export class SpellbookEntity2 extends Entity {
         scrollIndicator.style.justifyContent = 'center';
         scrollIndicator.style.alignItems = 'center';
         scrollIndicator.style.pointerEvents = 'none';
-        scrollIndicator.style.zIndex = '100';
+        scrollIndicator.style.zIndex = '9500'; // Higher than page but lower than radio button
         scrollIndicator.style.opacity = '0.7';
         scrollIndicator.style.transition = 'opacity 0.3s ease';
+        scrollIndicator.style.boxShadow = '0 0 10px rgba(0, 255, 255, 0.3)';
         scrollIndicator.innerHTML = `
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 5L12 19" stroke="#0ff" stroke-width="2" stroke-linecap="round"/>
@@ -440,7 +442,19 @@ export class SpellbookEntity2 extends Entity {
         
         // Handle touch start - initialize drag
         const handleTouchStart = (e) => {
-            if (e.target.closest('.radio-container')) return; // Don't interfere with radio button
+            // Check if we're touching the radio container or any of its children
+            // Use path or composedPath() for more reliable element detection
+            const path = e.path || (e.composedPath && e.composedPath()) || [];
+            const isRadioInteraction = path.some(el => {
+                return el.classList && (el.classList.contains('radio-container') || 
+                       el.parentElement?.classList?.contains('radio-container'));
+            });
+            
+            // Don't interfere with radio button interactions
+            if (isRadioInteraction || e.target.closest('.radio-container')) {
+                console.log('Windsurf Ad: Touch on radio button, ignoring for scrolling');
+                return;
+            }
             
             // Capture the initial touch position and current scroll position
             isDragging = true;
@@ -466,6 +480,38 @@ export class SpellbookEntity2 extends Entity {
         // Handle touch move - perform scrolling
         const handleTouchMove = (e) => {
             if (!isDragging) return;
+            
+            // Check if we've moved over the radio button area during drag
+            const path = e.path || (e.composedPath && e.composedPath()) || [];
+            const isOverRadio = path.some(el => {
+                return el.classList && (el.classList.contains('radio-container') || 
+                       el.parentElement?.classList?.contains('radio-container'));
+            });
+            
+            // If we're now over the radio button, temporarily make it non-interactive
+            // This prevents accidental clicks while scrolling over it
+            if (isOverRadio) {
+                const radioElements = document.querySelectorAll('.radio-container');
+                radioElements.forEach(el => {
+                    el.style.pointerEvents = 'none';
+                    // Store current z-index to restore later
+                    el.dataset.originalZIndex = el.style.zIndex || '10000';
+                    // Temporarily lower z-index to ensure scroll takes precedence
+                    el.style.zIndex = '9800';
+                });
+                
+                // Set a timeout to restore interactivity after scrolling ends
+                clearTimeout(window.radioRestoreTimeout);
+                window.radioRestoreTimeout = setTimeout(() => {
+                    if (!isDragging) {
+                        radioElements.forEach(el => {
+                            el.style.pointerEvents = 'auto';
+                            // Restore original z-index
+                            el.style.zIndex = el.dataset.originalZIndex || '10000';
+                        });
+                    }
+                }, 200);
+            }
             
             // Calculate the distance moved
             const currentY = e.touches[0].clientY;
@@ -493,6 +539,14 @@ export class SpellbookEntity2 extends Entity {
             
             // Reset dragging state
             isDragging = false;
+            
+            // Restore radio button interactivity immediately
+            const radioElements = document.querySelectorAll('.radio-container');
+            radioElements.forEach(el => {
+                el.style.pointerEvents = 'auto';
+                // Restore original z-index to ensure radio button is on top
+                el.style.zIndex = el.dataset.originalZIndex || '10000';
+            });
             
             // Gradually hide scroll indicator
             setTimeout(() => {
