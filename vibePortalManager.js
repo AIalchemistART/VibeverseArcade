@@ -98,7 +98,7 @@ export class VibePortalManager {
         };
         
         // Default position for start portal
-        const position = options.position || { x: 20, y: 15, z: 0 };
+        const position = options.position || { x: 20, y: 15.8, z: 0 };
         
         debug('VibePortalManager: Creating start portal at', position);
         

@@ -411,6 +411,7 @@ class Game {
                      entity.constructor.name === 'TrophyEntity' ||
                      entity.constructor.name === 'PortalEntity' ||
                      entity.constructor.name === 'SpellbookEntity' ||
+                     entity.constructor.name === 'SpellbookEntity2' ||
                      entity.constructor.name === 'ArcadeEntity' ||
                      entity.constructor.name === 'ArcadeEntity2' ||
                      entity.constructor.name === 'ArcadeEntity3' ||

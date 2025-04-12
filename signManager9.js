@@ -68,7 +68,7 @@ class SignManager9 {
         // Create ceiling signs at strategic positions
         // Positioned in the center of various areas for visibility
         const signPositions = [
-            { x: 97.5, y: 14.1, key: 'sign9' } // Central position in the arcade
+            { x: 97.5, y: 15.5, key: 'sign9' } // Central position in the arcade
         ];
         
         // Add each sign

@@ -673,7 +673,7 @@ class VisitorCounterEntity extends Entity {
         const isoAngle = Math.PI / 4; // 45 degrees in radians (kept for reference)
         ctx.translate(x, y);
         // Apply transformation for isometric view with foreshortening
-        ctx.transform(1, -0.17, 0, 1, 0, 0); // Add horizontal skew for foreshortening
+        ctx.transform(1, -0.18, 0, 1, 0, 0); // Add horizontal skew for foreshortening
         ctx.scale(0.85, 0.7); // Scale to match isometric perspective
         
         // Set up text styles

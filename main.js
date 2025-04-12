@@ -44,6 +44,7 @@ import { VibePortalManager } from './vibePortalManager.js'; // Import VibePortal
 import { TrophyManager } from './trophyManager.js'; // Import TrophyManager
 import { XPortalManager } from './xPortalManager.js'; // Import XPortalManager
 import { SpellbookManager } from './spellbookManager.js'; // Import SpellbookManager
+import { SpellbookManager2 } from './spellbookManager2.js'; // Import SpellbookManager2
 import { ArcadeManager } from './arcadeManager.js'; // Import ArcadeManager
 import { ArcadeManager2 } from './arcadeManager2.js'; // Import ArcadeManager2
 import { ArcadeManager3 } from './arcadeManager3.js'; // Import ArcadeManager3
@@ -395,6 +396,17 @@ if (compatibilityResults.allCriticalSupported) {
             console.log('Adding spellbooks to scene...');
             spellbookManager.addSpellbooks();
             console.log('Spellbooks added successfully');
+            
+            // Initialize SpellbookManager2 with game instance
+            const spellbookManager2 = new SpellbookManager2(game);
+            
+            // Preload spellbook2 assets
+            spellbookManager2.preloadAssets();
+            
+            // Add spellbooks2 to scene
+            console.log('Adding spellbooks2 to scene...');
+            spellbookManager2.addSpellbooks();
+            console.log('Spellbooks2 added successfully');
             
             // Initialize ArcadeManager with game instance
             const arcadeManager = new ArcadeManager(game);

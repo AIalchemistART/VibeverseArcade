@@ -52,7 +52,7 @@ class VisitorCounterManager {
         // Place visitor counter next to the arcade cabinet
         // Position it at 71.2, 30.0 which should be near the arcade cabinet
         const counterX = 96.1;
-        const counterY = 11.7;
+        const counterY = 13.2;
         
         const counter = this.addCounter(counterX, counterY);
         
