@@ -369,6 +369,73 @@ export class SpellbookEntity2 extends Entity {
      * Display the Windsurf AI advertisement overlay
      */
     displaySpellbookPage() {
+        // Create a global touch event interceptor
+        const globalTouchInterceptor = document.createElement('div');
+        globalTouchInterceptor.id = 'global-touch-interceptor';
+        globalTouchInterceptor.style.position = 'fixed';
+        globalTouchInterceptor.style.top = '0';
+        globalTouchInterceptor.style.left = '0';
+        globalTouchInterceptor.style.width = '100vw';
+        globalTouchInterceptor.style.height = '100vh';
+        globalTouchInterceptor.style.backgroundColor = 'transparent';
+        globalTouchInterceptor.style.zIndex = '9990'; // Higher than game controls but lower than our overlay
+        globalTouchInterceptor.style.touchAction = 'none'; // Disable all browser touch actions
+        document.body.appendChild(globalTouchInterceptor);
+        
+        // Directly capture and stop all touch events at the document level
+        const originalTouchStart = document.ontouchstart;
+        const originalTouchMove = document.ontouchmove;
+        const originalTouchEnd = document.ontouchend;
+        
+        // Override document-level touch handlers
+        document.ontouchstart = (e) => {
+            // Only allow touch events inside our overlay
+            const path = e.path || (e.composedPath && e.composedPath()) || [];
+            const isInsideOverlay = path.some(el => el.id === 'spellbook-overlay');
+            
+            if (!isInsideOverlay) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        };
+        
+        document.ontouchmove = (e) => {
+            // Only allow touch events inside our overlay
+            const path = e.path || (e.composedPath && e.composedPath()) || [];
+            const isInsideOverlay = path.some(el => el.id === 'spellbook-overlay');
+            
+            if (!isInsideOverlay) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        };
+        
+        document.ontouchend = (e) => {
+            // Only allow touch events inside our overlay
+            const path = e.path || (e.composedPath && e.composedPath()) || [];
+            const isInsideOverlay = path.some(el => el.id === 'spellbook-overlay');
+            
+            if (!isInsideOverlay) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        };
+        
+        // Store the original game.js input handlers if they exist
+        let originalGameHandlers = {};
+        if (window.game && window.game.input) {
+            ['handleMouseDown', 'handleMouseMove', 'handleMouseUp', 'handleTouchStart', 'handleTouchMove', 'handleTouchEnd'].forEach(handlerName => {
+                if (typeof window.game.input[handlerName] === 'function') {
+                    originalGameHandlers[handlerName] = window.game.input[handlerName];
+                    // Replace with empty function
+                    window.game.input[handlerName] = () => {};
+                }
+            });
+        }
+        
         // Create overlay container
         const overlay = document.createElement('div');
         overlay.id = 'spellbook-overlay';
@@ -440,21 +507,31 @@ export class SpellbookEntity2 extends Entity {
         let animationFrameId = null;
         let lastTimestamp = 0;
         
-        // Handle touch start - initialize drag
+        // Handle touch start - initialize drag with enhanced reliability
         const handleTouchStart = (e) => {
-            // Check if we're touching the radio container or any of its children
+            // First, always capture this event and prevent it from bubbling to game controls
+            e.stopPropagation();
+            
+            // Check if we're touching the radio container or close button
             // Use path or composedPath() for more reliable element detection
             const path = e.path || (e.composedPath && e.composedPath()) || [];
-            const isRadioInteraction = path.some(el => {
-                return el.classList && (el.classList.contains('radio-container') || 
-                       el.parentElement?.classList?.contains('radio-container'));
+            const isSpecialElement = path.some(el => {
+                return el && el.classList && (
+                    el.classList.contains('radio-container') || 
+                    el.classList.contains('prominent-close-btn')
+                );
             });
             
-            // Don't interfere with radio button interactions
-            if (isRadioInteraction || e.target.closest('.radio-container')) {
-                console.log('Windsurf Ad: Touch on radio button, ignoring for scrolling');
+            // Don't interfere with special element interactions
+            if (isSpecialElement || 
+                e.target.closest('.radio-container') || 
+                e.target.closest('.prominent-close-btn')) {
+                console.log('Windsurf Ad: Touch on special element, ignoring for scrolling');
                 return;
             }
+            
+            // Visual feedback - highlight the scrollable area subtly
+            spellbookPage.style.boxShadow = '0 0 40px rgba(0, 255, 255, 0.7), 0 0 70px rgba(128, 0, 255, 0.4)';
             
             // Capture the initial touch position and current scroll position
             isDragging = true;
@@ -533,12 +610,20 @@ export class SpellbookEntity2 extends Entity {
             e.preventDefault();
         };
         
-        // Handle touch end - implement momentum scrolling
-        const handleTouchEnd = () => {
+        // Handle touch end - implement momentum scrolling with enhanced reliability
+        const handleTouchEnd = (e) => {
+            // Prevent event bubbling regardless of dragging state
+            if (e) {
+                e.stopPropagation();
+            }
+            
             if (!isDragging) return;
             
             // Reset dragging state
             isDragging = false;
+            
+            // Restore visual state for the scrollable area
+            spellbookPage.style.boxShadow = '0 0 30px rgba(0, 255, 255, 0.5), 0 0 60px rgba(128, 0, 255, 0.3)';
             
             // Restore radio button interactivity immediately
             const radioElements = document.querySelectorAll('.radio-container');
@@ -548,7 +633,8 @@ export class SpellbookEntity2 extends Entity {
                 el.style.zIndex = el.dataset.originalZIndex || '10000';
             });
             
-            // Gradually hide scroll indicator
+            // Gradually hide scroll indicator with subtle animation
+            scrollIndicator.style.transition = 'opacity 0.5s ease';
             setTimeout(() => {
                 scrollIndicator.style.opacity = '0.7';
             }, 500);
@@ -593,6 +679,67 @@ export class SpellbookEntity2 extends Entity {
         borderGlow.style.pointerEvents = 'none';
         borderGlow.style.borderRadius = '5px';
         spellbookPage.appendChild(borderGlow);
+        
+        // Add a prominent close button in the top-right corner
+        const prominentCloseBtn = document.createElement('div');
+        prominentCloseBtn.className = 'prominent-close-btn';
+        prominentCloseBtn.style.position = 'absolute';
+        prominentCloseBtn.style.top = '10px';
+        prominentCloseBtn.style.right = '10px';
+        prominentCloseBtn.style.width = '60px'; // Larger touch target
+        prominentCloseBtn.style.height = '60px'; // Larger touch target
+        prominentCloseBtn.style.borderRadius = '50%';
+        prominentCloseBtn.style.backgroundColor = 'rgba(255, 0, 60, 0.2)';
+        prominentCloseBtn.style.border = '2px solid #ff003c';
+        prominentCloseBtn.style.boxShadow = '0 0 15px rgba(255, 0, 60, 0.5)';
+        prominentCloseBtn.style.display = 'flex';
+        prominentCloseBtn.style.justifyContent = 'center';
+        prominentCloseBtn.style.alignItems = 'center';
+        prominentCloseBtn.style.cursor = 'pointer';
+        prominentCloseBtn.style.zIndex = '10001'; // Higher than everything
+        prominentCloseBtn.style.transition = 'all 0.2s ease';
+        
+        // Add 'X' symbol inside the button
+        prominentCloseBtn.innerHTML = `
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18" stroke="#ff003c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6 6L18 18" stroke="#ff003c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        `;
+        
+        // Add touch-friendly features from memories about touch-friendly implementation
+        prominentCloseBtn.style.touchAction = 'manipulation';
+        prominentCloseBtn.style.webkitTapHighlightColor = 'transparent';
+        prominentCloseBtn.style.userSelect = 'none';
+        
+        // Hover effects for the close button
+        prominentCloseBtn.addEventListener('mouseover', () => {
+            prominentCloseBtn.style.backgroundColor = 'rgba(255, 0, 60, 0.4)';
+            prominentCloseBtn.style.transform = 'scale(1.1)';
+            prominentCloseBtn.style.boxShadow = '0 0 20px rgba(255, 0, 60, 0.8)';
+        });
+        
+        prominentCloseBtn.addEventListener('mouseout', () => {
+            prominentCloseBtn.style.backgroundColor = 'rgba(255, 0, 60, 0.2)';
+            prominentCloseBtn.style.transform = 'scale(1)';
+            prominentCloseBtn.style.boxShadow = '0 0 15px rgba(255, 0, 60, 0.5)';
+        });
+        
+        // Touch event handlers with visual feedback
+        prominentCloseBtn.addEventListener('touchstart', () => {
+            prominentCloseBtn.style.backgroundColor = 'rgba(255, 0, 60, 0.4)';
+            prominentCloseBtn.style.transform = 'scale(0.95)'; // Scale down for press effect
+            prominentCloseBtn.style.boxShadow = '0 0 20px rgba(255, 0, 60, 0.8)';
+        }, { passive: true });
+        
+        prominentCloseBtn.addEventListener('touchend', () => {
+            prominentCloseBtn.style.backgroundColor = 'rgba(255, 0, 60, 0.2)';
+            prominentCloseBtn.style.transform = 'scale(1)';
+            prominentCloseBtn.style.boxShadow = '0 0 15px rgba(255, 0, 60, 0.5)';
+        }, { passive: true });
+        
+        // Add the close button to the spellbook page
+        spellbookPage.appendChild(prominentCloseBtn);
         
         // Add header with Windsurf logo and title
         const header = document.createElement('div');
@@ -1081,10 +1228,18 @@ export class SpellbookEntity2 extends Entity {
         scanLines.style.zIndex = '1';
         spellbookPage.appendChild(scanLines);
         
-        // Set up overlay closing functionality
-        closeButton.onclick = () => {
-            // Fade out and remove overlay
+        // Function to close the overlay and clean up
+        const closeOverlay = () => {
+            console.log('Windsurf Ad: Closing overlay');
+            // Play closing sound effect if available
+            if (typeof this.playPageTurnSound === 'function') {
+                this.playPageTurnSound();
+            }
+            
+            // Fade out animation
             overlay.style.opacity = '0';
+            
+            // Remove overlay and clean up resources
             setTimeout(() => {
                 if (document.body.contains(overlay)) {
                     document.body.removeChild(overlay);
@@ -1103,20 +1258,45 @@ export class SpellbookEntity2 extends Entity {
                     if (animationFrameId) {
                         cancelAnimationFrame(animationFrameId);
                     }
+                    
+                    // Remove the global touch interceptor
+                    const interceptor = document.getElementById('global-touch-interceptor');
+                    if (interceptor && interceptor.parentNode) {
+                        interceptor.parentNode.removeChild(interceptor);
+                    }
+                    
+                    // Restore original document touch handlers
+                    document.ontouchstart = originalTouchStart;
+                    document.ontouchmove = originalTouchMove;
+                    document.ontouchend = originalTouchEnd;
+                    
+                    // Restore game.js input handlers if they were modified
+                    if (window.game && window.game.input && Object.keys(originalGameHandlers).length > 0) {
+                        Object.keys(originalGameHandlers).forEach(handlerName => {
+                            window.game.input[handlerName] = originalGameHandlers[handlerName];
+                        });
+                    }
+                    
+                    console.log('Windsurf Ad: Game touch controls restored');
                 }
             }, 500);
-            
-            // Play closing sound (if available)
-            if (typeof this.playPageTurnSound === 'function') {
-                this.playPageTurnSound();
-            }
         };
+        
+        // Connect the original close button to close action
+        closeButton.onclick = closeOverlay;
+        
+        // Connect the new prominent close button to close action
+        prominentCloseBtn.addEventListener('click', closeOverlay);
+        prominentCloseBtn.addEventListener('touchend', (e) => {
+            e.preventDefault(); // Prevent ghost clicks
+            closeOverlay();
+        }, { passive: false });
         
         // Escape key handler function
         const escapeKeyHandler = (e) => {
             if (e.key === 'Escape') {
                 console.log('Windsurf Ad: Escape key detected, closing overlay');
-                closeButton.click(); // Use the same close logic
+                closeOverlay(); // Use the closeOverlay function directly
             }
         };
         
@@ -1142,41 +1322,6 @@ export class SpellbookEntity2 extends Entity {
         console.log('Windsurf AI advertisement displayed');
         
         return overlay;
-        
-        // Function to close the overlay
-        const closeOverlay = () => {
-            // Fade out and remove overlay
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                if (document.body.contains(overlay)) {
-                    document.body.removeChild(overlay);
-                    // Remove the event listener when overlay is closed
-                    document.removeEventListener('keydown', handleKeyDown);
-                }
-            }, 500);
-            
-            // Play closing sound
-            this.playPageTurnSound();
-        };
-        
-        // Event handler for keyboard input
-        const handleKeyDown = (e) => {
-            if (e.key === 'Escape') {
-                console.log('Spellbook: Escape key detected, closing overlay');
-                closeOverlay();
-            }
-        };
-        
-        // Add keyboard event listener for Escape key
-        document.addEventListener('keydown', handleKeyDown);
-        
-        // Update close button to use the same closeOverlay function
-        closeButton.onclick = closeOverlay;
-        
-        // Trigger fade in
-        setTimeout(() => {
-            overlay.style.opacity = '1';
-        }, 10);
     }
     
     /**
