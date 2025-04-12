@@ -396,13 +396,15 @@ export class SpellbookEntity extends Entity {
         spellbookPage.style.backgroundColor = '#f0e6d2'; // Parchment color
         spellbookPage.style.backgroundImage = 'url("data:image/svg+xml,%3Csvg width=\'100%25\' height=\'100%25\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cdefs%3E%3Cpattern id=\'smallGrid\' width=\'10\' height=\'10\' patternUnits=\'userSpaceOnUse\'%3E%3Cpath d=\'M 10 0 L 0 0 0 10\' fill=\'none\' stroke=\'rgba(90, 50, 10, 0.2)\' stroke-width=\'0.5\'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width=\'100%25\' height=\'100%25\' fill=\'url(%23smallGrid)\'/%3E%3C/svg%3E")';
         spellbookPage.style.border = '20px solid #8B4513'; // Wooden frame
-        spellbookPage.style.boxShadow = '0 0 30px rgba(0, 0, 0, 0.7), inset 0 0 30px rgba(0, 0, 0, 0.4)';
+        spellbookPage.style.boxShadow = '0 0 30px rgba(75, 0, 130, 0.5), inset 0 0 30px rgba(0, 0, 0, 0.4)';
         spellbookPage.style.borderRadius = '5px';
         spellbookPage.style.padding = '40px';
         spellbookPage.style.overflowY = 'auto';
         spellbookPage.style.fontFamily = '"Palatino Linotype", "Book Antiqua", Palatino, serif';
         spellbookPage.style.color = '#3a3a3a';
         spellbookPage.style.position = 'relative';
+        spellbookPage.style.transition = 'transform 0.2s ease-out, box-shadow 0.2s ease';
+        spellbookPage.style.webkitOverflowScrolling = 'touch'; // Enhanced mobile scrolling
         
         // Add border decorations to mimic an arcane spellbook
         const borderDecorations = `
@@ -419,38 +421,251 @@ export class SpellbookEntity extends Entity {
             </div>
         `;
         
-        // Add close button (styled as an arcane symbol)
+        // Add close button (styled as an arcane symbol) with enhanced touch handling
         const closeButton = document.createElement('div');
         closeButton.style.position = 'absolute';
         closeButton.style.top = '15px';
         closeButton.style.right = '15px';
-        closeButton.style.width = '40px';
-        closeButton.style.height = '40px';
+        closeButton.style.width = '50px'; // Larger touch target area
+        closeButton.style.height = '50px';
         closeButton.style.cursor = 'pointer';
         closeButton.style.borderRadius = '50%';
         closeButton.style.display = 'flex';
         closeButton.style.justifyContent = 'center';
         closeButton.style.alignItems = 'center';
-        closeButton.style.background = 'radial-gradient(circle, rgba(75,0,130,0.1) 0%, rgba(75,0,130,0.2) 100%)';
-        closeButton.style.border = '1px solid rgba(75,0,130,0.3)';
+        closeButton.style.background = 'radial-gradient(circle, rgba(75,0,130,0.2) 0%, rgba(75,0,130,0.3) 100%)';
+        closeButton.style.border = '2px solid rgba(75,0,130,0.4)';
         closeButton.style.color = '#4B0082';
-        closeButton.style.fontSize = '24px';
+        closeButton.style.fontSize = '28px';
         closeButton.style.fontWeight = 'bold';
         closeButton.style.transition = 'all 0.2s ease-in-out';
         closeButton.style.boxShadow = '0 0 10px rgba(75,0,130,0.5)';
+        closeButton.style.zIndex = '10000'; // Ensure it stays above everything
+        closeButton.className = 'prominent-close-btn'; // Add class for easy targeting in event handlers
+        closeButton.style.touchAction = 'manipulation'; // Improve touch behavior
+        closeButton.style.webkitTapHighlightColor = 'rgba(75,0,130,0.2)'; // Mobile tap highlight
         closeButton.innerHTML = '×';
         
+        // Enhanced hover effects for desktop
         closeButton.onmouseover = () => {
-            closeButton.style.background = 'radial-gradient(circle, rgba(75,0,130,0.2) 0%, rgba(75,0,130,0.3) 100%)';
-            closeButton.style.boxShadow = '0 0 10px rgba(75,0,130,0.5)';
+            closeButton.style.background = 'radial-gradient(circle, rgba(75,0,130,0.3) 0%, rgba(75,0,130,0.4) 100%)';
+            closeButton.style.boxShadow = '0 0 15px rgba(75,0,130,0.6)';
+            closeButton.style.transform = 'scale(1.1)';
         };
         
         closeButton.onmouseout = () => {
-            closeButton.style.background = 'radial-gradient(circle, rgba(75,0,130,0.1) 0%, rgba(75,0,130,0.2) 100%)';
-            closeButton.style.boxShadow = 'none';
+            closeButton.style.background = 'radial-gradient(circle, rgba(75,0,130,0.2) 0%, rgba(75,0,130,0.3) 100%)';
+            closeButton.style.boxShadow = '0 0 10px rgba(75,0,130,0.5)';
+            closeButton.style.transform = 'scale(1)';
         };
         
+        // Add touch-specific event handlers for mobile
+        closeButton.addEventListener('touchstart', (e) => {
+            // Prevent the touch event from triggering scrolling or other handlers
+            e.stopPropagation();
+            e.preventDefault();
+            
+            // Visual feedback for touch
+            closeButton.style.background = 'radial-gradient(circle, rgba(75,0,130,0.4) 0%, rgba(75,0,130,0.5) 100%)';
+            closeButton.style.boxShadow = '0 0 20px rgba(75,0,130,0.7)';
+            closeButton.style.transform = 'scale(0.95)'; // Slight press-in effect
+        }, { passive: false });
+        
+        closeButton.addEventListener('touchend', (e) => {
+            // Prevent default behavior
+            e.stopPropagation();
+            
+            // Return to normal state with delay for visual feedback
+            setTimeout(() => {
+                closeButton.style.background = 'radial-gradient(circle, rgba(75,0,130,0.2) 0%, rgba(75,0,130,0.3) 100%)';
+                closeButton.style.boxShadow = '0 0 10px rgba(75,0,130,0.5)';
+                closeButton.style.transform = 'scale(1)';
+            }, 100);
+        }, { passive: false });
+        
         // closeButton.onclick will be set after the closeOverlay function is defined
+        
+        // Create scroll indicator for better UX
+        const scrollIndicator = document.createElement('div');
+        scrollIndicator.style.position = 'absolute';
+        scrollIndicator.style.right = '5px';
+        scrollIndicator.style.top = '50%';
+        scrollIndicator.style.transform = 'translateY(-50%)';
+        scrollIndicator.style.width = '5px';
+        scrollIndicator.style.height = '100px';
+        scrollIndicator.style.backgroundColor = 'rgba(75, 0, 130, 0.3)';
+        scrollIndicator.style.borderRadius = '2.5px';
+        scrollIndicator.style.opacity = '0.7';
+        scrollIndicator.style.transition = 'opacity 0.5s ease';
+        
+        // Touch scrolling state variables
+        let isDragging = false;
+        let startY = 0;
+        let scrollTop = 0;
+        let lastY = 0;
+        let velocity = 0;
+        let animationFrameId = null;
+        let lastTimestamp = 0;
+        
+        // Handle touch start - initialize drag with enhanced reliability
+        const handleTouchStart = (e) => {
+            // First, always capture this event and prevent it from bubbling to game controls
+            e.stopPropagation();
+            
+            // Check if we're touching any of our interactive elements
+            // Don't interfere with these interactions
+            const interactiveTarget = e.target.closest('.prominent-close-btn') || 
+                                     e.target.closest('a') || 
+                                     e.target.href || 
+                                     e.target.tagName === 'A';
+            
+            if (interactiveTarget) {
+                console.log('Spellbook: Touch on interactive element, ignoring for scrolling');
+                return;
+            }
+            
+            // Visual feedback - highlight the scrollable area subtly
+            spellbookPage.style.boxShadow = '0 0 40px rgba(75, 0, 130, 0.7), inset 0 0 30px rgba(0, 0, 0, 0.4)';
+            
+            // Capture the initial touch position and current scroll position
+            isDragging = true;
+            startY = e.touches[0].clientY;
+            lastY = startY;
+            scrollTop = spellbookPage.scrollTop;
+            velocity = 0;
+            lastTimestamp = Date.now();
+            
+            // Show scroll indicator when starting to drag
+            scrollIndicator.style.opacity = '1';
+            
+            // Stop any ongoing momentum scrolling
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
+            // Prevent default to avoid browser's native scrolling
+            e.preventDefault();
+        };
+        
+        // Handle touch move - perform scrolling with enhanced sensitivity
+        const handleTouchMove = (e) => {
+            if (!isDragging) return;
+            
+            // Check for interaction with interactive elements during drag
+            const interactiveTarget = e.target.closest('.prominent-close-btn') || 
+                                     e.target.closest('a') || 
+                                     e.target.href || 
+                                     e.target.tagName === 'A';
+            
+            if (interactiveTarget) {
+                // Allow the interactive element to handle the touch
+                console.log('Spellbook: Touch move on interactive element, releasing scroll control');
+                isDragging = false;
+                return;
+            }
+            
+            // Always stop propagation to prevent game controls from interfering
+            e.stopPropagation();
+            e.preventDefault();
+            
+            // Calculate the distance moved with improved precision
+            const currentY = e.touches[0].clientY;
+            const deltaY = startY - currentY;
+            
+            // Update the scroll position with increased sensitivity (3x multiplier)
+            // This significantly reduces the "sticky" feeling
+            spellbookPage.scrollTop = scrollTop + (deltaY * 3.0);
+            
+            // Add subtle visual feedback during scrolling
+            if (Math.abs(deltaY) > 10) {
+                // Emphasize the glow slightly during active scrolling
+                const intensity = Math.min(Math.abs(deltaY) / 50, 1.0);
+                spellbookPage.style.boxShadow = `0 0 ${30 + (intensity * 10)}px rgba(75, 0, 130, ${0.5 + (intensity * 0.2)}), inset 0 0 30px rgba(0, 0, 0, 0.4)`;
+            }
+            
+            // Calculate velocity for momentum scrolling with enhanced sensitivity
+            const now = Date.now();
+            const timeDiff = now - lastTimestamp;
+            if (timeDiff > 0) {
+                // Significantly increased multiplier for very responsive scrolling
+                velocity = (lastY - currentY) / timeDiff * 35;
+                lastTimestamp = now;
+                lastY = currentY;
+            }
+        };
+        
+        // Handle touch end - implement momentum scrolling with enhanced reliability
+        const handleTouchEnd = (e) => {
+            // Prevent event bubbling regardless of dragging state
+            if (e) {
+                e.stopPropagation();
+            }
+            
+            if (!isDragging) return;
+            
+            // Reset dragging state
+            isDragging = false;
+            
+            // Restore visual state for the scrollable area
+            spellbookPage.style.boxShadow = '0 0 30px rgba(75, 0, 130, 0.5), inset 0 0 30px rgba(0, 0, 0, 0.4)';
+            
+            // Gradually hide scroll indicator with subtle animation
+            scrollIndicator.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                scrollIndicator.style.opacity = '0.7';
+            }, 500);
+            
+            // Implement enhanced momentum scrolling if there's velocity
+            if (Math.abs(velocity) > 0.3) { // Lower threshold to activate momentum (0.5 → 0.3)
+                const momentumScroll = () => {
+                    // Apply velocity with reduced friction for smoother scrolling
+                    spellbookPage.scrollTop += velocity;
+                    velocity *= 0.98; // Reduced friction factor (0.95 → 0.98) for longer scrolling
+                    
+                    // Add subtle easing at end of scroll
+                    if (Math.abs(velocity) < 4) {
+                        // Apply more friction when slowing down for a natural feel
+                        velocity *= 0.92;
+                    }
+                    
+                    // Stop when velocity becomes negligible - lower threshold for smoother finish
+                    if (Math.abs(velocity) > 0.05) { // Lower threshold (0.1 → 0.05)
+                        animationFrameId = requestAnimationFrame(momentumScroll);
+                    } else {
+                        animationFrameId = null;
+                        // Restore normal shadow when scrolling ends completely
+                        spellbookPage.style.boxShadow = '0 0 30px rgba(75, 0, 130, 0.5), inset 0 0 30px rgba(0, 0, 0, 0.4)';
+                    }
+                };
+                
+                // Start momentum scrolling
+                animationFrameId = requestAnimationFrame(momentumScroll);
+            }
+        };
+        
+        // Add touch event listeners to the spellbook page with enhanced capture options
+        // Using capture:true ensures our handlers run first, before any browser defaults
+        spellbookPage.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
+        spellbookPage.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+        spellbookPage.addEventListener('touchend', handleTouchEnd, { capture: true });
+        spellbookPage.addEventListener('touchcancel', handleTouchEnd, { capture: true });
+        
+        // Add touch feedback style - subtle transform on active touch
+        // Add an additional handler for instant scroll response on touchstart
+        spellbookPage.addEventListener('touchstart', (e) => {
+            // Don't apply to close button touches
+            if (e.target.closest('.prominent-close-btn')) {
+                return;
+            }
+            // Apply subtle scale feedback for tactile response - principle from TV shuffle button
+            spellbookPage.style.transform = 'scale(0.995)';
+        }, { passive: true });
+        
+        // Restore normal scale on touch end
+        spellbookPage.addEventListener('touchend', () => {
+            spellbookPage.style.transform = 'scale(1)';
+        }, { passive: true });
         
         // Create the content
         const content = document.createElement('div');
@@ -624,7 +839,7 @@ export class SpellbookEntity extends Entity {
         emailLabel.innerHTML = '📜 Ethereal Message: ';
         email.appendChild(emailLabel);
         
-        // Create the clickable email link
+        // Create the clickable email link with touch-friendly styling
         const emailLink = document.createElement('a');
         emailLink.href = 'mailto:manny@aialchemist.net';
         emailLink.textContent = 'manny@aialchemist.net';
@@ -632,19 +847,71 @@ export class SpellbookEntity extends Entity {
         emailLink.style.textDecoration = 'none';
         emailLink.style.borderBottom = '1px dotted #4B0082';
         emailLink.style.transition = 'all 0.2s ease-in-out';
+        emailLink.style.position = 'relative';
+        emailLink.style.zIndex = '9999'; // Ensure it stays on top during scrolling
+        emailLink.style.padding = '5px 8px'; // Larger touch target
+        emailLink.style.margin = '-5px -8px'; // Offset the padding
+        emailLink.style.display = 'inline-block';
+        emailLink.style.webkitTapHighlightColor = 'rgba(75,0,130,0.2)'; // Mobile tap highlight
         
-        // Add hover effect to email link
+        // Add enhanced hover effect to email link for desktop
         emailLink.onmouseover = () => {
             emailLink.style.color = '#8A2BE2';
             emailLink.style.borderBottom = '1px solid #8A2BE2';
-            emailLink.style.textShadow = '0 0 3px rgba(75,0,130,0.2)';
+            emailLink.style.textShadow = '0 0 3px rgba(75,0,130,0.3)';
+            emailLink.style.transform = 'scale(1.05)';
+            emailLink.style.backgroundColor = 'rgba(75,0,130,0.03)';
         };
         
         emailLink.onmouseout = () => {
             emailLink.style.color = '#4B0082';
             emailLink.style.borderBottom = '1px dotted #4B0082';
             emailLink.style.textShadow = 'none';
+            emailLink.style.transform = 'scale(1.0)';
+            emailLink.style.backgroundColor = 'transparent';
         };
+        
+        // Add touch-specific event handlers for mobile with aggressive event capturing
+        emailLink.addEventListener('touchstart', (e) => {
+            // Completely block event propagation to prevent scrolling
+            e.stopPropagation();
+            e.preventDefault();
+            console.log('Email link touch start captured');
+            
+            // Visual feedback similar to hover but more pronounced for touch
+            emailLink.style.color = '#9932CC';
+            emailLink.style.borderBottom = '2px solid #9932CC';
+            emailLink.style.textShadow = '0 0 5px rgba(75,0,130,0.4)';
+            emailLink.style.transform = 'scale(1.05)';
+            emailLink.style.backgroundColor = 'rgba(75,0,130,0.1)';
+            emailLink.style.borderRadius = '3px';
+            emailLink.style.boxShadow = '0 0 10px rgba(75,0,130,0.3)';
+        }, { passive: false, capture: true });
+        
+        emailLink.addEventListener('touchend', (e) => {
+            // Prevent default behavior but allow the link action
+            e.stopPropagation();
+            console.log('Email link touch end captured');
+            
+            // Trigger the email link programmatically
+            setTimeout(() => {
+                window.location.href = 'mailto:manny@aialchemist.net';
+                
+                // Restore normal appearance with slight delay for visual feedback
+                emailLink.style.color = '#4B0082';
+                emailLink.style.borderBottom = '1px dotted #4B0082';
+                emailLink.style.textShadow = 'none';
+                emailLink.style.transform = 'scale(1.0)';
+                emailLink.style.backgroundColor = 'transparent';
+                emailLink.style.boxShadow = 'none';
+            }, 100);
+        }, { passive: false, capture: true });
+        
+        // Also capture click events to handle hybrid devices
+        emailLink.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('Email link click captured');
+        }, { capture: true });
         
         email.appendChild(emailLink);
         
@@ -675,15 +942,20 @@ export class SpellbookEntity extends Entity {
         donationText.style.margin = '5px 0 10px';
         donationText.innerHTML = 'Support the continued research of magical innovations with a contribution of gold coins.';
         
-        // PayPal link (styled as an arcane button)
+        // PayPal link (styled as an arcane button) with enhanced touch support
         const donationLink = document.createElement('a');
         donationLink.href = 'https://paypal.me/aialchemistart';
         donationLink.target = '_blank';
         donationLink.style.display = 'inline-block';
-        donationLink.style.padding = '8px 15px';
-        donationLink.style.margin = '10px 0';
-        donationLink.style.background = 'linear-gradient(135deg, rgba(218,165,32,0.2) 0%, rgba(218,165,32,0.5) 100%)';
-        donationLink.style.border = '1px solid rgba(218,165,32,0.6)';
+        donationLink.style.padding = '12px 20px'; // Enlarged for better touch target
+        donationLink.style.margin = '15px 0';
+        donationLink.style.background = 'linear-gradient(135deg, rgba(218,165,32,0.3) 0%, rgba(218,165,32,0.6) 100%)';
+        donationLink.style.border = '1px solid rgba(218,165,32,0.7)';
+        donationLink.style.position = 'relative';
+        donationLink.style.zIndex = '9999'; // Ensure it stays on top during scrolling
+        donationLink.style.touchAction = 'manipulation'; // Improves touch response
+        donationLink.style.webkitTapHighlightColor = 'rgba(218,165,32,0.4)'; // Mobile tap highlight
+        donationLink.style.transform = 'translateZ(0)'; // Hardware acceleration
         donationLink.style.borderRadius = '3px';
         donationLink.style.color = '#8B4513';
         donationLink.style.textDecoration = 'none';
@@ -693,15 +965,55 @@ export class SpellbookEntity extends Entity {
         donationLink.style.boxShadow = '0 0 5px rgba(218,165,32,0.3)';
         donationLink.innerHTML = 'Donate Gold Coins';
         
+        // Enhanced hover effects for desktop
         donationLink.onmouseover = () => {
-            donationLink.style.background = 'linear-gradient(135deg, rgba(218,165,32,0.3) 0%, rgba(218,165,32,0.6) 100%)';
+            donationLink.style.background = 'linear-gradient(135deg, rgba(218,165,32,0.4) 0%, rgba(218,165,32,0.7) 100%)';
             donationLink.style.boxShadow = '0 0 10px rgba(218,165,32,0.5)';
+            donationLink.style.transform = 'translateZ(0) scale(1.05)';
         };
         
         donationLink.onmouseout = () => {
-            donationLink.style.background = 'linear-gradient(135deg, rgba(218,165,32,0.2) 0%, rgba(218,165,32,0.5) 100%)';
+            donationLink.style.background = 'linear-gradient(135deg, rgba(218,165,32,0.3) 0%, rgba(218,165,32,0.6) 100%)';
             donationLink.style.boxShadow = '0 0 5px rgba(218,165,32,0.3)';
+            donationLink.style.transform = 'translateZ(0) scale(1.0)';
         };
+        
+        // Add touch-specific event handlers for mobile with aggressive event capturing
+        donationLink.addEventListener('touchstart', (e) => {
+            // Completely block event propagation to prevent scrolling
+            e.stopPropagation();
+            e.preventDefault();
+            console.log('Donation link touch start captured');
+            
+            // Visual feedback - similar to hover but more pronounced
+            donationLink.style.background = 'linear-gradient(135deg, rgba(218,165,32,0.5) 0%, rgba(218,165,32,0.8) 100%)';
+            donationLink.style.boxShadow = '0 0 15px rgba(218,165,32,0.6)';
+            donationLink.style.transform = 'translateZ(0) scale(1.03)';
+            donationLink.style.border = '2px solid rgba(218,165,32,0.9)';
+        }, { passive: false, capture: true });
+        
+        donationLink.addEventListener('touchend', (e) => {
+            // Prevent default behavior but allow the link action
+            e.stopPropagation();
+            console.log('Donation link touch end captured');
+            
+            // Trigger the link programmatically
+            setTimeout(() => {
+                window.open('https://paypal.me/aialchemistart', '_blank');
+                
+                // Restore normal appearance with slight delay for visual feedback
+                donationLink.style.background = 'linear-gradient(135deg, rgba(218,165,32,0.3) 0%, rgba(218,165,32,0.6) 100%)';
+                donationLink.style.boxShadow = '0 0 5px rgba(218,165,32,0.3)';
+                donationLink.style.transform = 'translateZ(0) scale(1.0)';
+                donationLink.style.border = '1px solid rgba(218,165,32,0.7)';
+            }, 100);
+        }, { passive: false, capture: true });
+        
+        // Also capture click events to handle hybrid devices
+        donationLink.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('Donation link click captured');
+        }, { capture: true });
         
         // Footer with arcane symbol
         const footer = document.createElement('div');
@@ -743,6 +1055,7 @@ export class SpellbookEntity extends Entity {
         spellbookPage.innerHTML += borderDecorations;
         spellbookPage.appendChild(content);
         spellbookPage.appendChild(closeButton);
+        spellbookPage.appendChild(scrollIndicator);
         overlay.appendChild(spellbookPage);
         
         // Add to body
@@ -751,15 +1064,35 @@ export class SpellbookEntity extends Entity {
         // Play opening sound
         this.playPageTurnSound();
         
-        // Function to close the overlay
+        // Function to close the overlay with proper touch event cleanup
         const closeOverlay = () => {
+            // Cancel any ongoing animation
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
             // Fade out and remove overlay
             overlay.style.opacity = '0';
             setTimeout(() => {
                 if (document.body.contains(overlay)) {
+                    // Clean up all event listeners
+                    try {
+                        // Remove touch event listeners
+                        spellbookPage.removeEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
+                        spellbookPage.removeEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+                        spellbookPage.removeEventListener('touchend', handleTouchEnd, { capture: true });
+                        spellbookPage.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
+                        
+                        // Remove keyboard event listener
+                        document.removeEventListener('keydown', handleKeyDown);
+                        console.log('Spellbook: Removed all event listeners');
+                    } catch (err) {
+                        console.log('Spellbook: Error removing event listeners:', err);
+                    }
+                    
+                    // Finally remove from DOM
                     document.body.removeChild(overlay);
-                    // Remove the event listener when overlay is closed
-                    document.removeEventListener('keydown', handleKeyDown);
                 }
             }, 500);
             

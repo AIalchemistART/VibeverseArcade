@@ -554,14 +554,18 @@ export class SpellbookEntity2 extends Entity {
             e.preventDefault();
         };
         
-        // Handle touch move - perform scrolling
+        // Handle touch move - perform scrolling with enhanced sensitivity
         const handleTouchMove = (e) => {
             if (!isDragging) return;
+            
+            // Always stop propagation to prevent game controls from interfering
+            e.stopPropagation();
+            e.preventDefault();
             
             // Check if we've moved over the radio button area during drag
             const path = e.path || (e.composedPath && e.composedPath()) || [];
             const isOverRadio = path.some(el => {
-                return el.classList && (el.classList.contains('radio-container') || 
+                return el && el.classList && (el.classList.contains('radio-container') || 
                        el.parentElement?.classList?.contains('radio-container'));
             });
             
@@ -587,21 +591,31 @@ export class SpellbookEntity2 extends Entity {
                             el.style.zIndex = el.dataset.originalZIndex || '10000';
                         });
                     }
-                }, 200);
+                }, 100); // Reduced from 200ms to 100ms for faster response
             }
             
-            // Calculate the distance moved
+            // Calculate the distance moved with improved precision
             const currentY = e.touches[0].clientY;
             const deltaY = startY - currentY;
             
-            // Update the scroll position
-            spellbookPage.scrollTop = scrollTop + deltaY;
+            // Update the scroll position with further increased sensitivity (3x multiplier)
+            // This significantly reduces the "sticky" feeling
+            spellbookPage.scrollTop = scrollTop + (deltaY * 3.0);
             
-            // Calculate velocity for momentum scrolling
+            // Add subtle visual feedback during scrolling
+            if (Math.abs(deltaY) > 10) {
+                // Emphasize the glow slightly during active scrolling
+                const intensity = Math.min(Math.abs(deltaY) / 50, 1.0);
+                spellbookPage.style.boxShadow = `0 0 ${30 + (intensity * 10)}px rgba(0, 255, 255, ${0.5 + (intensity * 0.2)}), 0 0 ${60 + (intensity * 15)}px rgba(128, 0, 255, ${0.3 + (intensity * 0.1)})`;
+            }
+            
+            // Calculate velocity for momentum scrolling with further enhanced sensitivity
             const now = Date.now();
             const timeDiff = now - lastTimestamp;
             if (timeDiff > 0) {
-                velocity = (lastY - currentY) / timeDiff * 15; // Adjust multiplier for speed
+                // Significantly increased multiplier for very responsive scrolling
+                // Based on previous touch-friendly implementation principles
+                velocity = (lastY - currentY) / timeDiff * 35;
                 lastTimestamp = now;
                 lastY = currentY;
             }
@@ -639,18 +653,26 @@ export class SpellbookEntity2 extends Entity {
                 scrollIndicator.style.opacity = '0.7';
             }, 500);
             
-            // Implement momentum scrolling if there's velocity
-            if (Math.abs(velocity) > 0.5) {
+            // Implement enhanced momentum scrolling if there's velocity
+            if (Math.abs(velocity) > 0.3) { // Lower threshold to activate momentum (0.5 → 0.3)
                 const momentumScroll = () => {
-                    // Apply velocity with friction
+                    // Apply velocity with reduced friction for smoother scrolling
                     spellbookPage.scrollTop += velocity;
-                    velocity *= 0.95; // Friction factor
+                    velocity *= 0.98; // Reduced friction factor (0.95 → 0.98) for longer scrolling
                     
-                    // Stop when velocity becomes negligible
-                    if (Math.abs(velocity) > 0.1) {
+                    // Add subtle easing at end of scroll
+                    if (Math.abs(velocity) < 4) {
+                        // Apply more friction when slowing down for a natural feel
+                        velocity *= 0.92;
+                    }
+                    
+                    // Stop when velocity becomes negligible - lower threshold for smoother finish
+                    if (Math.abs(velocity) > 0.05) { // Lower threshold (0.1 → 0.05)
                         animationFrameId = requestAnimationFrame(momentumScroll);
                     } else {
                         animationFrameId = null;
+                        // Restore normal shadow when scrolling ends completely
+                        spellbookPage.style.boxShadow = '0 0 30px rgba(0, 255, 255, 0.5), 0 0 60px rgba(128, 0, 255, 0.3)';
                     }
                 };
                 
@@ -659,11 +681,30 @@ export class SpellbookEntity2 extends Entity {
             }
         };
         
-        // Add touch event listeners to the spellbook page
-        spellbookPage.addEventListener('touchstart', handleTouchStart, { passive: false });
-        spellbookPage.addEventListener('touchmove', handleTouchMove, { passive: false });
-        spellbookPage.addEventListener('touchend', handleTouchEnd);
-        spellbookPage.addEventListener('touchcancel', handleTouchEnd);
+        // Add touch event listeners to the spellbook page with enhanced capture options
+        // Using capture:true ensures our handlers run first, before any browser defaults
+        spellbookPage.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
+        spellbookPage.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+        spellbookPage.addEventListener('touchend', handleTouchEnd, { capture: true });
+        spellbookPage.addEventListener('touchcancel', handleTouchEnd, { capture: true });
+        
+        // Add touch feedback style - subtle transform on active touch
+        spellbookPage.style.transition = 'transform 0.2s ease-out, box-shadow 0.2s ease';
+        
+        // Add an additional handler for instant scroll response on touchstart
+        spellbookPage.addEventListener('touchstart', (e) => {
+            // Don't apply to radio button or close button touches
+            if (e.target.closest('.radio-container') || e.target.closest('.prominent-close-btn')) {
+                return;
+            }
+            // Apply subtle scale feedback for tactile response - principle from TV shuffle button
+            spellbookPage.style.transform = 'scale(0.995)';
+        }, { passive: true });
+        
+        // Restore normal scale on touch end
+        spellbookPage.addEventListener('touchend', () => {
+            spellbookPage.style.transform = 'scale(1)';
+        }, { passive: true });
         
         // Add scroll indicator to the page
         spellbookPage.appendChild(scrollIndicator);
