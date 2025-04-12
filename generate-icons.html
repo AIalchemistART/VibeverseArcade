@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Vibeverse Arcade Icons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1e1e2e;
+            color: #f0f0f0;
+        }
+        h1 {
+            color: cyan;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0,255,255,0.5);
+        }
+        .canvas-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .icon-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            border: 1px solid cyan;
+            margin-bottom: 5px;
+            box-shadow: 0 0 15px rgba(0,255,255,0.3);
+        }
+        button {
+            background: linear-gradient(135deg, #2a2a4a 0%, #1a1a2a 100%);
+            color: cyan;
+            border: 1px solid cyan;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,255,255,0.3);
+            transition: all 0.3s;
+        }
+        button:hover {
+            box-shadow: 0 0 20px rgba(0,255,255,0.5);
+            transform: scale(1.05);
+        }
+        .instructions {
+            background-color: #2a2a4a;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vibeverse Arcade Icon Generator</h1>
+    
+    <div class="instructions">
+        <p>This tool generates cyberpunk-themed PWA icons for Vibeverse Arcade. Click "Generate Icons" to create all the required sizes, then right-click each icon and save it to the <strong>/icons</strong> folder with the appropriate filename.</p>
+        <p>Required filenames: icon-72x72.png, icon-96x96.png, icon-128x128.png, icon-144x144.png, icon-152x152.png, icon-192x192.png, icon-384x384.png, icon-512x512.png</p>
+    </div>
+    
+    <button id="generateBtn">Generate Icons</button>
+    
+    <div class="canvas-container" id="canvasContainer"></div>
+    
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const container = document.getElementById('canvasContainer');
+        const generateBtn = document.getElementById('generateBtn');
+        
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const center = size / 2;
+            const radius = size * 0.4;
+            
+            // Background
+            ctx.fillStyle = '#0a0a14';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Grid lines
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+            ctx.lineWidth = Math.max(1, size / 100);
+            
+            // Horizontal and vertical grid lines
+            for (let i = 0; i < size; i += size / 10) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(size, i);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, size);
+                ctx.stroke();
+            }
+            
+            // Outer glow
+            const gradient = ctx.createRadialGradient(center, center, radius * 0.7, center, center, radius * 1.2);
+            gradient.addColorStop(0, 'rgba(0, 255, 255, 0.3)');
+            gradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(center, center, radius * 1.2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Circle
+            ctx.strokeStyle = 'cyan';
+            ctx.lineWidth = Math.max(2, size / 50);
+            ctx.beginPath();
+            ctx.arc(center, center, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Inner fill
+            const innerGradient = ctx.createRadialGradient(center, center, 0, center, center, radius);
+            innerGradient.addColorStop(0, 'rgba(255, 0, 255, 0.2)');
+            innerGradient.addColorStop(1, 'rgba(0, 255, 255, 0.1)');
+            
+            ctx.fillStyle = innerGradient;
+            ctx.beginPath();
+            ctx.arc(center, center, radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Cross pattern
+            ctx.strokeStyle = 'rgba(255, 0, 255, 0.7)';
+            ctx.lineWidth = Math.max(1, size / 80);
+            
+            ctx.beginPath();
+            ctx.moveTo(center, center - radius * 0.7);
+            ctx.lineTo(center, center + radius * 0.7);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(center - radius * 0.7, center);
+            ctx.lineTo(center + radius * 0.7, center);
+            ctx.stroke();
+            
+            // Diagonal lines
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
+            
+            ctx.beginPath();
+            ctx.moveTo(center - radius * 0.5, center - radius * 0.5);
+            ctx.lineTo(center + radius * 0.5, center + radius * 0.5);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(center - radius * 0.5, center + radius * 0.5);
+            ctx.lineTo(center + radius * 0.5, center - radius * 0.5);
+            ctx.stroke();
+            
+            // Center dot
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(center, center, radius * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Text
+            if (size >= 128) {
+                ctx.font = `bold ${size / 10}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillStyle = 'cyan';
+                ctx.fillText("VIBE", center, center + radius * 0.2);
+                
+                ctx.font = `${size / 12}px Arial`;
+                ctx.fillStyle = 'rgba(255, 0, 255, 0.8)';
+                ctx.fillText("VERSE", center, center + radius * 0.4);
+            }
+        }
+        
+        generateBtn.addEventListener('click', () => {
+            container.innerHTML = '';
+            
+            sizes.forEach(size => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'icon-wrapper';
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                
+                const label = document.createElement('div');
+                label.textContent = `${size}x${size}`;
+                
+                drawIcon(canvas, size);
+                
+                wrapper.appendChild(canvas);
+                wrapper.appendChild(label);
+                container.appendChild(wrapper);
+            });
+        });
+    </script>
+</body>
+</html>
