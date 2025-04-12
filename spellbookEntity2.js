@@ -399,9 +399,134 @@ export class SpellbookEntity2 extends Entity {
         spellbookPage.style.boxShadow = '0 0 30px rgba(0, 255, 255, 0.5), 0 0 60px rgba(128, 0, 255, 0.3)';
         spellbookPage.style.padding = '30px';
         spellbookPage.style.overflowY = 'auto';
+        spellbookPage.style.overflowX = 'hidden'; // Prevent horizontal scrolling
         spellbookPage.style.color = '#e0e0ff';
         spellbookPage.style.position = 'relative';
         spellbookPage.style.fontFamily = '"Rajdhani", "Orbitron", sans-serif';
+        spellbookPage.style.scrollBehavior = 'smooth'; // Add smooth scrolling effect
+        
+        // Add visual indication that the page is scrollable
+        const scrollIndicator = document.createElement('div');
+        scrollIndicator.style.position = 'absolute';
+        scrollIndicator.style.bottom = '15px';
+        scrollIndicator.style.right = '15px';
+        scrollIndicator.style.width = '40px';
+        scrollIndicator.style.height = '40px';
+        scrollIndicator.style.borderRadius = '50%';
+        scrollIndicator.style.backgroundColor = 'rgba(0, 255, 255, 0.2)';
+        scrollIndicator.style.display = 'flex';
+        scrollIndicator.style.justifyContent = 'center';
+        scrollIndicator.style.alignItems = 'center';
+        scrollIndicator.style.pointerEvents = 'none';
+        scrollIndicator.style.zIndex = '100';
+        scrollIndicator.style.opacity = '0.7';
+        scrollIndicator.style.transition = 'opacity 0.3s ease';
+        scrollIndicator.innerHTML = `
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5L12 19" stroke="#0ff" stroke-width="2" stroke-linecap="round"/>
+                <path d="M6 11L12 5L18 11" stroke="#0ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6 13L12 19L18 13" stroke="#0ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        `;
+        
+        // Implement touch-based drag scrolling
+        let isDragging = false;
+        let startY = 0;
+        let scrollTop = 0;
+        let lastY = 0;
+        let velocity = 0;
+        let animationFrameId = null;
+        let lastTimestamp = 0;
+        
+        // Handle touch start - initialize drag
+        const handleTouchStart = (e) => {
+            if (e.target.closest('.radio-container')) return; // Don't interfere with radio button
+            
+            // Capture the initial touch position and current scroll position
+            isDragging = true;
+            startY = e.touches[0].clientY;
+            lastY = startY;
+            scrollTop = spellbookPage.scrollTop;
+            velocity = 0;
+            lastTimestamp = Date.now();
+            
+            // Show scroll indicator when starting to drag
+            scrollIndicator.style.opacity = '1';
+            
+            // Stop any ongoing momentum scrolling
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
+            // Prevent default to avoid browser's native scrolling
+            e.preventDefault();
+        };
+        
+        // Handle touch move - perform scrolling
+        const handleTouchMove = (e) => {
+            if (!isDragging) return;
+            
+            // Calculate the distance moved
+            const currentY = e.touches[0].clientY;
+            const deltaY = startY - currentY;
+            
+            // Update the scroll position
+            spellbookPage.scrollTop = scrollTop + deltaY;
+            
+            // Calculate velocity for momentum scrolling
+            const now = Date.now();
+            const timeDiff = now - lastTimestamp;
+            if (timeDiff > 0) {
+                velocity = (lastY - currentY) / timeDiff * 15; // Adjust multiplier for speed
+                lastTimestamp = now;
+                lastY = currentY;
+            }
+            
+            // Prevent default to avoid browser's native scrolling
+            e.preventDefault();
+        };
+        
+        // Handle touch end - implement momentum scrolling
+        const handleTouchEnd = () => {
+            if (!isDragging) return;
+            
+            // Reset dragging state
+            isDragging = false;
+            
+            // Gradually hide scroll indicator
+            setTimeout(() => {
+                scrollIndicator.style.opacity = '0.7';
+            }, 500);
+            
+            // Implement momentum scrolling if there's velocity
+            if (Math.abs(velocity) > 0.5) {
+                const momentumScroll = () => {
+                    // Apply velocity with friction
+                    spellbookPage.scrollTop += velocity;
+                    velocity *= 0.95; // Friction factor
+                    
+                    // Stop when velocity becomes negligible
+                    if (Math.abs(velocity) > 0.1) {
+                        animationFrameId = requestAnimationFrame(momentumScroll);
+                    } else {
+                        animationFrameId = null;
+                    }
+                };
+                
+                // Start momentum scrolling
+                animationFrameId = requestAnimationFrame(momentumScroll);
+            }
+        };
+        
+        // Add touch event listeners to the spellbook page
+        spellbookPage.addEventListener('touchstart', handleTouchStart, { passive: false });
+        spellbookPage.addEventListener('touchmove', handleTouchMove, { passive: false });
+        spellbookPage.addEventListener('touchend', handleTouchEnd);
+        spellbookPage.addEventListener('touchcancel', handleTouchEnd);
+        
+        // Add scroll indicator to the page
+        spellbookPage.appendChild(scrollIndicator);
         
         // Create neon border effect
         const borderGlow = document.createElement('div');
@@ -691,6 +816,7 @@ export class SpellbookEntity2 extends Entity {
         
         // Radio button with cyberpunk styling for the referral link - enhanced for visibility above touch controls
         const radioContainer = document.createElement('label');
+        radioContainer.className = 'radio-container'; // Added class for touch event targeting
         radioContainer.style.display = 'flex';
         radioContainer.style.alignItems = 'center';
         radioContainer.style.justifyContent = 'center';
@@ -910,6 +1036,19 @@ export class SpellbookEntity2 extends Entity {
                     document.body.removeChild(overlay);
                     // Remove the escape key event listener
                     document.removeEventListener('keydown', escapeKeyHandler);
+                    
+                    // Clean up touch event listeners
+                    if (spellbookPage) {
+                        spellbookPage.removeEventListener('touchstart', handleTouchStart);
+                        spellbookPage.removeEventListener('touchmove', handleTouchMove);
+                        spellbookPage.removeEventListener('touchend', handleTouchEnd);
+                        spellbookPage.removeEventListener('touchcancel', handleTouchEnd);
+                    }
+                    
+                    // Cancel any ongoing animations
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                    }
                 }
             }, 500);
             
