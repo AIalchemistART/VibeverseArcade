@@ -3,6 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Dynamic cache control - prevents caching only during local development -->
+    <script>
+        // Only disable caching on localhost/development environments
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            // Create and add meta tags dynamically
+            const metaTags = [
+                { httpEquiv: 'Cache-Control', content: 'no-cache, no-store, must-revalidate' },
+                { httpEquiv: 'Pragma', content: 'no-cache' },
+                { httpEquiv: 'Expires', content: '0' }
+            ];
+            
+            metaTags.forEach(tagInfo => {
+                const meta = document.createElement('meta');
+                meta.httpEquiv = tagInfo.httpEquiv;
+                meta.content = tagInfo.content;
+                document.head.appendChild(meta);
+            });
+            
+            console.log('Development environment detected: Cache disabled');
+        } else {
+            console.log('Production environment detected: Normal caching enabled');
+        }
+    </script>
     <title>Vibeverse Arcade</title>
     <meta name="description" content="Explore a cyberpunk arcade full of interactive elements and neon vibes">
     <meta name="theme-color" content="#00ffff">
@@ -653,9 +676,10 @@
                 try {
                     // Simple, reliable path resolution approach
                     if (isLocalhost) {
-                        // For localhost, always use direct path
-                        mainScript.src = 'main.js';
-                        console.log('Local environment detected, using direct path:', mainScript.src);
+                        // For localhost, always use direct path with cache busting
+                        const cacheVersion = new Date().getTime();
+                        mainScript.src = `main.js?v=${cacheVersion}`;
+                        console.log('Local environment detected, using direct path with cache busting:', mainScript.src);
                     } else {
                         // For all other environments (GitHub Pages or custom domain)
                         // Try multiple fallback paths in sequence if the main one fails
@@ -686,11 +710,12 @@
                             document.body.appendChild(scriptElement);
                         };
                         
-                        // Define the paths to try, in order of preference
+                        // Define the paths to try, in order of preference (with cache busting)
+                        const cacheVersion = new Date().getTime();
                         const pathsToTry = [
-                            'main.js',                     // Try direct path first
-                            '/main.js',                   // Try root path
-                            '/AIalchemistsLAIR/main.js'   // Try GitHub Pages path as last resort
+                            `main.js?v=${cacheVersion}`,                     // Try direct path first
+                            `/main.js?v=${cacheVersion}`,                   // Try root path
+                            `/AIalchemistsLAIR/main.js?v=${cacheVersion}`   // Try GitHub Pages path as last resort
                         ];
                         
                         attemptToLoad(pathsToTry);
@@ -712,8 +737,9 @@
                 
                 mainScript.onerror = (err) => {
                     console.error('Failed to load main.js, trying alternative path', err);
-                    // Try an alternative path if the first one fails
-                    mainScript.src = 'main.js';
+                    // Try an alternative path if the first one fails (with cache busting)
+                    const cacheVersion = new Date().getTime();
+                    mainScript.src = `main.js?v=${cacheVersion}`;
                 };
                 
                 document.body.appendChild(mainScript);

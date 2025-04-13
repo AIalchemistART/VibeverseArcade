@@ -48,7 +48,92 @@ self.addEventListener('install', event => {
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches and take control immediately
+self.addEventListener('activate', event => {
+  console.log('[Service Worker] Activating...');
+  
+  // Delete all caches that aren't named in CACHE_NAME
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[Service Worker] Clearing old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+    .then(() => {
+      console.log('[Service Worker] Claiming clients...');
+      return self.clients.claim(); // Take control of all clients
+    })
+  );
+});
+
+// Fetch event - network first strategy for JS files, cache for others
+self.addEventListener('fetch', event => {
+  // Skip cross-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) return;
+  
+  const requestUrl = event.request.url;
+  
+  // For JS files, especially arcadeEntity12.js, always go to network first
+  if (requestUrl.endsWith('.js') || requestUrl.includes('arcadeEntity12.js')) {
+    console.log('[Service Worker] Network-first fetch for JS file:', requestUrl);
+    
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Clone the response to store in cache
+          const responseToCache = response.clone();
+          
+          // Open the cache and update it
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseToCache);
+              console.log('[Service Worker] Updated cache for:', requestUrl);
+            });
+          
+          return response;
+        })
+        .catch(err => {
+          console.log('[Service Worker] Network request failed, trying cache for:', requestUrl);
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // For other resources, check cache first, then network
+    event.respondWith(
+      caches.match(event.request)
+        .then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          
+          return fetch(event.request)
+            .then(response => {
+              // Don't cache if response is not valid
+              if (!response || response.status !== 200 || response.type !== 'basic') {
+                return response;
+              }
+              
+              // Clone the response to store in cache
+              const responseToCache = response.clone();
+              
+              caches.open(CACHE_NAME)
+                .then(cache => {
+                  cache.put(event.request, responseToCache);
+                });
+              
+              return response;
+            });
+        })
+    );
+  }
+});
+
+// Original activate event - kept for compatibility
 self.addEventListener('activate', event => {
   console.log('[Service Worker] Activating...');
   
