@@ -107,12 +107,33 @@ class VisitorCounterEntity extends Entity {
     /**
      * Generate visitor count using a client-side algorithm
      * This works in all environments (GitHub Pages, Netlify, local) without any backend
+     * The counter resets at 00:00 UTC and reaches an average of 35 visitors by the end of day
+     * with a range between 25-45 visits
      */
     async fetchVisitorCount() {
         console.log("VisitorCounterEntity: Generating visitor count");
         
         try {
-            // First try to use any cached value for immediate display
+            // First get the current UTC date and time
+            const now = new Date();
+            const utcNow = new Date(now.getTime());
+            const utcHours = utcNow.getUTCHours();
+            const utcMinutes = utcNow.getUTCMinutes();
+            const dayOfWeek = utcNow.getUTCDay(); // 0-6 (Sunday-Saturday)
+            
+            // Calculate the current UTC day key for storage
+            const utcDateKey = `${utcNow.getUTCFullYear()}-${(utcNow.getUTCMonth() + 1).toString().padStart(2, '0')}-${utcNow.getUTCDate().toString().padStart(2, '0')}`;
+            const storedDateKey = localStorage.getItem('arcadeVisitorDateKey');
+            
+            // Check if we need to reset the counter (new UTC day)
+            if (storedDateKey !== utcDateKey) {
+                console.log(`VisitorCounterEntity: New UTC day detected. Resetting counter. Previous: ${storedDateKey}, Current: ${utcDateKey}`);
+                localStorage.setItem('arcadeVisitorDateKey', utcDateKey);
+                localStorage.removeItem('visitorCounterInitialized');
+                localStorage.removeItem('arcadeVisitorCount');
+            }
+            
+            // Check if there's a cached count for today
             const storedCount = localStorage.getItem('arcadeVisitorCount');
             if (storedCount) {
                 const count = parseInt(storedCount, 10);
@@ -126,50 +147,57 @@ class VisitorCounterEntity extends Entity {
             // Time-based count generation (client-side version)
             // --------------------------------------------------
             
-            // Get the current time and date info
-            const now = new Date();
-            const hour = now.getHours();
-            const dayOfWeek = now.getDay(); // 0-6 (Sunday-Saturday)
+            // Convert UTC hours to a percentage of the day (0-1)
+            const dayProgress = (utcHours + (utcMinutes / 60)) / 24;
+            console.log(`VisitorCounterEntity: UTC time is ${utcHours}:${utcMinutes}, day progress: ${(dayProgress * 100).toFixed(1)}%`);
             
-            // Base count starts at exactly 20
-            const baseCount = 20;
+            // Base count is now 0 at the start of the UTC day
+            let baseCount = 0;
             
-            // Small variance based on day of week (0-3 visitors)
-            // Weekends (Sat-Sun) have slightly higher traffic
-            const dayVariance = (dayOfWeek === 0 || dayOfWeek === 6) ? 3 : (dayOfWeek % 3);
-            
-            // Hour-based variance (0-7 visitors based on time of day)
-            // Peak hours are between 5pm-8pm (17-20), lowest in early morning
-            let hourlyVariance = 0;
-            if (hour >= 17 && hour <= 20) {
-                // Peak hours: 5-7 additional visitors
-                hourlyVariance = 5 + Math.min(2, hour - 17);
-            } else if (hour > 8 && hour < 17) {
-                // Working hours: 2-4 additional visitors
-                hourlyVariance = 2 + Math.floor((hour - 8) / 3);
-            } else if (hour > 20) {
-                // Evening hours: 3-1 additional visitors (decreasing)
-                hourlyVariance = Math.max(1, 4 - Math.floor((hour - 20) / 2));
+            // Calculate time-based progression throughout the day
+            // We want to reach around 35 visitors by 20 hours into the day (83.3% of day)  
+            // Using a slightly accelerated curve at the beginning and slowing down at the end
+            let timeBasedCount = 0;
+            if (dayProgress <= 0.833) { // First 20 hours (up to 83.3% of day)
+                // Use a curve that accelerates in morning, is steadier mid-day, and then slows
+                // Curve: 37 * (dayProgress/0.833)^0.9 gives about 35 at 20 hours
+                timeBasedCount = Math.round(37 * Math.pow(dayProgress / 0.833, 0.9));
             } else {
-                // Early morning: 0-1 additional visitors
-                hourlyVariance = Math.min(1, hour);
+                // Last 4 hours of the day - slower growth to remain in range
+                const remainingProgress = (dayProgress - 0.833) / 0.167; // 0-1 for last 4 hours
+                timeBasedCount = Math.round(35 + (remainingProgress * 5)); // Add up to 5 more in last hours
             }
             
-            // Calculate the final count - should be in the 20-35 range
-            let count = baseCount + dayVariance + hourlyVariance;
+            // Add day of week variance (±2 visitors)
+            // Weekends (Sat-Sun) tend to have higher traffic
+            const dayVariance = (dayOfWeek === 0 || dayOfWeek === 6) ? 
+                Math.floor(Math.random() * 3) : // Weekend: 0 to +2
+                Math.floor(Math.random() * 5) - 2; // Weekday: -2 to +2
+            
+            // Add some randomness for each session (±3 visitors)
+            // This ensures the counter isn't perfectly predictable and adds natural variance
+            const sessionRandomness = Math.floor(Math.random() * 7) - 3; // -3 to +3
+            
+            // Calculate the final count - aiming for range 25-45 with average around 35
+            let count = Math.max(0, timeBasedCount + dayVariance + sessionRandomness);
             
             // Only increment on first load, not on every refresh
             // This prevents artificially inflating the count
             if (!localStorage.getItem('visitorCounterInitialized')) {
-                // Add 1 for this visitor
-                count += 1;
+                // Add 1 for this visitor (with small probability of +2 for popular sessions)
+                count += (Math.random() < 0.1) ? 2 : 1;
                 
                 // Mark as initialized so subsequent refreshes don't increment
                 localStorage.setItem('visitorCounterInitialized', 'true');
                 console.log('First visit in this session - incrementing counter');
             }
             
-            // Store the final count in localStorage
+            // Ensure the counter stays within expected range (25-45) after all adjustments
+            if (dayProgress >= 0.85) { // Near end of day
+                count = Math.max(25, Math.min(45, count));
+            }
+            
+            // Store the final count and timestamp in localStorage
             localStorage.setItem('arcadeVisitorCount', count.toString());
             localStorage.setItem('arcadeVisitorLastRefresh', Date.now().toString());
                 
@@ -177,13 +205,14 @@ class VisitorCounterEntity extends Entity {
             this.targetCount = count;
             this.animateToCount(this.targetCount);
                 
-            console.log(`VisitorCounterEntity: Generated count: ${count}`);
+            console.log(`VisitorCounterEntity: Generated count: ${count} (time-based: ${timeBasedCount}, day variance: ${dayVariance}, session: ${sessionRandomness})`);
                 
             // Track in Google Analytics if available
             if (typeof gtag === 'function') {
                 gtag('event', 'visitor_counter_viewed', {
                     'counter_value': this.targetCount,
-                    'source': 'client-side-algorithm'
+                    'source': 'client-side-algorithm',
+                    'utc_hours': utcHours
                 });
             }
             
